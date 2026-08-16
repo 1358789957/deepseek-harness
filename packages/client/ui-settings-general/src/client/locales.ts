@@ -3,6 +3,7 @@
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
   'trigger': '设置',
+  'trigger.shortcut': 'Ctrl+,',
   'title': '设置',
   'close': '关闭',
   'openDocument': '打开配置文件',
@@ -18,6 +19,7 @@ export type SettingsKey = keyof typeof zh
 /** English dictionary, checked complete against the zh key set. */
 export const en = {
   'trigger': 'Settings',
+  'trigger.shortcut': 'Ctrl+,',
   'title': 'Settings',
   'close': 'Close',
   'openDocument': 'Open configuration file',

@@ -27,6 +27,7 @@ export function TriggerContent({ wide, t }: TriggerContentProps) {
     <>
       {wide ? <IconSettingsOutline16 size={16} /> : <IconSettingsOutline14 size={18} />}
       {wide && <span className={css.triggerLabel}>{t('trigger')}</span>}
+      {wide && <span className={css.shortcut} aria-hidden="true">{t('trigger.shortcut')}</span>}
     </>
   )
 }

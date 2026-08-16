@@ -2,8 +2,20 @@
  * only guards against overflow during the sidebar collapse crossfade). */
 
 .triggerLabel {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.shortcut {
+  flex: none;
+  margin-left: auto;
+  padding-right: 6px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .search {

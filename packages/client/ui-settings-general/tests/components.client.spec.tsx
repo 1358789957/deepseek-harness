@@ -25,12 +25,15 @@ describe('chrome content', () => {
     const { container } = render(<TriggerContent {...kit} wide t={t} />)
     expect(container.querySelector('svg')).toBeTruthy()
     expect(screen.getByText('Settings')).toBeTruthy()
+    expect(screen.getByText('Ctrl+,')).toBeTruthy()
+    expect(screen.getByText('Ctrl+,').getAttribute('aria-hidden')).toBe('true')
   })
 
   it('TriggerContent drops the label in the rail state', () => {
     const { container } = render(<TriggerContent {...kit} wide={false} t={t} />)
     expect(container.querySelector('svg')).toBeTruthy()
     expect(screen.queryByText('Settings')).toBeNull()
+    expect(screen.queryByText('Ctrl+,')).toBeNull()
   })
 
   it('HeaderContent and CloseLabel render their translated text', () => {

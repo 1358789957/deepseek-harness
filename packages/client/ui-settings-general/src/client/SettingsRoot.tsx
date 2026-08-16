@@ -6,10 +6,10 @@
  * accessible names resolve to that content (trigger: its own text; dialog:
  * aria-labelledby the title node; close: visually-hidden slot text). Modal
  * open state, the active section id, and the nav query are component-local
- * viewing state. The onboarding coordinator mounts exactly one ordered
- * registrant while the sessions-derived empty-Hero fact is active. Visible
- * dialog chrome belongs to the step, so a mounted-but-deciding step paints
- * nothing here.
+ * viewing state. Ctrl/Cmd+, toggles the panel unless an editor is focused.
+ * The onboarding coordinator mounts exactly one ordered registrant while the
+ * sessions-derived empty-Hero fact is active. Visible dialog chrome belongs
+ * to the step, so a mounted-but-deciding step paints nothing here.
  */
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import clsx from 'clsx'
@@ -19,6 +19,13 @@ import {
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { SettingsRootComponentProps, SettingsSectionRow } from './shell-contract.ts'
 import css from './SettingsRoot.module.css'
+
+/** True when the event target is an editor that should keep Ctrl/Cmd+, . */
+function isEditor(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  if (target.matches('input, textarea, select')) return true
+  return target.closest('[contenteditable]:not([contenteditable="false"])') !== null
+}
 
 /** Nav glyph by section id; unknown ids fall back to the settings gear. */
 function navIcon(id: string) {
@@ -155,6 +162,18 @@ export function SettingsRoot(props: SettingsRootComponentProps) {
     })
   }, [])
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== 'Comma' || event.altKey || event.shiftKey
+        || !(event.ctrlKey || event.metaKey) || isEditor(event.target)) return
+      event.preventDefault()
+      if (open) close()
+      else setOpen(true)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => { document.removeEventListener('keydown', onKeyDown) }
+  }, [close, open])
+
   return (
     <>
       <button
@@ -162,6 +181,7 @@ export function SettingsRoot(props: SettingsRootComponentProps) {
         className={clsx(css.trigger, !wide && css.rail)}
         aria-haspopup="dialog"
         aria-expanded={open}
+        aria-keyshortcuts="Control+Comma Meta+Comma"
         onClick={() => { setOpen(true) }}
       >
         {renderSlot('settings.trigger', { wide })}

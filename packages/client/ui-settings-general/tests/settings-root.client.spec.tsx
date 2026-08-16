@@ -107,6 +107,34 @@ describe('SettingsRoot trigger', () => {
     const { renderSlot } = mount({ wide: false })
     expect(renderSlot).toHaveBeenCalledWith('settings.trigger', { wide: false })
   })
+
+  it('toggles the panel on Ctrl/Meta+, unless an editor is focused', () => {
+    mount()
+    const trigger = screen.getByRole('button', { name: 'Settings' })
+    expect(trigger.getAttribute('aria-keyshortcuts')).toBe('Control+Comma Meta+Comma')
+    fireEvent.keyDown(document, { code: 'Comma', ctrlKey: true })
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    fireEvent.keyDown(document, { code: 'Comma', metaKey: true })
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    fireEvent.keyDown(document, { code: 'Comma' })
+    fireEvent.keyDown(document, { code: 'Comma', ctrlKey: true, altKey: true })
+    fireEvent.keyDown(document, { code: 'Comma', ctrlKey: true, shiftKey: true })
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    const box = document.createElement('textarea')
+    document.body.append(box)
+    fireEvent.keyDown(box, { code: 'Comma', ctrlKey: true })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    box.remove()
+
+    const edit = document.createElement('div')
+    edit.setAttribute('contenteditable', 'true')
+    document.body.append(edit)
+    fireEvent.keyDown(edit, { code: 'Comma', ctrlKey: true })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    edit.remove()
+  })
 })
 
 describe('SettingsPanel chrome seats', () => {

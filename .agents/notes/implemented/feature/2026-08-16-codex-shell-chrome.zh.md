@@ -20,6 +20,8 @@ Status: implemented
 
 插件列表是单列折叠行：模块短名称、完整模块说明符、启停标签，以及原有的 fiber 状态圆点。它仍是只读 Host 清单。没有 Install 控件，也没有连接器商店。
 
+Ctrl/Cmd+, 会切换设置面板。宽侧栏触发器把该快捷键画在行尾并对辅助技术隐藏，因此无障碍名称仍是设置 seat 文案。本产品没有账号、计费余量、邀请、宠物或登出，所以底栏仍是设置控件，而不是伪造的个人资料菜单。
+
 ## 备选方案
 
 **去掉预览版徽标以匹配 Codex 空页。** 否决。预览状态是面向整个产品的身份，不是装饰；持有该决策的笔记禁止运行时隐藏。
@@ -32,17 +34,20 @@ Status: implemented
 
 **加上 Install 按钮或已安装图标条。** 否决。该清单不能启用、停用或拉取市场插件。
 
+**把设置触发器换成账号菜单（剩余用量、Show pet、邀请朋友、登出）。** 否决。没有已登录资料、计费剩余百分比、邀请流程或登出。只有「设置」一项的菜单会多一次点击，却不增加事实。
+
 ## 后果
 
 - 组装后的空态快照和无密钥 e2e 字符串跟随新标题。
 - 设置搜索不查看分区内部。查询隐藏当前分区时回退到剩余的第一行。
 - 「最近」只是区头标签，不是单独的置顶或最近记账。
 - 插件行展示真实模块说明符，而不是营销描述。
+- 输入框、textarea、select 或 contenteditable 聚焦时，Ctrl/Cmd+, 会被忽略。
 
 ## 测试
 
 - `packages/client/ui-conversation/tests/skeleton.client.spec.tsx` 钉住两种语言的标题和预览版徽标。
-- `packages/client/ui-settings-general/tests/settings-root.client.spec.tsx` 与 `components.client.spec.tsx` 钉住导航过滤、无匹配文案、Escape 先清查询，以及「通用」页标题。
+- `packages/client/ui-settings-general/tests/settings-root.client.spec.tsx` 与 `components.client.spec.tsx` 钉住导航过滤、无匹配文案、Escape 先清查询、「通用」页标题、宽触发器快捷键提示，以及 Ctrl/Cmd+, 切换。
 - `packages/client/ui-workspace/tests/workspace-browser.client.spec.tsx` 钉住单列表 + 最近更新时的「最近」，以及单列表 + 手动排序时的「会话」。
 - `packages/client/ui-settings-plugin-inventory/tests/components.client.spec.tsx` 钉住列表行上可见的模块说明符。
 - `apps/web/tests/snapshots/lifecycle-chrome/hero.expected.md` 与 `plan-active.expected.md` 钉住组装后的英文空态。

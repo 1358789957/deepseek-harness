@@ -20,6 +20,8 @@ The sidebar header is **Recent** only for the flat list while Last updated is se
 
 The Plugin list is a single-column disclosure list: short module name, full module specifier, enablement tag, and the existing fiber-status dot. It remains a read-only Host inventory. There is no Install control and no connector store.
 
+Ctrl/Cmd+, toggles the Settings panel. The wide sidebar trigger shows that shortcut as trailing text hidden from assistive technology so the accessible name stays the Settings seat copy. The product has no account, billing quota, invite, pet, or logout, so the foot stays a Settings control rather than a fake profile menu.
+
 ## Alternatives considered
 
 **Drop the Preview badge to match the Codex empty page.** Rejected. Preview status is a product-wide identity, not decoration; the owning note forbids a runtime hide.
@@ -32,17 +34,20 @@ The Plugin list is a single-column disclosure list: short module name, full modu
 
 **Add Install buttons or an installed-icon strip.** Rejected. The inventory cannot enable, disable, or fetch marketplace plugins.
 
+**Replace the Settings trigger with an account menu (usage left, Show pet, Invite a friend, Log out).** Rejected. There is no signed-in profile, billing remaining-percent, invite flow, or logout. A one-item Settings menu would add a click without adding a fact.
+
 ## Consequences
 
 - Assembled hero snapshots and keyless e2e strings follow the new headline.
 - Settings search does not look inside a section. A query that hides the active section falls back to the first remaining row.
 - Recent is a header label, not a pinned or recency account of its own.
 - Plugin rows show the real module specifier instead of a marketing description.
+- Ctrl/Cmd+, is ignored while an input, textarea, select, or contenteditable is focused.
 
 ## Testing
 
 - `packages/client/ui-conversation/tests/skeleton.client.spec.tsx` pins both localized headlines and the Preview badge.
-- `packages/client/ui-settings-general/tests/settings-root.client.spec.tsx` and `components.client.spec.tsx` pin nav filter, empty copy, Escape-clears-query, and the General heading.
+- `packages/client/ui-settings-general/tests/settings-root.client.spec.tsx` and `components.client.spec.tsx` pin nav filter, empty copy, Escape-clears-query, the General heading, the wide shortcut hint, and Ctrl/Cmd+, toggle.
 - `packages/client/ui-workspace/tests/workspace-browser.client.spec.tsx` pins Recent on flat + last-updated and Sessions on flat + Manual.
 - `packages/client/ui-settings-plugin-inventory/tests/components.client.spec.tsx` pins the visible module specifier on a list row.
 - `apps/web/tests/snapshots/lifecycle-chrome/hero.expected.md` and `plan-active.expected.md` pin the assembled English hero.

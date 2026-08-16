@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-16-codex-shell-chrome.md
-2026-08-16-codex-shell-chrome.md: 849a13b78ffc68ff0adffe78690238a755feede3
-2026-08-16-codex-shell-chrome.zh.md: f8c60387959c9b98d5d9142bb852af6c8ad33772
+2026-08-16-codex-shell-chrome.md: f8527105f4df422718dbb09dfe3513a9eaf80075
+2026-08-16-codex-shell-chrome.zh.md: 7fffd74534d594b7c858ed2a3e8e86fc8acc0da2
