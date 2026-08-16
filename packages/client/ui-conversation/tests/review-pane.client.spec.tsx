@@ -24,7 +24,10 @@ const t = makeTranslate(zh, commonZh)
 const SID = 's1' as SessionId
 const SessionProviderStub: SessionProviderComponent = ({ children }) => children(SID)
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.unstubAllGlobals()
+})
 
 const TODOS: readonly TodoItem[] = [
   { content: '搭骨架', status: 'completed' },
@@ -248,6 +251,7 @@ describe('ReviewPane file open and Escape', () => {
 
 describe('ReviewHeaderAction', () => {
   it('toggles from the button or Codex shortcut and reflects the open bit', () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: false }))
     const toggleDetails = vi.fn()
     const store = createSnapshotStore({ open: false })
     const view = render(
@@ -272,5 +276,9 @@ describe('ReviewHeaderAction', () => {
     fireEvent.keyDown(input, { code: 'KeyB', ctrlKey: true, altKey: true })
     expect(toggleDetails).toHaveBeenCalledTimes(3)
     input.remove()
+
+    vi.stubGlobal('matchMedia', () => ({ matches: true }))
+    fireEvent.keyDown(document, { code: 'KeyB', ctrlKey: true, altKey: true })
+    expect(toggleDetails).toHaveBeenCalledTimes(3)
   })
 })

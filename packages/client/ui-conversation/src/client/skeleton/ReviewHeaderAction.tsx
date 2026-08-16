@@ -16,6 +16,8 @@ export type ReviewHeaderActionProps =
   & InjectFace<ReviewHeaderInjected>
   & PropsLocale<'conversation'>
 
+const NARROW_REVIEW_QUERY = '(max-width: 720px)'
+
 function isEditor(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false
   if (target.matches('input, textarea, select')) return true
@@ -32,6 +34,7 @@ export function ReviewHeaderAction({ useDetailsOpen, toggleDetails, t }: ReviewH
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.code !== 'KeyB' || !event.altKey || !(event.metaKey || event.ctrlKey) || isEditor(event.target)) return
+      if (matchMedia(NARROW_REVIEW_QUERY).matches) return
       event.preventDefault()
       toggleDetails()
     }

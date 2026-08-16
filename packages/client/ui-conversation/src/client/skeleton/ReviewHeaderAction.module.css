@@ -26,3 +26,9 @@
   background: var(--dsw-alias-interactive-bg-active);
   color: var(--dsw-alias-label-primary);
 }
+
+@media (max-width: 720px) {
+  .trigger {
+    display: none;
+  }
+}
