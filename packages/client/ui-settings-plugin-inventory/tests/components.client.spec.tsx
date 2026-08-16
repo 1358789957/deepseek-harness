@@ -45,6 +45,7 @@ describe('PluginInventorySettingsTab', () => {
     expect(screen.getByRole('heading', { name: en.catalog })).toBeTruthy()
     expect(view.container.querySelector('[data-plugin-count]')?.textContent).toBe('7')
     expect(screen.getAllByRole('listitem')).toHaveLength(7)
+    expect(screen.getByText('@deepseek-ai/cordis-plugin-hmr')).toBeTruthy()
     expect(screen.getAllByText(en.enabledTag)).toHaveLength(6)
     expect(screen.getByText(en.disabledTag)).toBeTruthy()
     for (const value of [

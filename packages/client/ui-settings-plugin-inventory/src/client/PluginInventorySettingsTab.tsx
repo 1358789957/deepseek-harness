@@ -151,7 +151,10 @@ export function PluginInventorySettingsTab({ list, t }: PluginInventorySettingsT
                         setExpanded(current => current === entry.entryId ? null : entry.entryId)
                       }}
                     >
-                      <strong className={css.cardTitle} title={entry.moduleName}>{title}</strong>
+                      <span className={css.cardCopy}>
+                        <strong className={css.cardTitle}>{title}</strong>
+                        <span className={css.cardDescription}>{entry.moduleName}</span>
+                      </span>
                       <span className={css.cardTrailing}>
                         {entry.enabled ? (
                           <span

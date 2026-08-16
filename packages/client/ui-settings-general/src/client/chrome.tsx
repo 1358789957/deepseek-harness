@@ -1,10 +1,13 @@
 /**
- * Shell chrome content registered into the shell's trigger/header seats: the
- * trigger row icon + label (figma sidebar foot) and the panel title text.
- * The shell renders the surrounding chrome (button, nav heading row) and
- * reads each entry's `label` option for aria text.
+ * Shell chrome content registered into the shell's trigger/header/search
+ * seats: the trigger row icon + label (figma sidebar foot), the panel title
+ * text, the nav search field, and the empty-search copy. The shell renders
+ * the surrounding chrome (button, nav heading row) and reads each entry's
+ * `label` option for aria text.
  */
-import { IconSettingsOutline14, IconSettingsOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import {
+  IconSearchOutline16, IconSettingsOutline14, IconSettingsOutline16,
+} from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import css from './chrome.module.css'
 
@@ -47,4 +50,41 @@ export type CloseLabelProps = PropsRuntime<'settings.close'> & PropsLocale<'sett
  */
 export function CloseLabel({ t }: CloseLabelProps) {
   return <>{t('close')}</>
+}
+
+/** Search-field props: the shell-owned query plus the standard locale seat. */
+export type SearchFieldProps = PropsRuntime<'settings.search'> & PropsLocale<'settings'>
+
+/**
+ * Render the settings nav search field.
+ * @param props - composed slot props.
+ * @returns the labeled search input.
+ */
+export function SearchField({ query, onQuery, t }: SearchFieldProps) {
+  return (
+    <label className={css.search}>
+      <IconSearchOutline16 className={css.searchIcon} size={14} aria-hidden="true" />
+      <span className={css.hiddenLabel}>{t('search.placeholder')}</span>
+      <input
+        type="search"
+        value={query}
+        placeholder={t('search.placeholder')}
+        aria-label={t('search.placeholder')}
+        autoComplete="off"
+        onChange={(event) => { onQuery(event.currentTarget.value) }}
+      />
+    </label>
+  )
+}
+
+/** Empty-search copy props: the standard locale seat only. */
+export type SearchEmptyProps = PropsRuntime<'settings.searchEmpty'> & PropsLocale<'settings'>
+
+/**
+ * Render the nav copy used when a search matches no section.
+ * @param props - composed slot props.
+ * @returns the empty-match text node.
+ */
+export function SearchEmpty({ t }: SearchEmptyProps) {
+  return <>{t('search.empty')}</>
 }

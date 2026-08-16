@@ -159,6 +159,13 @@
   text-overflow: ellipsis;
 }
 
+.navEmpty {
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
 /* Content column (figma Content 501:29980): header + options. */
 .content {
   flex: 1;

@@ -2,8 +2,8 @@
  * Settings slot contract — the canonical home of every settings slot type,
  * owned by the settings domain base rather than by the shell that renders
  * them (ui-settings-general, which occupies `sidebar.settings`). The shell has
- * zero copy of its own: ALL text (trigger label, panel title, header actions,
- * close aria, section content) arrives from registrants. A feature owns its
+ * zero copy of its own: ALL text (trigger label, panel title, nav search,
+ * header actions, close aria, section content) arrives from registrants. A feature owns its
  * own settings pages — adding a setting never means editing the shell; copy
  * that belongs to no single feature (chrome, the General section) is owned by
  * ui-settings-general too.
@@ -39,6 +39,18 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      * the button without an accessible name (broken-composition state).
      */
     'settings.close': { kind: 'single'; scope: 'root'; owner: SettingsHeaderOwnerProps }
+    /**
+     * The nav search field. The shell owns the query string and filters the
+     * projected section labels; this seat supplies the input chrome and its
+     * localized placeholder. Absent contribution hides the field and leaves
+     * every section visible.
+     */
+    'settings.search': { kind: 'single'; scope: 'root'; owner: SettingsSearchOwnerProps }
+    /**
+     * Copy shown in the nav when a non-empty search matches no section label.
+     * Absent contribution leaves the empty-nav state unlabeled.
+     */
+    'settings.searchEmpty': { kind: 'single'; scope: 'root'; owner: SettingsHeaderOwnerProps }
     /**
      * One settings page per list entry. Registrant options carry the nav
      * identity: `id` (section key, drives `only` filtering), `order` (nav
@@ -104,6 +116,20 @@ export interface SettingsPluginsTabOwnerProps {
 export interface SettingsTriggerOwnerProps {
   /** Whether the sidebar renders wide content (false = 56px rail, icon only). */
   wide: boolean
+}
+
+/**
+ * Owner share of the settings nav search field. The shell owns the query
+ * string; the seat paints the input and writes each keystroke back.
+ */
+export interface SettingsSearchOwnerProps {
+  /** Current nav filter text (unnormalized). */
+  query: string
+  /**
+   * Replace the nav filter text.
+   * @param query - next raw query string.
+   */
+  onQuery: (query: string) => void
 }
 
 /** Owner share of the header title seat (the shell supplies nothing). */

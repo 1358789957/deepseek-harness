@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-web-react'
 import type { GeneralSectionComponentProps } from '../src/client/GeneralSection.tsx'
 import { GeneralSection } from '../src/client/GeneralSection.tsx'
-import { CloseLabel, HeaderContent, TriggerContent } from '../src/client/chrome.tsx'
+import { CloseLabel, HeaderContent, SearchEmpty, SearchField, TriggerContent } from '../src/client/chrome.tsx'
 import type { TriggerContentProps } from '../src/client/chrome.tsx'
 import { SettingsDocumentAction } from '../src/client/SettingsDocumentAction.tsx'
 import { SettingsDocumentStore } from '../src/client/settings-document-store.ts'
@@ -39,6 +39,20 @@ describe('chrome content', () => {
     expect(screen.getByText('Settings')).toBeTruthy()
     expect(screen.getByText('Close')).toBeTruthy()
   })
+
+  it('SearchField writes each keystroke back to the shell', () => {
+    const onQuery = vi.fn()
+    render(<SearchField {...kit} query="mod" onQuery={onQuery} t={t} />)
+    const field = screen.getByRole('searchbox', { name: 'Search settings…' })
+    expect((field as HTMLInputElement).value).toBe('mod')
+    fireEvent.change(field, { target: { value: 'Models' } })
+    expect(onQuery).toHaveBeenCalledWith('Models')
+  })
+
+  it('SearchEmpty renders the empty-match copy', () => {
+    render(<SearchEmpty {...kit} t={t} />)
+    expect(screen.getByText('No matching settings.')).toBeTruthy()
+  })
 })
 
 describe('GeneralSection', () => {
@@ -46,13 +60,14 @@ describe('GeneralSection', () => {
     const renderSlot = vi.fn(
       ((key: string) => <div data-testid={`slot-${key}`} />) as GeneralSectionComponentProps['renderSlot'],
     )
-    const props: GeneralSectionComponentProps = { ...kit, renderSlot, close: vi.fn() }
+    const props: GeneralSectionComponentProps = { ...kit, renderSlot, close: vi.fn(), t }
     const view = render(<GeneralSection {...props} />)
     return { view, renderSlot }
   }
 
   it('renders the item slot as the section body', () => {
     const { renderSlot } = mount()
+    expect(screen.getByRole('heading', { name: 'General' })).toBeTruthy()
     expect(renderSlot).toHaveBeenCalledWith('settings.general.item', {})
     expect(screen.getByTestId('slot-settings.general.item')).toBeTruthy()
   })
