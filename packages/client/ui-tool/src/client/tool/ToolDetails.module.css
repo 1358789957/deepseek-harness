@@ -1,3 +1,12 @@
+/* Single-file review card: compact body inside the details pane. */
+
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
 .description {
   margin: 0 0 6px;
   color: var(--dsw-alias-label-secondary);
@@ -18,12 +27,12 @@
 
 .code {
   margin: 0;
-  padding: 16px;
-  border-radius: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
   background: var(--dsw-alias-markdown-code-block);
   font-family: var(--ds-font-family-code);
-  font-size: 13px;
-  line-height: 22px;
+  font-size: 12px;
+  line-height: 18px;
   color: var(--dsw-alias-label-primary);
   white-space: pre-wrap;
   word-break: break-word;

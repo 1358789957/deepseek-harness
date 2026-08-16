@@ -1,4 +1,5 @@
 /** Card-aware output body for the selected Tool call in details. */
+import type { ReactNode } from 'react'
 import { DiffBlock, ReadBlock, SearchBlock, TerminalBlock, WebBlock } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ToolDetailsProps } from '../contract/slots.ts'
 import { diffCardModel } from './models/diff-card-model.ts'
@@ -23,6 +24,11 @@ interface ToolDetailsContentProps {
  * @returns the details output body.
  */
 export function ToolDetails({ block, cwd, t }: ToolDetailsContentProps) {
+  return <div className={css.review}>{toolDetailsBody({ block, cwd, t })}</div>
+}
+
+/** Structured or flattened body for one selected call. */
+function toolDetailsBody({ block, cwd, t }: ToolDetailsContentProps): ReactNode {
   const terminal = terminalCardModel(block, cwd)
   if (terminal !== null) {
     return (

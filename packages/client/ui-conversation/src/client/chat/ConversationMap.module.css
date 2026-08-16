@@ -1,0 +1,159 @@
+/* Left-gutter jump rail. Sticky overlay so it does not consume flow space
+   or cover the right-hand conversation scrollbar. */
+
+.host {
+  position: sticky;
+  top: 12px;
+  z-index: 5;
+  width: 0;
+  height: 0;
+  margin-left: calc(-1 * (var(--dsh-composer-side-clearance) + 16px) + 2px);
+  pointer-events: none;
+}
+
+.rail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 36px;
+}
+
+.marker {
+  position: absolute;
+  left: 0;
+  display: grid;
+  width: 36px;
+  height: 12px;
+  padding: 0;
+  place-items: center start;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  transform: translateY(-50%);
+}
+
+.marker > span {
+  display: block;
+  width: 8px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--dsw-alias-label-primary);
+  opacity: 0.85;
+  transition:
+    width 170ms var(--ds-ease-in-out),
+    background 150ms ease,
+    opacity 150ms ease;
+}
+
+.marker:hover > span,
+.previewed > span {
+  width: 28px;
+  opacity: 1;
+  background: var(--dsw-alias-label-primary);
+}
+
+.active > span {
+  width: 8px;
+  opacity: 1;
+  background: var(--dsw-alias-label-primary);
+}
+
+.active:hover > span,
+.active.previewed > span {
+  width: 28px;
+}
+
+.marker:focus-visible {
+  outline: 0;
+}
+
+.marker:focus-visible > span {
+  box-shadow: 0 0 0 3px var(--dsw-alias-bg-mask-2);
+}
+
+.preview {
+  position: absolute;
+  left: 44px;
+  display: flex;
+  width: min(360px, 56vw);
+  min-height: 96px;
+  flex-direction: column;
+  padding: 14px 16px 15px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 16px;
+  background: var(--dsw-alias-button-floating-fill);
+  box-shadow: var(--dsw-shadow-lv2);
+  color: var(--dsw-alias-label-primary);
+  pointer-events: auto;
+  transform: translateY(-50%);
+  animation: dsh-map-preview-in 150ms var(--ds-ease-in-out) both;
+  transition: top 180ms var(--ds-ease-in-out);
+}
+
+/* Invisible bridge so the pointer can travel from a marker onto the card. */
+.preview::before {
+  position: absolute;
+  top: -12px;
+  bottom: -12px;
+  left: -20px;
+  width: 20px;
+  content: '';
+}
+
+.preview > strong {
+  overflow: hidden;
+  font: var(--dsw-font-s-strong-14);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview > span {
+  margin-top: 8px;
+  color: var(--dsw-alias-label-caption);
+  font: var(--dsw-font-xs-13);
+}
+
+.preview ul {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0 0 0 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.preview li {
+  font: var(--dsw-font-xs-13);
+  line-height: 1.5;
+}
+
+@keyframes dsh-map-preview-in {
+  from {
+    opacity: 0;
+    transform: translate3d(-6px, -50%, 0) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, -50%, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview {
+    animation: none;
+    transition: none;
+  }
+
+  .marker > span {
+    transition: none;
+  }
+}
+
+/* Narrow conversation columns keep the transcript; the rail would collide. */
+@media (max-width: 720px) {
+  .host {
+    display: none;
+  }
+}

@@ -46,11 +46,11 @@
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
-  height: 36px;
-  padding-left: 4px;
-  margin-bottom: 4px;
+  height: 28px;
+  padding-left: 8px;
+  margin-bottom: 2px;
   box-sizing: border-box;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   color: var(--dsw-alias-label-tertiary);
 }
@@ -66,7 +66,10 @@
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
-  line-height: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.01em;
   opacity: 1;
   visibility: visible;
   transition:
@@ -449,9 +452,9 @@
 }
 
 .empty {
-  padding: 16px 12px;
+  padding: 10px 8px;
   color: var(--dsw-alias-label-tertiary);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 /* Rename dialog form (same figma dialog family as the create modals). */

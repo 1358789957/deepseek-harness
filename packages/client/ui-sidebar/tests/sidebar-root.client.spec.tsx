@@ -111,6 +111,43 @@ describe('SidebarRoot shell', () => {
     expect(b.toggleSidebar).toHaveBeenCalledOnce()
   })
 
+  it('toggles the sidebar on Ctrl/Meta+B unless an editor is focused', () => {
+    const b = mountShell()
+    fireEvent.keyDown(document, { code: 'KeyB', ctrlKey: true })
+    expect(b.toggleSidebar).toHaveBeenCalledOnce()
+    fireEvent.keyDown(document, { code: 'KeyB', metaKey: true })
+    expect(b.toggleSidebar).toHaveBeenCalledTimes(2)
+    fireEvent.keyDown(document, { code: 'KeyB', ctrlKey: true, altKey: true })
+    fireEvent.keyDown(document, { code: 'KeyB' })
+    fireEvent.keyDown(document, { code: 'KeyK', ctrlKey: true })
+    expect(b.toggleSidebar).toHaveBeenCalledTimes(2)
+
+    const input = document.createElement('input')
+    document.body.appendChild(input)
+    fireEvent.keyDown(input, { code: 'KeyB', ctrlKey: true })
+    expect(b.toggleSidebar).toHaveBeenCalledTimes(2)
+    input.remove()
+
+    const textarea = document.createElement('textarea')
+    document.body.appendChild(textarea)
+    fireEvent.keyDown(textarea, { code: 'KeyB', metaKey: true })
+    expect(b.toggleSidebar).toHaveBeenCalledTimes(2)
+    textarea.remove()
+
+    const select = document.createElement('select')
+    document.body.appendChild(select)
+    fireEvent.keyDown(select, { code: 'KeyB', ctrlKey: true })
+    expect(b.toggleSidebar).toHaveBeenCalledTimes(2)
+    select.remove()
+
+    const editable = document.createElement('div')
+    editable.setAttribute('contenteditable', 'true')
+    document.body.appendChild(editable)
+    fireEvent.keyDown(editable, { code: 'KeyB', ctrlKey: true })
+    expect(b.toggleSidebar).toHaveBeenCalledTimes(2)
+    editable.remove()
+  })
+
   it('renders statically collapsed on a cold start (no crossfade classes)', () => {
     const b = mountShell({ collapsed: true })
     expect(b.regionOwner().wide).toBe(false)

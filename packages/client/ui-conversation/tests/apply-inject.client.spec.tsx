@@ -335,14 +335,38 @@ describe('conversation slot inject API', () => {
   })
 })
 
+describe('review header utility', () => {
+  it('toggles the details column through ctx.layout openDetails / closeDetails', async () => {
+    const b = await bench()
+    const entry = b.runtime.slots.entries('conversation.session.header.utilities')[0]
+    expect(entry?.options.id).toBe('review')
+    const injected = (entry?.inject as unknown as () => {
+      toggleDetails: () => void
+      hooks: { detailsOpen: { getSnapshot: () => { open: boolean } } }
+    })()
+    expect(injected.hooks.detailsOpen.getSnapshot().open).toBe(false)
+    injected.toggleDetails()
+    expect(b.layoutFake.openDetails).toHaveBeenCalledTimes(1)
+    expect(injected.hooks.detailsOpen.getSnapshot().open).toBe(true)
+    injected.toggleDetails()
+    expect(b.layoutFake.closeDetails).toHaveBeenCalledTimes(1)
+    expect(injected.hooks.detailsOpen.getSnapshot().open).toBe(false)
+    await b.runtime.dispose()
+  })
+})
+
 describe('details inject API', () => {
-  it('details injects the one layout callback; selection rides the shared store instead', async () => {
+  it('details injects closeDetails and openFile; selection rides the shared store instead', async () => {
     const b = await bench()
     const entry = b.entryOf('details')
-    const injected = (entry.inject as unknown as () => DetailsInjected)()
-    expect(Object.keys(injected)).toEqual(['closeDetails'])
+    const injected = (entry.inject as unknown as (sessionId: SessionId) => DetailsInjected)(ROOT)
+    expect(Object.keys(injected)).toEqual(['closeDetails', 'openFile'])
     injected.closeDetails()
     expect(b.layoutFake.closeDetails).toHaveBeenCalledTimes(1)
+    injected.openFile('src/a.ts')
+    await vi.waitFor(() => {
+      expect(b.runtime.workspaces.calls).toContainEqual({ method: 'openPath', args: ['/proj/src/a.ts'] })
+    })
     // The shared handle: details resolves the SAME instance conversation writes.
     const conv = b.runtime.storeOf('conversation.session', ROOT)
     const details = b.runtime.storeOf('details', ROOT)

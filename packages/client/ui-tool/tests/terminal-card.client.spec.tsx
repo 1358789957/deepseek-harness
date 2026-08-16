@@ -475,6 +475,7 @@ describe('DetailsPanel Output section', () => {
         useStore={bindSnapshotSelector(chat)}
         actions={chat.actions}
         closeDetails={vi.fn()}
+        openFile={vi.fn()}
         t={t}
       />,
     )
@@ -626,13 +627,13 @@ describe('DetailsPanel Output section', () => {
 
   it('no selection at all renders the guidance line and the default title', () => {
     const view = mount(snapshot(), null)
-    expect(view.getByText('详情')).toBeTruthy()
-    expect(view.getByText('点击消息流中的工具行查看详情')).toBeTruthy()
+    expect(view.getByText('审查')).toBeTruthy()
+    expect(view.getByText('暂无文件变更')).toBeTruthy()
   })
 
   it('a step selection without a callId renders the guidance line too', () => {
     const view = mount(snapshot(), { turnSeq: 3, stepSeq: 1 })
-    expect(view.getByText('点击消息流中的工具行查看详情')).toBeTruthy()
+    expect(view.getByText('暂无文件变更')).toBeTruthy()
   })
 
   it('the close button reaches closeDetails', () => {
@@ -661,10 +662,11 @@ describe('DetailsPanel Output section', () => {
         useStore={bindSnapshotSelector(chat)}
         actions={chat.actions}
         closeDetails={closeDetails}
+        openFile={vi.fn()}
         t={t}
       />,
     )
-    fireEvent.click(view.getByRole('button', { name: '关闭详情' }))
+    fireEvent.click(view.getByRole('button', { name: '关闭审查' }))
     expect(closeDetails).toHaveBeenCalledTimes(1)
   })
 
