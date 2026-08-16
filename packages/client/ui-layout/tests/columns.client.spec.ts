@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  CENTER_MIN, clampWidth, computeColumns,
+  CENTER_MIN, clampWidth, computeColumns, detailsTrackFits,
   DETAILS_DEFAULT, DETAILS_MIN, SIDEBAR_COLLAPSED, SIDEBAR_DEFAULT, SIDEBAR_MIN,
 } from '@deepseek-ai/dsh-client-ui-layout/src/client/columns.ts'
 
@@ -83,6 +83,16 @@ describe('computeColumns', () => {
     const restored = computeColumns(1920, open(SIDEBAR_DEFAULT), open(DETAILS_DEFAULT))
     expect(restored.details).toBe(DETAILS_DEFAULT)
     expect(restored.sidebar).toBe(SIDEBAR_DEFAULT)
+  })
+})
+
+describe('detailsTrackFits', () => {
+  it('follows the concession floor, not a fixed pixel cutoff', () => {
+    expect(detailsTrackFits(1920, SIDEBAR_DEFAULT)).toBe(true)
+    expect(detailsTrackFits(SIDEBAR_DEFAULT + DETAILS_MIN + CENTER_MIN, SIDEBAR_DEFAULT)).toBe(true)
+    expect(detailsTrackFits(SIDEBAR_DEFAULT + DETAILS_MIN + CENTER_MIN - 1, SIDEBAR_DEFAULT)).toBe(false)
+    expect(detailsTrackFits(SIDEBAR_COLLAPSED + DETAILS_MIN + CENTER_MIN, 0)).toBe(true)
+    expect(detailsTrackFits(SIDEBAR_COLLAPSED + DETAILS_MIN + CENTER_MIN - 1, 0)).toBe(false)
   })
 })
 

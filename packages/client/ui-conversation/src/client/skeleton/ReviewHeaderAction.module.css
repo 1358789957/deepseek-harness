@@ -2,24 +2,31 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   height: 28px;
-  padding: 4px 10px;
+  padding: 3px 10px 3px 8px;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 16px;
-  background: transparent;
+  border-radius: 8px;
+  background: var(--dsw-alias-button-floating-fill);
   color: var(--dsw-alias-label-primary);
-  font-family: var(--dsw-font-family);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 20px;
+  font: var(--dsw-font-xs-13);
   cursor: pointer;
 }
 
 .trigger:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+  background: var(--dsw-alias-button-floating-hover);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 2px;
 }
 
 .trigger[aria-pressed='true'] {
   background: var(--dsw-alias-interactive-bg-active);
   color: var(--dsw-alias-label-primary);
+}
+
+:global([data-app-frame]:not([data-details-available])) .trigger {
+  display: none;
 }

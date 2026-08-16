@@ -155,7 +155,6 @@ export function reviewChanges(snapshot: ConversationSnapshot): ReviewChanges {
     if (root !== undefined) visitBlock(root, into)
   }
   const produced = producedFromTimeline(snapshot)
-  for (const path of produced) addPathOnly(into, path)
 
   const files: ReviewFile[] = []
   let added = 0

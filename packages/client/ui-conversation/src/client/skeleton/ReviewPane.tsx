@@ -5,6 +5,7 @@
 
 import { useId } from 'react'
 import type { TodoItem } from '@deepseek-ai/dsh-tool-todo/client'
+import { IconCodeOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { DetailsSlotProps } from '../contract/slots.ts'
 import { reviewBasename, type ReviewChanges } from './review-material.ts'
 import css from './ReviewPane.module.css'
@@ -76,17 +77,34 @@ function FileStats({ added, removed }: { added: number; removed: number }) {
   )
 }
 
+const TODO_STATUS_KEY = {
+  completed: 'review.task.completed',
+  in_progress: 'review.task.inProgress',
+  pending: 'review.task.pending',
+} as const satisfies Record<TodoItem['status'],
+  'review.task.completed' | 'review.task.inProgress' | 'review.task.pending'>
+
+function reviewParentPath(path: string): string {
+  const at = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'))
+  return at === -1 ? '' : path.slice(0, at)
+}
+
 /**
- * Codex-like Review body: three standing sections over real session facts.
+ * Codex-like Review body: changed files, produced artifacts, and current tasks.
  * @param props - selected changes, produced paths, todos, and locale seat.
- * @returns the three Review sections.
+ * @returns the available Review sections.
  */
 export function ReviewPane({ files, added, removed, produced, todos, t, openFile }: ReviewPaneProps) {
+  const changedPaths = new Set(files.map(file => file.path))
+  const producedOnly = produced.filter(path => !changedPaths.has(path))
   return (
     <div className={css.root}>
       <section className={css.section} data-review-section="changes">
         <div className={css.sectionHead}>
-          <div className={css.sectionLabel}>{t('review.changes')}</div>
+          <div className={css.sectionTitle}>
+            <h2 className={css.sectionLabel}>{t('review.changes')}</h2>
+            <span className={css.sectionCount}>{files.length}</span>
+          </div>
           {added !== null && removed !== null && (
             <div className={css.sectionStats} aria-label={t('review.changes.stats', { added, removed })}>
               <span className={css.add}>+{added}</span>
@@ -105,9 +123,16 @@ export function ReviewPane({ files, added, removed, produced, todos, t, openFile
                     className={css.file}
                     data-review-file={file.path}
                     title={file.path}
+                    aria-label={file.path}
                     onClick={() => { openFile(file.path) }}
                   >
-                    <span className={css.fileName}>{reviewBasename(file.path)}</span>
+                    <IconCodeOutline16 className={css.fileIcon} />
+                    <span className={css.fileIdentity}>
+                      <span className={css.fileName}>{reviewBasename(file.path)}</span>
+                      {reviewParentPath(file.path) !== '' && (
+                        <span className={css.filePath}>{reviewParentPath(file.path)}</span>
+                      )}
+                    </span>
                     {file.added !== undefined && file.removed !== undefined
                       ? <FileStats added={file.added} removed={file.removed} />
                       : null}
@@ -118,46 +143,58 @@ export function ReviewPane({ files, added, removed, produced, todos, t, openFile
           )}
       </section>
 
-      <section className={css.section} data-review-section="commits">
-        <div className={css.sectionLabel}>{t('review.commits')}</div>
-        <div className={css.empty}>{t('review.commits.empty')}</div>
-        {produced.length > 0 && (
-          <>
-            <div className={css.subLabel}>{t('review.produced')}</div>
-            <ul className={css.list}>
-              {produced.map(path => (
-                <li key={path}>
-                  <button
-                    type="button"
-                    className={css.file}
-                    data-review-produced={path}
-                    title={path}
-                    onClick={() => { openFile(path) }}
-                  >
+      {producedOnly.length > 0 && (
+        <section className={css.section} data-review-section="produced">
+          <div className={css.sectionTitle}>
+            <h2 className={css.sectionLabel}>{t('review.produced')}</h2>
+            <span className={css.sectionCount}>{producedOnly.length}</span>
+          </div>
+          <ul className={css.list}>
+            {producedOnly.map(path => (
+              <li key={path}>
+                <button
+                  type="button"
+                  className={css.file}
+                  data-review-produced={path}
+                  title={path}
+                  aria-label={path}
+                  onClick={() => { openFile(path) }}
+                >
+                  <IconCodeOutline16 className={css.fileIcon} />
+                  <span className={css.fileIdentity}>
                     <span className={css.fileName}>{reviewBasename(path)}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </section>
+                    {reviewParentPath(path) !== '' && (
+                      <span className={css.filePath}>{reviewParentPath(path)}</span>
+                    )}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className={css.section} data-review-section="tasks">
-        <div className={css.sectionLabel}>{t('review.tasks')}</div>
+        <div className={css.sectionTitle}>
+          <h2 className={css.sectionLabel}>{t('review.tasks')}</h2>
+          <span className={css.sectionCount}>{todos.length}</span>
+        </div>
         {todos.length === 0
           ? <div className={css.empty}>{t('review.tasks.empty')}</div>
           : (
             <ul className={css.list}>
-              {todos.map(item => (
+              {todos.map((item, index) => (
                 <li
-                  key={item.content}
+                  key={`${String(index)}:${item.content}`}
                   className={css.todo}
                   data-review-todo={item.status}
                   data-status={item.status}
                 >
                   <span className={css.glyph} aria-hidden><StatusGlyph status={item.status} /></span>
-                  <span className={css.todoContent}>{item.content}</span>
+                  <span className={css.todoContent}>
+                    <span className={css.visuallyHidden}>{t(TODO_STATUS_KEY[item.status])}: </span>
+                    {item.content}
+                  </span>
                 </li>
               ))}
             </ul>

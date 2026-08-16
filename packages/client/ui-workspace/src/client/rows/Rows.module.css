@@ -1,13 +1,13 @@
-/* Tree rows: compact Codex-like thread list. Project/session 28px, radius 6,
+/* Tree rows: compact Codex-like thread list. Project/session 32px, radius 8,
    indent step 22px (16px slot + 6px gap). Hover swaps are pure CSS: project
-   folder -> chevron + action buttons; timestamps stay off the row. */
+   folder -> chevron + action buttons; session time -> archive action. */
 
 .projectRow,
 .sessionRow {
   display: flex;
   align-items: center;
   gap: 6px;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 0 8px;
   cursor: pointer;
   user-select: none;
@@ -95,7 +95,7 @@
 
 /* Compact one-line Workspace row after removing the session-count subtitle. */
 .projectRow {
-  height: 28px;
+  height: 32px;
   align-items: center;
   box-sizing: border-box;
 }
@@ -106,7 +106,7 @@
 
 /* Session cell (figma): pad 8, a 16px status slot, then a 4px title gap. */
 .sessionRow {
-  height: 28px;
+  height: 32px;
   gap: 0;
   /* Mount fade: session rows appear by unfolding a group (or the tree
      mounting). Stable row keys keep already-visible rows from replaying it. */
@@ -206,7 +206,7 @@
 }
 
 .time {
-  display: none;
+  display: inline;
   flex: none;
   font-size: 12px;
   line-height: 20px;
@@ -239,7 +239,9 @@
 }
 
 .sessionRow:hover .quickArchive,
-.sessionRow:focus-within .quickArchive {
+.sessionRow:focus-within .quickArchive,
+.sessionRow.selected .quickArchive,
+.sessionRow.menuOpen .quickArchive {
   display: inline-flex;
 }
 
@@ -250,6 +252,8 @@
 }
 
 .sessionRow:hover .time,
+.sessionRow:focus-within .time,
+.sessionRow.selected .time,
 .sessionRow.menuOpen .time {
   display: none;
 }

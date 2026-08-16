@@ -14,9 +14,9 @@ A tempting fix is a new `root` or `conversation.view` plugin that overlays the c
 
 The jump rail is ChatView chrome in `@deepseek-ai/dsh-client-ui-conversation`. It is not registered on `root` and is not a `conversation.view` tab.
 
-`collectMapMessages` reads the loaded Chat order and keeps `user` plus non-empty `assistant-step` rows. `buildTurns` groups each user message with the assistant replies that follow it. The rail renders only when two or more user turns are loaded. Each tick is a button: hover (after 300ms, or immediately once a preview is open) shows that turn's title, status, and up to two assistant summary lines; click or keyboard activation calls `jumpToMessage` on the resolved conversation scrollport (`[data-conversation-scroll]` when nested, otherwise the view-local scroller). `ChatNodeSeat` stamps `data-conversation-message` with the Node key so the jumper does not interpolate a selector.
+`collectMapMessages` reads the loaded Chat order and keeps `user` plus non-empty `assistant-step` rows. ChatView collects those messages in its snapshot selector and compares their ids, roles, and bodies, so streamed assistant text refreshes the preview even when the mutable Chat Node store retains its identity. `buildTurns` groups each user message with the assistant replies that follow it; while the session runs, the latest turn stays `running` even after it has emitted summary text. The rail renders only when two or more user turns are loaded. Each tick is a button: hover (after 300ms, or immediately once a preview is open) shows that turn's title, status, and up to two assistant summary lines; click or keyboard activation calls `jumpToMessage` on the resolved conversation scrollport (`[data-conversation-scroll]` when nested, otherwise the view-local scroller). `ChatNodeSeat` stamps `data-conversation-message` with the Node key so the jumper does not interpolate a selector.
 
-The rail is a zero-size sticky overlay on the left of the Chat scroller so the conversation scrollbar stays on the right. Below 720px the host hides; a narrow column would collide with the transcript. Manual jumps clear ChatView's bottom-follow pin through `onManualNavigate`.
+The rail is a zero-size sticky overlay on the left of the Chat scroller so the conversation scrollbar stays on the right. Markers retain a 14px natural gap while it fits and compress uniformly into the measured rail when a long transcript would overflow it. Below 720px the host hides; a narrow column would collide with the transcript. A successful manual jump clears ChatView's bottom-follow pin through `onManualNavigate`.
 
 ## Alternatives considered
 
@@ -38,4 +38,5 @@ The rail is a zero-size sticky overlay on the left of the Chat scroller so the c
 - Short threads (zero or one user turn) show no rail.
 - Only the loaded window is jumpable; older history still requires `chat.loadOlder`.
 - Steering bubbles are not markers; they stay mid-turn flow rows.
+- Long loaded windows compress marker spacing rather than drawing ticks below the transcript viewport.
 - The rail adds left-edge hit targets; the 720px cutoff keeps them off narrow columns.

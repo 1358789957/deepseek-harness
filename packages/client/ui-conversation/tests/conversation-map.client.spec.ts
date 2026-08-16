@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
   TITLE_LIMIT, SUMMARY_LIMIT,
   buildTurns, collectMapMessages, compactText, jumpScrollTop, markerTop,
-  nextMarkerIndex, summaryLines, truncate,
+  nextMarkerIndex, sameMapMessages, summaryLines, truncate,
 } from '../src/client/chat/conversation-map.ts'
 
 function store(entries: Array<{ key: string; kind: string; data: unknown }>) {
@@ -61,6 +61,12 @@ describe('collectMapMessages', () => {
       { key: 'a', kind: 'assistant-step', data: { blocks: [null, { kind: 'text', text: 'ok' }] } },
     ]))).toEqual([{ id: 'a', role: 'assistant', body: 'ok' }])
   })
+
+  it('compares the collected content rather than the mutable store identity', () => {
+    const current = [{ id: 'a', role: 'assistant' as const, body: 'partial' }]
+    expect(sameMapMessages(current, [{ ...current[0]! }])).toBe(true)
+    expect(sameMapMessages(current, [{ ...current[0]!, body: 'settled' }])).toBe(false)
+  })
 })
 
 describe('buildTurns', () => {
@@ -88,11 +94,12 @@ describe('buildTurns', () => {
     })
   })
 
-  it('marks the latest empty turn as running while the session is live', () => {
+  it('keeps the latest turn running after streamed summary text arrives', () => {
     const turns = buildTurns([
       { id: 'u1', role: 'user', body: 'one' },
       { id: 'a1', role: 'assistant', body: 'done reply here' },
       { id: 'u2', role: 'user', body: 'two' },
+      { id: 'a2', role: 'assistant', body: 'streaming reply here' },
     ], true, 'untitled')
     expect(turns.map(turn => turn.status)).toEqual(['done', 'running'])
   })
@@ -115,12 +122,13 @@ describe('jump and marker math', () => {
     expect(jumpScrollTop(10, 400)).toBe(0)
   })
 
-  it('stacks markers from the top with a fixed 14px gap', () => {
+  it('uses a 14px natural gap and compresses markers into a short rail', () => {
     expect(markerTop(0)).toBe(8)
-    expect(markerTop(1)).toBe(22)
-    expect(markerTop(2)).toBe(36)
+    expect(markerTop(1, 3, 80)).toBe(22)
+    expect(markerTop(2, 3, 80)).toBe(36)
     expect(markerTop(0, 99, 400)).toBe(8)
-    expect(markerTop(2, 3, 16)).toBe(36)
+    expect(markerTop(2, 3, 40)).toBe(32)
+    expect(markerTop(2, 3, 16)).toBe(8)
   })
 
   it('moves ArrowUp/ArrowDown within bounds and ignores other keys', () => {

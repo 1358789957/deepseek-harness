@@ -24,7 +24,10 @@ const t = makeTranslate(zh, commonZh)
 const SID = 's1' as SessionId
 const SessionProviderStub: SessionProviderComponent = ({ children }) => children(SID)
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.unstubAllGlobals()
+})
 
 const TODOS: readonly TodoItem[] = [
   { content: '搭骨架', status: 'completed' },
@@ -59,7 +62,9 @@ function mountDetails(opts?: {
   selection?: SelectionTarget | null
   todos?: readonly TodoItem[] | null
   owners?: DetailsToolOwnerProps[]
+  open?: boolean
   closeDetails?: () => void
+  setColumnOpen?: (open: boolean) => void
   openFile?: (path: string) => void
 }) {
   const snap = opts?.snap ?? snapshotBase()
@@ -80,7 +85,7 @@ function mountDetails(opts?: {
       useSession={bindSnapshotSelector({ getSnapshot: () => snap, subscribe: () => () => {} })}
       useSessions={bindSnapshotSelector(emptyList)}
       useWorkspaces={bindSnapshotSelector(emptyWorkspaces)}
-      useProjection={((key: string) => key === 'todos' ? todos : undefined) as DetailsSlotProps['useProjection']}
+      useProjection={(key: string) => key === 'todos' ? todos : undefined}
       useInput={(() => { throw new Error('unused') })}
       inputActions={{
         setDraft: () => {},
@@ -91,6 +96,9 @@ function mountDetails(opts?: {
       }}
       useStore={bindSnapshotSelector(chat)}
       actions={chat.actions}
+      open={opts?.open ?? true}
+      available
+      setColumnOpen={opts?.setColumnOpen ?? vi.fn()}
       closeDetails={opts?.closeDetails ?? vi.fn()}
       openFile={opts?.openFile ?? vi.fn()}
       t={t}
@@ -99,26 +107,25 @@ function mountDetails(opts?: {
 }
 
 describe('ReviewPane', () => {
-  it('shows all three sections with honest empty copy', () => {
+  it('shows the standing sections with honest empty copy', () => {
     const view = render(
       <ReviewPane files={[]} added={null} removed={null} produced={[]} todos={[]} t={t} openFile={vi.fn()} />,
     )
     expect(view.getByText('变更')).toBeTruthy()
     expect(view.getByText('暂无文件变更')).toBeTruthy()
-    expect(view.getByText('提交')).toBeTruthy()
-    expect(view.getByText('暂无提交')).toBeTruthy()
     expect(view.getByText('任务')).toBeTruthy()
     expect(view.getByText('暂无任务')).toBeTruthy()
     expect(view.queryByText('本轮产出')).toBeNull()
+    expect(view.container.querySelector('[data-review-section="produced"]')).toBeNull()
   })
 
-  it('lists files with real +/- and produced paths without calling them commits', () => {
+  it('lists files with real +/- and keeps produced-only paths separate', () => {
     const view = render(
       <ReviewPane
         files={[{ path: 'src/a.ts', added: 4, removed: 1 }, { path: 'notes/b.md' }]}
         added={4}
         removed={1}
-        produced={['src/a.ts']}
+        produced={['src/a.ts', 'artifacts/report.pdf']}
         todos={TODOS}
         t={t}
         openFile={vi.fn()}
@@ -128,24 +135,24 @@ describe('ReviewPane', () => {
     expect(view.getAllByText('+4').length).toBeGreaterThan(0)
     expect(view.getAllByText('−1').length).toBeGreaterThan(0)
     expect(view.getByText('b.md')).toBeTruthy()
-    expect(view.getByText('暂无提交')).toBeTruthy()
     expect(view.getByText('本轮产出')).toBeTruthy()
-    expect(view.container.querySelector('[data-review-produced="src/a.ts"]')).not.toBeNull()
+    expect(view.container.querySelector('[data-review-produced="src/a.ts"]')).toBeNull()
+    expect(view.container.querySelector('[data-review-produced="artifacts/report.pdf"]')).not.toBeNull()
     expect(view.getByText('搭骨架')).toBeTruthy()
     expect(view.container.querySelectorAll('[data-review-todo]')).toHaveLength(3)
+    expect(view.container.querySelector('[data-review-todo="completed"]')?.textContent).toBe('已完成: 搭骨架')
   })
 })
 
 describe('DetailsPanel Review host', () => {
-  it('always titles the column 审查 and keeps the three sections when empty', () => {
+  it('always titles the column 审查 and keeps Changes and Tasks when empty', () => {
     const view = mountDetails()
     expect(view.getByText('审查')).toBeTruthy()
     expect(view.container.querySelector('[data-review-section="changes"]')).not.toBeNull()
-    expect(view.container.querySelector('[data-review-section="commits"]')).not.toBeNull()
     expect(view.container.querySelector('[data-review-section="tasks"]')).not.toBeNull()
+    expect(view.container.querySelector('[data-review-section="produced"]')).toBeNull()
     expect(view.container.querySelector('[data-review-section="details"]')).toBeNull()
     expect(view.getByText('暂无文件变更')).toBeTruthy()
-    expect(view.getByText('暂无提交')).toBeTruthy()
     expect(view.getByText('暂无任务')).toBeTruthy()
   })
 
@@ -184,7 +191,7 @@ describe('ReviewPane file open and Escape', () => {
         files={[{ path: 'src/a.ts', added: 4, removed: 1 }, { path: 'notes/b.md' }]}
         added={4}
         removed={1}
-        produced={['src/a.ts']}
+        produced={['dist/report.md']}
         todos={[]}
         t={t}
         openFile={openFile}
@@ -194,9 +201,9 @@ describe('ReviewPane file open and Escape', () => {
     expect(openFile).toHaveBeenCalledWith('src/a.ts')
     fireEvent.click(view.getByText('b.md'))
     expect(openFile).toHaveBeenCalledWith('notes/b.md')
-    fireEvent.click(view.container.querySelector('[data-review-produced="src/a.ts"]')!)
+    fireEvent.click(view.container.querySelector('[data-review-produced="dist/report.md"]')!)
     expect(openFile).toHaveBeenCalledTimes(3)
-    expect(openFile).toHaveBeenNthCalledWith(3, 'src/a.ts')
+    expect(openFile).toHaveBeenNthCalledWith(3, 'dist/report.md')
     expect(view.queryByText(/commit|sha|hash/i)).toBeNull()
   })
 
@@ -246,10 +253,27 @@ describe('ReviewPane file open and Escape', () => {
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(closeDetails).toHaveBeenCalledTimes(2)
   })
+
+  it('does not attach Escape while the rendered column is closed', () => {
+    const closeDetails = vi.fn()
+    mountDetails({ closeDetails, open: false })
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(closeDetails).not.toHaveBeenCalled()
+  })
+
+  it('mirrors the rendered column open bit for the header Review control', () => {
+    const setColumnOpen = vi.fn()
+    mountDetails({ setColumnOpen, open: true })
+    expect(setColumnOpen).toHaveBeenCalledWith(true)
+    cleanup()
+    setColumnOpen.mockClear()
+    mountDetails({ setColumnOpen, open: false })
+    expect(setColumnOpen).toHaveBeenCalledWith(false)
+  })
 })
 
 describe('ReviewHeaderAction', () => {
-  it('toggles the injected callback and reflects the open bit', () => {
+  it('toggles from the button or Codex shortcut and reflects the open bit', () => {
     const toggleDetails = vi.fn()
     const store = createSnapshotStore({ open: false })
     const view = render(
@@ -265,5 +289,24 @@ describe('ReviewHeaderAction', () => {
     expect(button.getAttribute('aria-pressed')).toBe('false')
     fireEvent.click(button)
     expect(toggleDetails).toHaveBeenCalledTimes(1)
+    fireEvent.keyDown(document, { code: 'KeyB', ctrlKey: true, altKey: true })
+    fireEvent.keyDown(document, { code: 'KeyB', metaKey: true, altKey: true })
+    expect(toggleDetails).toHaveBeenCalledTimes(3)
+
+    const input = document.createElement('input')
+    document.body.appendChild(input)
+    fireEvent.keyDown(input, { code: 'KeyB', ctrlKey: true, altKey: true })
+    expect(toggleDetails).toHaveBeenCalledTimes(3)
+    input.remove()
+
+    const frame = document.createElement('div')
+    frame.setAttribute('data-app-frame', '')
+    document.body.appendChild(frame)
+    fireEvent.keyDown(document, { code: 'KeyB', ctrlKey: true, altKey: true })
+    expect(toggleDetails).toHaveBeenCalledTimes(3)
+    frame.setAttribute('data-details-available', '')
+    fireEvent.keyDown(document, { code: 'KeyB', ctrlKey: true, altKey: true })
+    expect(toggleDetails).toHaveBeenCalledTimes(4)
+    frame.remove()
   })
 })

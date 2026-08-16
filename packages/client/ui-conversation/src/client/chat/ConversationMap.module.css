@@ -16,6 +16,7 @@
   top: 0;
   left: 0;
   width: 36px;
+  overflow: hidden;
 }
 
 .marker {
@@ -36,11 +37,11 @@
 
 .marker > span {
   display: block;
-  width: 8px;
+  width: 6px;
   height: 2px;
   border-radius: 999px;
   background: var(--dsw-alias-label-primary);
-  opacity: 0.85;
+  opacity: 0.35;
   transition:
     width 170ms var(--ds-ease-in-out),
     background 150ms ease,
@@ -49,20 +50,20 @@
 
 .marker:hover > span,
 .previewed > span {
-  width: 28px;
+  width: 24px;
   opacity: 1;
   background: var(--dsw-alias-label-primary);
 }
 
 .active > span {
-  width: 8px;
+  width: 16px;
   opacity: 1;
   background: var(--dsw-alias-label-primary);
 }
 
 .active:hover > span,
 .active.previewed > span {
-  width: 28px;
+  width: 24px;
 }
 
 .marker:focus-visible {
@@ -77,12 +78,11 @@
   position: absolute;
   left: 44px;
   display: flex;
-  width: min(360px, 56vw);
-  min-height: 96px;
+  width: min(320px, 56vw);
   flex-direction: column;
-  padding: 14px 16px 15px;
+  padding: 12px 14px;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 16px;
+  border-radius: 10px;
   background: var(--dsw-alias-button-floating-fill);
   box-shadow: var(--dsw-shadow-lv2);
   color: var(--dsw-alias-label-primary);
@@ -102,23 +102,50 @@
   content: '';
 }
 
-.preview > strong {
+.previewHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.previewHead > strong {
   overflow: hidden;
+  flex: 1;
   font: var(--dsw-font-s-strong-14);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.preview > span {
-  margin-top: 8px;
+.previewHead > span {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
   color: var(--dsw-alias-label-caption);
   font: var(--dsw-font-xs-13);
 }
 
+.previewHead > span::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+
+.previewHead > span[data-status='done'] {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.previewHead > span[data-status='running'] {
+  color: var(--dsw-alias-state-business-primary);
+}
+
 .preview ul {
   display: grid;
-  gap: 6px;
-  margin: 10px 0 0;
+  gap: 4px;
+  margin: 8px 0 0;
   padding: 0 0 0 18px;
   color: var(--dsw-alias-label-tertiary);
 }
