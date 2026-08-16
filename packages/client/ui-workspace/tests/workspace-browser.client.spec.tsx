@@ -195,9 +195,11 @@ describe('WorkspaceBrowser', () => {
       expect(b.store.getSnapshot().sessionOrderByAccount[FLAT_SESSION_ORDER_KEY])
         .toEqual(['one', 'two', 'three'])
     })
+    expect(screen.getByText('最近')).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: '视图选项' }))
     fireEvent.click(screen.getByRole('menuitem', { name: '手动排序' }))
+    expect(screen.getByText('会话')).toBeTruthy()
     fireEvent.dragStart(one, { dataTransfer: dragData() })
     fireDrag(three, 'drop', 180)
     b.view.unmount()

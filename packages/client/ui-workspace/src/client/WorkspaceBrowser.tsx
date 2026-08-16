@@ -977,7 +977,9 @@ export function WorkspaceBrowser({
       <div className={css.sectionHeader}>
         {wide && (
           <span className={clsx(css.sectionLabel, css.wide, searchExpanded && css.sectionLabelHidden)}>
-            {groupBy === 'flat' ? t('section.sessions') : t('section.workspaces')}
+            {groupBy === 'workspace'
+              ? t('section.workspaces')
+              : orderBy === 'updated' ? t('section.recent') : t('section.sessions')}
           </span>
         )}
         {wide && (

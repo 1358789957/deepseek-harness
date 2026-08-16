@@ -7,6 +7,14 @@
   width: 100%;
 }
 
+.heading {
+  margin: 0 0 16px;
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+
 .section > :global([data-slot='settings.general.item']) > :last-child {
   border-bottom: none;
 }

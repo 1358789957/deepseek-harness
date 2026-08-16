@@ -16,6 +16,7 @@ const SEAT_CONTENT: Record<string, string> = {
   'settings.header': 'Settings Title',
   'settings.action': 'Open configuration file',
   'settings.close': 'Close',
+  'settings.searchEmpty': 'No matching settings.',
 }
 
 function mount({
@@ -36,8 +37,19 @@ function mount({
   let current = rows
   const listeners = new Set<() => void>()
   const renderSlot = vi.fn(
-    ((key: string, _owner: unknown, opts?: { only?: string }) => {
+    ((key: string, owner: unknown, opts?: { only?: string }) => {
       if (key === 'settings.section') return <div data-testid={`section-${opts?.only ?? 'all'}`} />
+      if (key === 'settings.search') {
+        const search = owner as { query: string; onQuery: (query: string) => void }
+        return (
+          <input
+            type="search"
+            aria-label="Search settings…"
+            value={search.query}
+            onChange={(event) => { search.onQuery(event.currentTarget.value) }}
+          />
+        )
+      }
       return SEAT_CONTENT[key]
     }) as SettingsRootComponentProps['renderSlot'],
   )
@@ -94,6 +106,34 @@ describe('SettingsRoot trigger', () => {
   it('hands the rail state to the trigger seat', () => {
     const { renderSlot } = mount({ wide: false })
     expect(renderSlot).toHaveBeenCalledWith('settings.trigger', { wide: false })
+  })
+
+  it('toggles the panel on Ctrl/Meta+, unless an editor is focused', () => {
+    mount()
+    const trigger = screen.getByRole('button', { name: 'Settings' })
+    expect(trigger.getAttribute('aria-keyshortcuts')).toBe('Control+Comma Meta+Comma')
+    fireEvent.keyDown(document, { code: 'Comma', ctrlKey: true })
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    fireEvent.keyDown(document, { code: 'Comma', metaKey: true })
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    fireEvent.keyDown(document, { code: 'Comma' })
+    fireEvent.keyDown(document, { code: 'Comma', ctrlKey: true, altKey: true })
+    fireEvent.keyDown(document, { code: 'Comma', ctrlKey: true, shiftKey: true })
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    const box = document.createElement('textarea')
+    document.body.append(box)
+    fireEvent.keyDown(box, { code: 'Comma', ctrlKey: true })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    box.remove()
+
+    const edit = document.createElement('div')
+    edit.setAttribute('contenteditable', 'true')
+    document.body.append(edit)
+    fireEvent.keyDown(edit, { code: 'Comma', ctrlKey: true })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    edit.remove()
   })
 })
 
@@ -152,6 +192,20 @@ describe('SettingsPanel close paths', () => {
     openPanel()
     fireEvent.keyDown(document, { key: 'Enter' })
     expect(screen.getByRole('dialog')).toBeTruthy()
+  })
+
+  it('clears a nav query on Escape before closing the panel', () => {
+    mount()
+    openPanel()
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search settings…' }), {
+      target: { value: 'Models' },
+    })
+    expect(screen.queryByRole('button', { name: 'General' })).toBeNull()
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'General' })).toBeTruthy()
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   it('lands focus on the close button when the dialog opens', () => {
@@ -241,6 +295,30 @@ describe('SettingsPanel navigation', () => {
     expect(appRoot.inert).not.toBe(true)
     view.unmount()
     appRoot.remove()
+  })
+
+  it('filters nav rows by label and falls back when the active row is hidden', () => {
+    mount()
+    openPanel()
+    fireEvent.click(screen.getByRole('button', { name: 'Models' }))
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search settings…' }), {
+      target: { value: 'gen' },
+    })
+    expect(screen.getByRole('button', { name: 'General' }).getAttribute('aria-current')).toBe('true')
+    expect(screen.queryByRole('button', { name: 'Models' })).toBeNull()
+    expect(screen.getByTestId('section-general')).toBeTruthy()
+  })
+
+  it('shows empty-search copy and no section when no label matches', () => {
+    const { renderSlot } = mount()
+    openPanel()
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search settings…' }), {
+      target: { value: 'zzz' },
+    })
+    expect(screen.queryByRole('button', { name: 'General' })).toBeNull()
+    expect(screen.getByText('No matching settings.')).toBeTruthy()
+    expect(screen.queryByTestId('section-general')).toBeNull()
+    expect(renderSlot.mock.calls.some(call => call[0] === 'settings.searchEmpty')).toBe(true)
   })
 
   it('falls back to the first row when the active entry unregisters', () => {

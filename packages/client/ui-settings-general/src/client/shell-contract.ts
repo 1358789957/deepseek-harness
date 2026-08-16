@@ -53,6 +53,8 @@ export type SettingsRootComponentProps =
     | 'settings.header'
     | 'settings.action'
     | 'settings.close'
+    | 'settings.search'
+    | 'settings.searchEmpty'
     | 'settings.section'
     | 'settings.onboarding'
   >
