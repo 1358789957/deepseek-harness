@@ -8,7 +8,7 @@
 import { useState } from 'react'
 import clsx from 'clsx'
 import {
-  HoverCard, IconArchiveOutline20, IconBranchOutline16, IconCloseOutline16, IconEditOutline16,
+  HoverCard, IconArchiveOutline20, IconBranchOutline16, IconEditOutline16,
   IconEllipsisOutline16, IconFolderClose16, IconFolderOpen16, IconPlusOutline16,
   IconTrashOutline16, IconTriangleRightFill14, Menu, StateDot,
 } from '@deepseek-ai/dsh-client-ui-primitives'
@@ -441,7 +441,7 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
           aria-label={t('menu.archiveSession')}
           onClick={(e) => { e.stopPropagation(); onArchive(node.id) }}
         >
-          <IconCloseOutline16 />
+          <IconArchiveOutline20 size={16} />
         </button>
       )}
       {!row.blank && (

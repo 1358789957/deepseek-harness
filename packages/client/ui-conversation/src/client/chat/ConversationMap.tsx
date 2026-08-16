@@ -23,6 +23,8 @@ const STATUS_KEY = {
   waiting: 'map.status.waiting',
 } as const satisfies Record<ConversationTurnStatus, 'map.status.done' | 'map.status.running' | 'map.status.waiting'>
 
+const PREVIEW_EDGE_CLEARANCE_PX = 88
+
 export interface ConversationMapProps {
   readonly messages: readonly ConversationMapMessage[]
   readonly running: boolean
@@ -50,7 +52,7 @@ export function ConversationMap({
   )
   const [activeId, setActiveId] = useState('')
   const [hoveredId, setHoveredId] = useState('')
-  const [previewTop, setPreviewTop] = useState(92)
+  const [previewTop, setPreviewTop] = useState(PREVIEW_EDGE_CLEARANCE_PX)
   const [railHeight, setRailHeight] = useState(360)
   const rootRef = useRef<HTMLElement>(null)
   const markerRefs = useRef(new Map<string, HTMLButtonElement>())
@@ -142,7 +144,10 @@ export function ConversationMap({
     const markerRect = marker.getBoundingClientRect()
     if (rootRect !== undefined) {
       const markerCenter = markerRect.top - rootRect.top + markerRect.height / 2
-      const safeTop = Math.min(Math.max(markerCenter, 88), Math.max(88, rootRect.height - 88))
+      const safeTop = Math.min(
+        Math.max(markerCenter, PREVIEW_EDGE_CLEARANCE_PX),
+        Math.max(PREVIEW_EDGE_CLEARANCE_PX, railHeight - PREVIEW_EDGE_CLEARANCE_PX),
+      )
       setPreviewTop(safeTop)
     }
     setHoveredId(turnId)
@@ -170,8 +175,8 @@ export function ConversationMap({
   const jumpToTurn = (turn: ConversationTurn): void => {
     const scroller = resolveScroller(listRef)
     if (scroller === null) return
-    onManualNavigate?.()
     if (!jumpToMessage(scroller, turn.anchorId, prefersReducedMotion())) return
+    onManualNavigate?.()
     setActiveId(turn.id)
   }
 
@@ -202,7 +207,8 @@ export function ConversationMap({
                 if (node) markerRefs.current.set(turn.id, node)
                 else markerRefs.current.delete(turn.id)
               }}
-              style={{ top: markerTop(index) }}
+              style={{ top: markerTop(index, turns.length, railHeight) }}
+              tabIndex={isActive || (activeId === '' && index === 0) ? 0 : -1}
               aria-label={t('map.jump', { title: turn.title })}
               aria-current={isActive ? 'step' : undefined}
               aria-describedby={isPreviewed ? 'conversation-map-preview' : undefined}
@@ -232,8 +238,10 @@ export function ConversationMap({
           onMouseEnter={holdPreview}
           onMouseLeave={cancelPreview}
         >
-          <strong>{preview.title}</strong>
-          <span>{t(STATUS_KEY[preview.status])}</span>
+          <div className={css.previewHead}>
+            <strong>{preview.title}</strong>
+            <span data-status={preview.status}>{t(STATUS_KEY[preview.status])}</span>
+          </div>
           <ul>
             {(preview.summaries.length > 0 ? preview.summaries : [
               preview.status === 'running' ? t('map.preview.running') : t('map.preview.empty'),

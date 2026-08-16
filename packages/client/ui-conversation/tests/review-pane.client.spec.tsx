@@ -99,20 +99,19 @@ function mountDetails(opts?: {
 }
 
 describe('ReviewPane', () => {
-  it('shows all three sections with honest empty copy', () => {
+  it('shows the standing sections with honest empty copy', () => {
     const view = render(
       <ReviewPane files={[]} added={null} removed={null} produced={[]} todos={[]} t={t} openFile={vi.fn()} />,
     )
     expect(view.getByText('变更')).toBeTruthy()
     expect(view.getByText('暂无文件变更')).toBeTruthy()
-    expect(view.getByText('提交')).toBeTruthy()
-    expect(view.getByText('暂无提交')).toBeTruthy()
     expect(view.getByText('任务')).toBeTruthy()
     expect(view.getByText('暂无任务')).toBeTruthy()
     expect(view.queryByText('本轮产出')).toBeNull()
+    expect(view.container.querySelector('[data-review-section="produced"]')).toBeNull()
   })
 
-  it('lists files with real +/- and produced paths without calling them commits', () => {
+  it('lists files with real +/- and exposes produced paths as a section', () => {
     const view = render(
       <ReviewPane
         files={[{ path: 'src/a.ts', added: 4, removed: 1 }, { path: 'notes/b.md' }]}
@@ -128,24 +127,23 @@ describe('ReviewPane', () => {
     expect(view.getAllByText('+4').length).toBeGreaterThan(0)
     expect(view.getAllByText('−1').length).toBeGreaterThan(0)
     expect(view.getByText('b.md')).toBeTruthy()
-    expect(view.getByText('暂无提交')).toBeTruthy()
     expect(view.getByText('本轮产出')).toBeTruthy()
     expect(view.container.querySelector('[data-review-produced="src/a.ts"]')).not.toBeNull()
     expect(view.getByText('搭骨架')).toBeTruthy()
     expect(view.container.querySelectorAll('[data-review-todo]')).toHaveLength(3)
+    expect(view.getByText(/已完成.*搭骨架/)).toBeTruthy()
   })
 })
 
 describe('DetailsPanel Review host', () => {
-  it('always titles the column 审查 and keeps the three sections when empty', () => {
+  it('always titles the column 审查 and keeps Changes and Tasks when empty', () => {
     const view = mountDetails()
     expect(view.getByText('审查')).toBeTruthy()
     expect(view.container.querySelector('[data-review-section="changes"]')).not.toBeNull()
-    expect(view.container.querySelector('[data-review-section="commits"]')).not.toBeNull()
     expect(view.container.querySelector('[data-review-section="tasks"]')).not.toBeNull()
+    expect(view.container.querySelector('[data-review-section="produced"]')).toBeNull()
     expect(view.container.querySelector('[data-review-section="details"]')).toBeNull()
     expect(view.getByText('暂无文件变更')).toBeTruthy()
-    expect(view.getByText('暂无提交')).toBeTruthy()
     expect(view.getByText('暂无任务')).toBeTruthy()
   })
 
@@ -249,7 +247,7 @@ describe('ReviewPane file open and Escape', () => {
 })
 
 describe('ReviewHeaderAction', () => {
-  it('toggles the injected callback and reflects the open bit', () => {
+  it('toggles from the button or Codex shortcut and reflects the open bit', () => {
     const toggleDetails = vi.fn()
     const store = createSnapshotStore({ open: false })
     const view = render(
@@ -265,5 +263,14 @@ describe('ReviewHeaderAction', () => {
     expect(button.getAttribute('aria-pressed')).toBe('false')
     fireEvent.click(button)
     expect(toggleDetails).toHaveBeenCalledTimes(1)
+    fireEvent.keyDown(document, { code: 'KeyB', ctrlKey: true, altKey: true })
+    fireEvent.keyDown(document, { code: 'KeyB', metaKey: true, altKey: true })
+    expect(toggleDetails).toHaveBeenCalledTimes(3)
+
+    const input = document.createElement('input')
+    document.body.appendChild(input)
+    fireEvent.keyDown(input, { code: 'KeyB', ctrlKey: true, altKey: true })
+    expect(toggleDetails).toHaveBeenCalledTimes(3)
+    input.remove()
   })
 })

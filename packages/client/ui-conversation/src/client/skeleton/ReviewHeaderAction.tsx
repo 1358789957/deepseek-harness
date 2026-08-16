@@ -1,6 +1,6 @@
-// Session-header utility: 审查 toggles the details / Review column.
-
+import { useEffect } from 'react'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
+import { IconCodeOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import css from './ReviewHeaderAction.module.css'
 
@@ -16,6 +16,12 @@ export type ReviewHeaderActionProps =
   & InjectFace<ReviewHeaderInjected>
   & PropsLocale<'conversation'>
 
+function isEditor(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  if (target.matches('input, textarea, select')) return true
+  return target.closest('[contenteditable]:not([contenteditable="false"])') !== null
+}
+
 /**
  * Right-aligned 审查 control that opens or closes the Review column.
  * @param props - runtime kit, bound open bit, toggle, and locale seat.
@@ -23,16 +29,27 @@ export type ReviewHeaderActionProps =
  */
 export function ReviewHeaderAction({ useDetailsOpen, toggleDetails, t }: ReviewHeaderActionProps) {
   const open = useDetailsOpen(state => state.open)
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.code !== 'KeyB' || !event.altKey || !(event.metaKey || event.ctrlKey) || isEditor(event.target)) return
+      event.preventDefault()
+      toggleDetails()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => { document.removeEventListener('keydown', onKeyDown) }
+  }, [toggleDetails])
   return (
     <button
       type="button"
       className={css.trigger}
       aria-pressed={open}
+      aria-keyshortcuts="Meta+Alt+B Control+Alt+B"
       aria-label={open ? t('review.close') : t('review.open')}
       data-review-header=""
       onClick={() => { toggleDetails() }}
     >
-      {t('review.title')}
+      <IconCodeOutline16 />
+      <span>{t('review.title')}</span>
     </button>
   )
 }

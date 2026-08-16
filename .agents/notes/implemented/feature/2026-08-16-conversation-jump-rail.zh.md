@@ -14,9 +14,9 @@ Status: implemented
 
 跳转轨是 `@deepseek-ai/dsh-client-ui-conversation` 里的 ChatView chrome。它不注册到 `root`，也不是 `conversation.view` 标签页。
 
-`collectMapMessages` 读取已加载的 Chat 顺序，保留 `user` 与非空 `assistant-step` 行。`buildTurns` 把每条用户消息与紧随其后的助手回复收成一轮。仅当已加载窗口中有两轮及以上用户消息时才渲染该轨。每个刻度是按钮：悬停（300ms 后，或预览已打开时立即）显示该轮标题、状态和至多两行助手摘要；点击或键盘激活会在解析出的会话滚动容器上调用 `jumpToMessage`（嵌套时为 `[data-conversation-scroll]`，否则为视图本地 scroller）。`ChatNodeSeat` 把 Node key 打到 `data-conversation-message` 上，因此跳转不会拼接选择器。
+`collectMapMessages` 读取已加载的 Chat 顺序，保留 `user` 与非空 `assistant-step` 行。ChatView 在快照 selector 中收集这些消息，并比较它们的 id、角色与正文，因此可变 Chat Node store 保持 identity 时，流式助手文本仍会刷新预览。`buildTurns` 把每条用户消息与紧随其后的助手回复收成一轮；会话运行期间，最新一轮即使已经产出摘要文本，状态仍保持 `running`。仅当已加载窗口中有两轮及以上用户消息时才渲染该轨。每个刻度是按钮：悬停（300ms 后，或预览已打开时立即）显示该轮标题、状态和至多两行助手摘要；点击或键盘激活会在解析出的会话滚动容器上调用 `jumpToMessage`（嵌套时为 `[data-conversation-scroll]`，否则为视图本地 scroller）。`ChatNodeSeat` 把 Node key 打到 `data-conversation-message` 上，因此跳转不会拼接选择器。
 
-该轨是 Chat scroller 左侧的零尺寸 sticky overlay，会话滚动条仍在右侧。宽度低于 720px 时宿主隐藏；窄列会与 transcript 相撞。手动跳转通过 `onManualNavigate` 清掉 ChatView 的贴底跟随。
+该轨是 Chat scroller 左侧的零尺寸 sticky overlay，会话滚动条仍在右侧。空间足够时，标记保持 14px 的自然间距；长 transcript 将要溢出时，标记会均匀压入实测轨道高度。宽度低于 720px 时宿主隐藏；窄列会与 transcript 相撞。成功的手动跳转通过 `onManualNavigate` 清掉 ChatView 的贴底跟随。
 
 ## 备选方案
 
@@ -38,4 +38,5 @@ Status: implemented
 - 短线程（零轮或一轮用户消息）不显示该轨。
 - 只有已加载窗口可跳；更早历史仍要走 `chat.loadOlder`。
 - steering（中途引导）气泡不是标记；它们仍是轮次中途的流程行。
+- 已加载窗口很长时，标记会压缩间距，不会继续画到 transcript viewport 下方。
 - 该轨在左缘增加命中目标；720px 截止让它们离开窄列。

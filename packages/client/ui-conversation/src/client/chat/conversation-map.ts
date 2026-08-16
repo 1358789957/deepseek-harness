@@ -134,6 +134,25 @@ export function collectMapMessages(
 }
 
 /**
+ * Compare collected rail messages after a live snapshot notification.
+ * @param left - previous collected messages.
+ * @param right - next collected messages.
+ * @returns whether message identity, role, and preview text are unchanged.
+ */
+export function sameMapMessages(
+  left: readonly ConversationMapMessage[],
+  right: readonly ConversationMapMessage[],
+): boolean {
+  return left.length === right.length && left.every((message, index) => {
+    const other = right[index]
+    return other !== undefined
+      && message.id === other.id
+      && message.role === other.role
+      && message.body === other.body
+  })
+}
+
+/**
  * Group user messages and the assistant replies that follow them into turns.
  * @param messages - collected user/assistant rows.
  * @param running - whether the session currently has a live turn.
@@ -166,7 +185,7 @@ export function buildTurns(
     return {
       ...turn,
       summaries,
-      status: summaries.length > 0 ? 'done' : running && isLatest ? 'running' : 'waiting',
+      status: running && isLatest ? 'running' : summaries.length > 0 ? 'done' : 'waiting',
     }
   })
 }
@@ -217,10 +236,15 @@ export function activeTurnId(
   const first = turns[0]
   if (first === undefined) return ''
   const focusLine = scroller.scrollTop + scroller.clientHeight * FOCUS_LINE_RATIO
+  const anchors = new Map<string, HTMLElement>()
+  for (const element of scroller.querySelectorAll<HTMLElement>('[data-conversation-message]')) {
+    const id = element.dataset.conversationMessage
+    if (id !== undefined) anchors.set(id, element)
+  }
   let next = first.id
   for (const turn of turns) {
-    const anchor = findMessageElement(scroller, turn.anchorId)
-    if (anchor !== null && messageScrollTop(scroller, anchor) <= focusLine) next = turn.id
+    const anchor = anchors.get(turn.anchorId)
+    if (anchor !== undefined && messageScrollTop(scroller, anchor) <= focusLine) next = turn.id
   }
   return next
 }
@@ -229,14 +253,18 @@ export function activeTurnId(
 export const MARKER_GAP_PX = 14
 
 /**
- * Marker Y stacked from the top with a fixed gap. Never spreads across the rail.
+ * Marker Y uses the natural gap while it fits, then compresses into the rail.
  * @param index - zero-based marker index.
- * @param _count - unused; kept so existing call sites stay valid.
- * @param _railHeight - unused; kept so existing call sites stay valid.
+ * @param count - total marker count.
+ * @param railHeight - available rail height.
  * @returns CSS `top` in px.
  */
-export function markerTop(index: number, _count?: number, _railHeight?: number): number {
-  return 8 + index * MARKER_GAP_PX
+export function markerTop(index: number, count = 1, railHeight = MIN_RAIL_HEIGHT): number {
+  const inset = 8
+  if (count <= 1) return inset
+  const available = Math.max(0, railHeight - inset * 2)
+  const gap = Math.min(MARKER_GAP_PX, available / (count - 1))
+  return inset + index * gap
 }
 
 /**
