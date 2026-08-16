@@ -80,7 +80,7 @@ function mountDetails(opts?: {
       useSession={bindSnapshotSelector({ getSnapshot: () => snap, subscribe: () => () => {} })}
       useSessions={bindSnapshotSelector(emptyList)}
       useWorkspaces={bindSnapshotSelector(emptyWorkspaces)}
-      useProjection={((key: string) => key === 'todos' ? todos : undefined) as DetailsSlotProps['useProjection']}
+      useProjection={(key: string) => key === 'todos' ? todos : undefined}
       useInput={(() => { throw new Error('unused') })}
       inputActions={{
         setDraft: () => {},
@@ -131,7 +131,7 @@ describe('ReviewPane', () => {
     expect(view.container.querySelector('[data-review-produced="src/a.ts"]')).not.toBeNull()
     expect(view.getByText('搭骨架')).toBeTruthy()
     expect(view.container.querySelectorAll('[data-review-todo]')).toHaveLength(3)
-    expect(view.getByText(/已完成.*搭骨架/)).toBeTruthy()
+    expect(view.container.querySelector('[data-review-todo="completed"]')?.textContent).toBe('已完成: 搭骨架')
   })
 })
 

@@ -1,12 +1,20 @@
 /** Pure helpers for the conversation jump rail (turn grouping and scroll math). */
 
+/** Pointer dwell before the first turn preview opens. */
 export const HOVER_PREVIEW_DELAY_MS = 300
+/** Grace period for moving from a marker into its preview. */
 export const HOVER_PREVIEW_HOLD_MS = 420
+/** Maximum user-prompt characters retained in a marker title. */
 export const TITLE_LIMIT = 40
+/** Maximum assistant-text characters retained in one preview line. */
 export const SUMMARY_LIMIT = 66
+/** Scrollport-height ratio used to select the active marker. */
 export const FOCUS_LINE_RATIO = 0.34
+/** Scrollport-height ratio placed above a jumped message. */
 export const JUMP_TOP_RATIO = 0.18
+/** Maximum pixel inset placed above a jumped message. */
 export const JUMP_TOP_MAX_PX = 96
+/** Smallest measured height used by marker layout. */
 export const MIN_RAIL_HEIGHT = 80
 
 /** One user or assistant row the rail can summarize. */

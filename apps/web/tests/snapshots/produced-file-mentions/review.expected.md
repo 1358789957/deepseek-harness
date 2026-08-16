@@ -1,24 +1,31 @@
 - text: Review
-- button "Close review":
-  - img
-- text: Changes 3
-- button "report.html site":
-  - img
-  - text: report.html site
-- button "style.css a":
-  - img
-  - text: style.css a
-- button "style.css b":
-  - img
-  - text: style.css b
+- button "Close review"
+- text: Changes 3 +3 −0
+- list:
+  - listitem:
+    - button "report.html site +1 −0":
+      - img
+      - text: report.html site +1 −0
+  - listitem:
+    - button "style.css a +1 −0":
+      - img
+      - text: style.css a +1 −0
+  - listitem:
+    - button "style.css b +1 −0":
+      - img
+      - text: style.css b +1 −0
 - text: Produced this turn 3
-- button "report.html site":
-  - img
-  - text: report.html site
-- button "style.css a":
-  - img
-  - text: style.css a
-- button "style.css b":
-  - img
-  - text: style.css b
+- list:
+  - listitem:
+    - button "report.html site":
+      - img
+      - text: report.html site
+  - listitem:
+    - button "style.css a":
+      - img
+      - text: style.css a
+  - listitem:
+    - button "style.css b":
+      - img
+      - text: style.css b
 - text: Tasks 0 No tasks

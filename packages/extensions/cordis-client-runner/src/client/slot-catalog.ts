@@ -371,7 +371,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'conversation.composer.bar\', () => ctx.slots.register(\n      { name: \'conversation.composer.bar\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:201',
+    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:200',
   },
   {
     key: 'conversation.composer.dock',
@@ -648,8 +648,8 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     key: 'conversation.input.model',
     kind: 'single',
     scope: 'session',
-    summary: 'The named model-select seat at the right end of the composer tool row, left of the send button — one occupant, so taking it means rendering the whole model affordance yourself.',
-    doc: 'The named model-select seat at the right end of the composer tool row,\nleft of the send button — one occupant, so taking it means rendering the\nwhole model affordance yourself. Same `locked`-only owner share and same\nrenders-nothing-while-empty contract as the plan seat. Note the composer\ndeliberately keeps this seat LIVE while it refuses text for a\nmodel-related block: every such block is one the user clears by picking\na model here.',
+    summary: 'The named model-select seat on the left of the composer tool row (after attach / plan, left of send) — one occupant, so taking it means rendering the whole model + reasoning-effort affordance yourself.',
+    doc: 'The named model-select seat on the left of the composer tool row\n(after attach / plan, left of send) — one occupant, so taking it means\nrendering the whole model + reasoning-effort affordance yourself. Same\n`locked`-only owner share and same renders-nothing-while-empty contract\nas the plan seat. Note the composer deliberately keeps this seat LIVE\nwhile it refuses text for a model-related block: every such block is\none the user clears by picking a model here.',
     registerOptions: [],
     ownerProps: [
       '/**\n * Owner share of the two named composer control seats (plan / model): the\n * bar passes its disable state; the filling entry owns everything else.\n */\nexport interface InputControlOwnerProps {\n  /** Session-removed lock (the bar\'s chrome disable state). */\n  locked: boolean\n}',
@@ -673,7 +673,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'conversation.input.model\', () => ctx.slots.register(\n      { name: \'conversation.input.model\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:221',
+    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:220',
   },
   {
     key: 'conversation.input.overlay',
@@ -753,14 +753,14 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'conversation.input.plan\', () => ctx.slots.register(\n      { name: \'conversation.input.plan\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:211',
+    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:210',
   },
   {
     key: 'conversation.input.right',
     kind: 'list',
     scope: 'session',
-    summary: 'The right end of the same tool row, before the primary send button — the seat for a control the user reaches on the way to sending (the model select sits in its own named seat just left of here).',
-    doc: 'The right end of the same tool row, before the primary send button —\nthe seat for a control the user reaches on the way to sending (the\nmodel select sits in its own named seat just left of here). Same\nInputZone owner share and the same one-row height budget as\n`conversation.input.left`.',
+    summary: 'The right end of the same tool row, before the primary send button — the seat for a control the user reaches on the way to sending.',
+    doc: 'The right end of the same tool row, before the primary send button —\nthe seat for a control the user reaches on the way to sending. Same\nInputZone owner share and the same one-row height budget as\n`conversation.input.left`.',
     registerOptions: [
       {
         name: 'id',
@@ -804,7 +804,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     occupants: [],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'conversation.input.right\', () => ctx.slots.register(\n      { name: \'conversation.input.right\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:187',
+    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:186',
   },
   {
     key: 'conversation.session',
@@ -960,6 +960,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     slotInject: '',
     declaredBy: 'an entry in \'conversation.session.header\' (client-ui-conversation), so it exists while that entry is mounted',
     occupants: [
+      'client-ui-conversation ReviewHeaderAction id \'review\'',
       'session-log-export SessionLogDownloadHeaderAction id \'session-log-download\'',
     ],
     replaceRisk: 'none',
