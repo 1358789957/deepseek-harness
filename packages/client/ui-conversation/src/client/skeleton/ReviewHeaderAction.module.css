@@ -27,8 +27,6 @@
   color: var(--dsw-alias-label-primary);
 }
 
-@media (max-width: 720px) {
-  .trigger {
-    display: none;
-  }
+:global([data-app-frame]:not([data-details-available])) .trigger {
+  display: none;
 }

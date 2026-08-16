@@ -719,6 +719,12 @@ export interface DetailsInjected {
   /** Close the details panel (layout geometry stays with ctx.layout). */
   closeDetails: () => void
   /**
+   * Mirror AppFrame's rendered details `open` into the header Review bit.
+   * Session switches and concession change that bit without calling closeDetails.
+   * @param open - true when the details track has a non-zero rendered width.
+   */
+  setColumnOpen: (open: boolean) => void
+  /**
    * Open a tool-arg filesystem path with the host OS default application
    * (relative paths resolve against the session cwd).
    */

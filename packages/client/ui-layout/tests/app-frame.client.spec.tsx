@@ -142,7 +142,7 @@ describe('AppFrame', () => {
     expect(tracks(frame)).toEqual([280, 0])
   })
 
-  it('renders the session pair with empty owner shares (sessionId is framework-standard)', () => {
+  it('renders the session pair with empty conversation owner share and live details chrome', () => {
     const { slotCalls, getByTestId } = mountFrame()
     expect(getByTestId('center-content')).toBeTruthy()
     expect(getByTestId('details-content')).toBeTruthy()
@@ -151,7 +151,7 @@ describe('AppFrame', () => {
     expect(keys).toContain('details')
     expect(keys).not.toContain('conversation.empty')
     expect(slotCalls.find(c => c.key === 'conversation')!.props).toEqual({})
-    expect(slotCalls.find(c => c.key === 'details')!.props).toEqual({})
+    expect(slotCalls.find(c => c.key === 'details')!.props).toEqual({ open: false, available: true })
   })
 
   it('keeps the conversation slot mounted while no session is current', () => {
@@ -248,7 +248,23 @@ describe('AppFrame', () => {
     const { frame, getByTestId } = mountFrame()
     expect(tracks(frame)).toEqual([280, 0])
     expect(getByTestId('details-content')).toBeTruthy()
+    expect(frame.hasAttribute('data-app-frame')).toBe(true)
     expect(frame.hasAttribute('data-details-collapsed')).toBe(true)
+    expect(frame.hasAttribute('data-details-available')).toBe(true)
+  })
+
+  it('publishes rendered open and withholds available when the details track cannot fit', () => {
+    const { frame, instance, slotCalls, rerenderFrame } = mountFrame()
+    act(() => { instance.actions.openDetails() })
+    expect(slotCalls.filter(c => c.key === 'details').at(-1)!.props).toEqual({ open: true, available: true })
+    expect(frame.hasAttribute('data-details-available')).toBe(true)
+
+    frameWidth = 800
+    act(() => { fireResize?.(); vi.advanceTimersByTime(20) })
+    rerenderFrame()
+    expect(tracks(frame)[1]).toBe(0)
+    expect(frame.hasAttribute('data-details-available')).toBe(false)
+    expect(slotCalls.filter(c => c.key === 'details').at(-1)!.props).toEqual({ open: false, available: false })
   })
 
   it('closed sidebar keeps its compact rail with mounted slot content and collapsed owner props', () => {

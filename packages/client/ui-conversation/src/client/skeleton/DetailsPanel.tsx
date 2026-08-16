@@ -1,4 +1,4 @@
-// DetailsPanel: Review right column (变更 / 提交 / 任务) plus the selected
+// DetailsPanel: Review right column (变更 / 任务) plus the selected
 // call's Input/Output when a tool is selected. Reads the shared chat store
 // and the session snapshot — no data of its own.
 
@@ -77,16 +77,19 @@ function escapeBlocked(target: EventTarget | null): boolean {
 }
 
 export function DetailsPanel({
-  useSession, useSessions, useProjection, sessionId, useStore, renderSlot, closeDetails, openFile, t,
+  open, setColumnOpen, useSession, useSessions, useProjection, sessionId, useStore, renderSlot,
+  closeDetails, openFile, t,
 }: DetailsPanelProps) {
+  useEffect(() => { setColumnOpen(open) }, [open, setColumnOpen])
   useEffect(() => {
+    if (!open) return
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== 'Escape' || escapeBlocked(event.target)) return
       closeDetails()
     }
     document.addEventListener('keydown', onKeyDown)
     return () => { document.removeEventListener('keydown', onKeyDown) }
-  }, [closeDetails])
+  }, [closeDetails, open])
   const selection = useStore(s => s.selection)
   // Session workspace root: an omitted or relative terminal cwd resolves
   // against it, which the pure presenter cannot see.

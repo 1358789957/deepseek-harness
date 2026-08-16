@@ -50,6 +50,16 @@ export function clampWidth(px: number, min: number, max: number): number {
 }
 
 /**
+ * Whether the details track can render at {@link DETAILS_MIN} beside this sidebar preference.
+ * @param viewport - available frame width in px.
+ * @param sidebar - sidebar width preference in px (0 = closed rail).
+ * @returns true when concession would leave a non-zero details width.
+ */
+export function detailsTrackFits(viewport: number, sidebar: number): boolean {
+  return computeColumns(viewport, sidebar, DETAILS_MIN).details > 0
+}
+
+/**
  * Solve the three column widths for one viewport frame. Pure: no hysteresis —
  * the output is a function of (viewport, preferences) only, so recovery on
  * re-widening is automatic. Preferences re-clamp here because they cross the

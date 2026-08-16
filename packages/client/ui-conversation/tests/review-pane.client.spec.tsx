@@ -62,7 +62,9 @@ function mountDetails(opts?: {
   selection?: SelectionTarget | null
   todos?: readonly TodoItem[] | null
   owners?: DetailsToolOwnerProps[]
+  open?: boolean
   closeDetails?: () => void
+  setColumnOpen?: (open: boolean) => void
   openFile?: (path: string) => void
 }) {
   const snap = opts?.snap ?? snapshotBase()
@@ -94,6 +96,9 @@ function mountDetails(opts?: {
       }}
       useStore={bindSnapshotSelector(chat)}
       actions={chat.actions}
+      open={opts?.open ?? true}
+      available
+      setColumnOpen={opts?.setColumnOpen ?? vi.fn()}
       closeDetails={opts?.closeDetails ?? vi.fn()}
       openFile={opts?.openFile ?? vi.fn()}
       t={t}
@@ -248,11 +253,27 @@ describe('ReviewPane file open and Escape', () => {
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(closeDetails).toHaveBeenCalledTimes(2)
   })
+
+  it('does not attach Escape while the rendered column is closed', () => {
+    const closeDetails = vi.fn()
+    mountDetails({ closeDetails, open: false })
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(closeDetails).not.toHaveBeenCalled()
+  })
+
+  it('mirrors the rendered column open bit for the header Review control', () => {
+    const setColumnOpen = vi.fn()
+    mountDetails({ setColumnOpen, open: true })
+    expect(setColumnOpen).toHaveBeenCalledWith(true)
+    cleanup()
+    setColumnOpen.mockClear()
+    mountDetails({ setColumnOpen, open: false })
+    expect(setColumnOpen).toHaveBeenCalledWith(false)
+  })
 })
 
 describe('ReviewHeaderAction', () => {
   it('toggles from the button or Codex shortcut and reflects the open bit', () => {
-    vi.stubGlobal('matchMedia', () => ({ matches: false }))
     const toggleDetails = vi.fn()
     const store = createSnapshotStore({ open: false })
     const view = render(
@@ -278,8 +299,14 @@ describe('ReviewHeaderAction', () => {
     expect(toggleDetails).toHaveBeenCalledTimes(3)
     input.remove()
 
-    vi.stubGlobal('matchMedia', () => ({ matches: true }))
+    const frame = document.createElement('div')
+    frame.setAttribute('data-app-frame', '')
+    document.body.appendChild(frame)
     fireEvent.keyDown(document, { code: 'KeyB', ctrlKey: true, altKey: true })
     expect(toggleDetails).toHaveBeenCalledTimes(3)
+    frame.setAttribute('data-details-available', '')
+    fireEvent.keyDown(document, { code: 'KeyB', ctrlKey: true, altKey: true })
+    expect(toggleDetails).toHaveBeenCalledTimes(4)
+    frame.remove()
   })
 })

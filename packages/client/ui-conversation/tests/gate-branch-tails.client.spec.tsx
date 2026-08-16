@@ -135,6 +135,9 @@ describe('render branch tails', () => {
         }}
         useStore={bindSnapshotSelector(chat)}
         actions={chat.actions}
+        open
+        available
+        setColumnOpen={vi.fn()}
         closeDetails={vi.fn()}
         openFile={vi.fn()}
         t={t}
@@ -193,6 +196,9 @@ describe('render branch tails', () => {
         }}
         useStore={bindSnapshotSelector(chat)}
         actions={chat.actions}
+        open
+        available
+        setColumnOpen={vi.fn()}
         closeDetails={vi.fn()}
         openFile={vi.fn()}
         t={t}

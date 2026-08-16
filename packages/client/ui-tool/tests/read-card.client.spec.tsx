@@ -290,6 +290,9 @@ describe('DetailsPanel Output section (read)', () => {
         useProjection={(() => undefined)}
         useStore={bindSnapshotSelector(chat)}
         actions={chat.actions}
+        open
+        available
+        setColumnOpen={() => {}}
         closeDetails={vi.fn()}
         openFile={vi.fn()}
       />,

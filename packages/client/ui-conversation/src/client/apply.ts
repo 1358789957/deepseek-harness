@@ -2,7 +2,8 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { resolveSlotLabel, type BoundActions } from '@deepseek-ai/dsh-client-ui-slots'
 import {
-  resolveWorkspacePath, type ISessions, type SessionId,
+  createSnapshotStore, resolveWorkspacePath, type ISessions, type SessionId,
+  type SnapshotStore,
 } from '@deepseek-ai/dsh-client-runtime/client'
 // Type-only: the ctx.settingsScope Context merge. Cross-plugin collaboration
 // goes through the service, never a value import (client bundle purity gate).
@@ -111,22 +112,10 @@ function selectApproval({ interactions }: ComposerChainProps): ApprovalWait | nu
 }
 
 
-/** Mirror of the details column open state for the header Review toggle. */
-function createDetailsOpenStore() {
-  let state = { open: false }
-  const listeners = new Set<() => void>()
-  return {
-    getSnapshot: () => state,
-    subscribe: (fn: () => void) => {
-      listeners.add(fn)
-      return () => { listeners.delete(fn) }
-    },
-    setOpen(open: boolean) {
-      if (state.open === open) return
-      state = { open }
-      for (const listener of listeners) listener()
-    },
-  }
+/** Header Review pressed-state; AppFrame's rendered `open` is the authority. */
+function setDetailsOpen(store: SnapshotStore<{ open: boolean }>, open: boolean): void {
+  if (store.getSnapshot().open === open) return
+  store.set({ open })
 }
 
 /** Mounts the conversation plugin.
@@ -137,7 +126,7 @@ export function apply(ctx: Context): void {
   const workspaces = ctx.workspaces
   const layout = ctx.layout
   const slots = ctx.slots
-  const detailsOpen = createDetailsOpenStore()
+  const detailsOpen = createSnapshotStore({ open: false })
   const openSessionFile = (sessionId: SessionId, path: string): void => {
     const cwd = sessions.list.getSnapshot().byId[sessionId]?.cwd
     void workspaces.openPath(resolveWorkspacePath(cwd, path)).catch(() => {
@@ -145,15 +134,6 @@ export function apply(ctx: Context): void {
       // error dialog when the path is unusable.
     })
   }
-  ctx.effect(() => {
-    let current = sessions.list.getSnapshot().current
-    return sessions.list.subscribe(() => {
-      const next = sessions.list.getSnapshot().current
-      if (next === current) return
-      current = next
-      detailsOpen.setOpen(false)
-    })
-  }, 'ui-conversation: review open-state follows session')
 
   registerConversationNodes(ctx)
   registerChatNodeRenderers(ctx)
@@ -426,7 +406,7 @@ export function apply(ctx: Context): void {
       return {
         openDetails: (target) => {
           actions.select(target)
-          detailsOpen.setOpen(true)
+          setDetailsOpen(detailsOpen, true)
           layout.openDetails()
         },
         fileMentions: owner => ctx.get('chatFileMentions')?.forClosing(owner),
@@ -482,9 +462,10 @@ export function apply(ctx: Context): void {
     store: chatStore,
     inject: (sessionId: SessionId): DetailsInjected => ({
       closeDetails: () => {
-        detailsOpen.setOpen(false)
+        setDetailsOpen(detailsOpen, false)
         layout.closeDetails()
       },
+      setColumnOpen: (open) => { setDetailsOpen(detailsOpen, open) },
       openFile: (path) => { openSessionFile(sessionId, path) },
     }),
   }, DetailsPanel)
@@ -496,14 +477,16 @@ export function apply(ctx: Context): void {
     id: 'review',
     order: 0,
     locale: NS,
-    inject: (): ReviewHeaderInjected => ({
+    store: chatStore,
+    inject: (_sessionId, actions): ReviewHeaderInjected => ({
       hooks: { detailsOpen },
       toggleDetails: () => {
         if (detailsOpen.getSnapshot().open) {
-          detailsOpen.setOpen(false)
+          setDetailsOpen(detailsOpen, false)
           layout.closeDetails()
         } else {
-          detailsOpen.setOpen(true)
+          actions.select(null)
+          setDetailsOpen(detailsOpen, true)
           layout.openDetails()
         }
       },
