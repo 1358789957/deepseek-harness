@@ -114,13 +114,13 @@ describe('ReviewPane', () => {
     expect(view.container.querySelector('[data-review-section="produced"]')).toBeNull()
   })
 
-  it('lists files with real +/- and exposes produced paths as a section', () => {
+  it('lists files with real +/- and keeps produced-only paths separate', () => {
     const view = render(
       <ReviewPane
         files={[{ path: 'src/a.ts', added: 4, removed: 1 }, { path: 'notes/b.md' }]}
         added={4}
         removed={1}
-        produced={['src/a.ts']}
+        produced={['src/a.ts', 'artifacts/report.pdf']}
         todos={TODOS}
         t={t}
         openFile={vi.fn()}
@@ -131,7 +131,8 @@ describe('ReviewPane', () => {
     expect(view.getAllByText('−1').length).toBeGreaterThan(0)
     expect(view.getByText('b.md')).toBeTruthy()
     expect(view.getByText('本轮产出')).toBeTruthy()
-    expect(view.container.querySelector('[data-review-produced="src/a.ts"]')).not.toBeNull()
+    expect(view.container.querySelector('[data-review-produced="src/a.ts"]')).toBeNull()
+    expect(view.container.querySelector('[data-review-produced="artifacts/report.pdf"]')).not.toBeNull()
     expect(view.getByText('搭骨架')).toBeTruthy()
     expect(view.container.querySelectorAll('[data-review-todo]')).toHaveLength(3)
     expect(view.container.querySelector('[data-review-todo="completed"]')?.textContent).toBe('已完成: 搭骨架')
@@ -185,7 +186,7 @@ describe('ReviewPane file open and Escape', () => {
         files={[{ path: 'src/a.ts', added: 4, removed: 1 }, { path: 'notes/b.md' }]}
         added={4}
         removed={1}
-        produced={['src/a.ts']}
+        produced={['dist/report.md']}
         todos={[]}
         t={t}
         openFile={openFile}
@@ -195,9 +196,9 @@ describe('ReviewPane file open and Escape', () => {
     expect(openFile).toHaveBeenCalledWith('src/a.ts')
     fireEvent.click(view.getByText('b.md'))
     expect(openFile).toHaveBeenCalledWith('notes/b.md')
-    fireEvent.click(view.container.querySelector('[data-review-produced="src/a.ts"]')!)
+    fireEvent.click(view.container.querySelector('[data-review-produced="dist/report.md"]')!)
     expect(openFile).toHaveBeenCalledTimes(3)
-    expect(openFile).toHaveBeenNthCalledWith(3, 'src/a.ts')
+    expect(openFile).toHaveBeenNthCalledWith(3, 'dist/report.md')
     expect(view.queryByText(/commit|sha|hash/i)).toBeNull()
   })
 

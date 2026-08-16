@@ -62,6 +62,20 @@ describe('reviewChanges', () => {
     expect(changes.removed).toBeNull()
   })
 
+  it('keeps produced-only paths out of the changed-file list', () => {
+    const chat = chatSnapshotFixture({ turnTimings: new Map([[1, { startTime: 1 }]]) })
+    const turn = chat.timeline.turns.get(1)
+    if (turn === undefined) throw new Error('fixture turn missing')
+    const data = turn.data as typeof turn.data & { set(key: string, value: unknown): void }
+    data.set('deliverables', { produced: [{ path: 'artifacts/report.pdf' }] })
+    expect(reviewChanges(snapshot({ chat }))).toEqual({
+      files: [],
+      added: null,
+      removed: null,
+      produced: ['artifacts/report.pdf'],
+    })
+  })
+
   it('skips failed mutations and still walks nested subcalls', () => {
     const child: ToolResultNode = settled({
       callId: 'c1:n1',

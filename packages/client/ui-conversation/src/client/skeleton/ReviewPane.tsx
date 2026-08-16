@@ -95,12 +95,14 @@ function reviewParentPath(path: string): string {
  * @returns the available Review sections.
  */
 export function ReviewPane({ files, added, removed, produced, todos, t, openFile }: ReviewPaneProps) {
+  const changedPaths = new Set(files.map(file => file.path))
+  const producedOnly = produced.filter(path => !changedPaths.has(path))
   return (
     <div className={css.root}>
       <section className={css.section} data-review-section="changes">
         <div className={css.sectionHead}>
           <div className={css.sectionTitle}>
-            <div className={css.sectionLabel}>{t('review.changes')}</div>
+            <h2 className={css.sectionLabel}>{t('review.changes')}</h2>
             <span className={css.sectionCount}>{files.length}</span>
           </div>
           {added !== null && removed !== null && (
@@ -121,6 +123,7 @@ export function ReviewPane({ files, added, removed, produced, todos, t, openFile
                     className={css.file}
                     data-review-file={file.path}
                     title={file.path}
+                    aria-label={file.path}
                     onClick={() => { openFile(file.path) }}
                   >
                     <IconCodeOutline16 className={css.fileIcon} />
@@ -140,20 +143,21 @@ export function ReviewPane({ files, added, removed, produced, todos, t, openFile
           )}
       </section>
 
-      {produced.length > 0 && (
+      {producedOnly.length > 0 && (
         <section className={css.section} data-review-section="produced">
           <div className={css.sectionTitle}>
-            <div className={css.sectionLabel}>{t('review.produced')}</div>
-            <span className={css.sectionCount}>{produced.length}</span>
+            <h2 className={css.sectionLabel}>{t('review.produced')}</h2>
+            <span className={css.sectionCount}>{producedOnly.length}</span>
           </div>
           <ul className={css.list}>
-            {produced.map(path => (
+            {producedOnly.map(path => (
               <li key={path}>
                 <button
                   type="button"
                   className={css.file}
                   data-review-produced={path}
                   title={path}
+                  aria-label={path}
                   onClick={() => { openFile(path) }}
                 >
                   <IconCodeOutline16 className={css.fileIcon} />
@@ -172,7 +176,7 @@ export function ReviewPane({ files, added, removed, produced, todos, t, openFile
 
       <section className={css.section} data-review-section="tasks">
         <div className={css.sectionTitle}>
-          <div className={css.sectionLabel}>{t('review.tasks')}</div>
+          <h2 className={css.sectionLabel}>{t('review.tasks')}</h2>
           <span className={css.sectionCount}>{todos.length}</span>
         </div>
         {todos.length === 0
