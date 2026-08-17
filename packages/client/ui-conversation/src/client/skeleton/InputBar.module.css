@@ -280,8 +280,7 @@
   min-height: 52px;
 }
 
-/* Toolbar: + / attach / plan / model on the left; send on the right
-   (Codex-style left model chip). */
+/* Toolbar: + / attach / model on the left; plan + access hug send on the right. */
 .row {
   display: flex;
   align-items: center;
@@ -323,7 +322,11 @@
 
 .trailing {
   flex: none;
-  gap: 12px;
+  gap: 8px;
+}
+
+.trailing .modes {
+  gap: 4px;
 }
 
 /* Attach circle (figma + control): 28px, selector fill, primary glyph. */
