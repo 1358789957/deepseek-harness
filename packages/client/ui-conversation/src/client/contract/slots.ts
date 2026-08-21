@@ -218,6 +218,12 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      * one the user clears by picking a model here.
      */
     'conversation.input.model': { kind: 'single'; scope: 'session'; owner: InputControlOwnerProps }
+    /**
+     * Entries of the composer plus menu. Declared by the composer-bar entry;
+     * the bar opens the menu locally and passes `onClose` plus `locked`.
+     * Slash `/` still opens the command source; this menu is a separate face.
+     */
+    'conversation.input.plus': { kind: 'list'; scope: 'session-maybe'; owner: PlusMenuOwnerProps }
   }
 
   /**
@@ -540,10 +546,21 @@ export interface InputControlOwnerProps {
   locked: boolean
 }
 
+/**
+ * Owner share of one plus-menu entry: the bar owns open state; entries
+ * close the menu after a pick and honour `locked` when the action needs a session.
+ */
+export interface PlusMenuOwnerProps {
+  /** Close the plus menu after a committed action. */
+  onClose: () => void
+  /** Session-removed / inert lock from the bar. */
+  locked: boolean
+}
+
 /** Full composer-bar props: standard kit & owner share & control-seat render share & injected share (hooks bound) & locale seat. */
 export type ComposerBarProps =
   PropsRuntime<'conversation.composer.bar'>
-  & PropsRenderSlots<'conversation.input.plan' | 'conversation.input.model'>
+  & PropsRenderSlots<'conversation.input.plan' | 'conversation.input.model' | 'conversation.input.plus'>
   & InjectFace<ComposerBarInjected>
   & PropsLocale<'conversation'>
 

@@ -292,7 +292,7 @@ describe('a capability the session\'s preset mounts', () => {
 
     // A preset ships its own skill directory, so the catalog IS the
     // session's; reading a host singleton would answer for the wrong one.
-    expect(response.result).toMatchObject({ ok: true, value: { skills: [{ name: 'preset-owned' }] } })
+    expect(response.result).toMatchObject({ ok: true, value: { skills: [{ name: 'preset-owned', source: 'bundled' }] } })
     services.delete('k1')
   })
 

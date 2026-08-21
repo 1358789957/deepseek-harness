@@ -23,7 +23,10 @@ async function bench() {
   const slots = ctx.get('slots') as SlotRegistry
   slots.register({
     name: 'root',
-    children: { 'conversation.input.plan': { kind: 'single', scope: 'session' } },
+    children: {
+      'conversation.input.plan': { kind: 'single', scope: 'session' },
+      'conversation.input.plus': { kind: 'list', scope: 'session-maybe' },
+    },
   } as never, () => null)
   const execute = vi.fn((_sessionId: SessionId, _line: string) =>
     Promise.resolve({ ok: true, value: { commandId: 'c1', result: { kind: 'success' as const } } }))
@@ -53,7 +56,10 @@ describe('ui-plan browser apply', () => {
     await fiber.await()
     expect(ctx.slots.entries('conversation.input.plan')).toHaveLength(0)
     ctx.slots.register({
-      name: 'root', children: { 'conversation.input.plan': { kind: 'single', scope: 'session' } },
+      name: 'root', children: {
+        'conversation.input.plan': { kind: 'single', scope: 'session' },
+        'conversation.input.plus': { kind: 'list', scope: 'session-maybe' },
+      },
     } as never, () => null)
     await Promise.resolve()
     expect(ctx.slots.entries('conversation.input.plan')).toHaveLength(1)
@@ -65,6 +71,7 @@ describe('ui-plan browser apply', () => {
     await fiber.await()
     const entry = b.slots.entries('conversation.input.plan')[0]!
     expect(entry.component).toBe(PlanChip)
+    expect(b.slots.entries('conversation.input.plus')[0]!.options.id).toBe('plan')
     const injected = (entry.inject as unknown as (id: SessionId) => PlanChipInjected)(SID)
 
     await expect(injected.exitPlanMode()).resolves.toBeNull()

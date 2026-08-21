@@ -6,7 +6,7 @@
  * Export discipline:
  * packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import { createSnapshotStore, type ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type { ConnectionHandle } from '@deepseek-ai/dsh-api-remotes/client'
 import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-web-react'
 // Type-only: pulls the shell's SlotMap merge (the 'settings.section' entry).
@@ -16,6 +16,14 @@ import type {} from '@deepseek-ai/dsh-client-locale/client'
 // Type-only: pulls the ctx.remote merge and the forwarded-event key face
 // (settings/credentials invalidations ride the allowlist) into this program.
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
+import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+import { ApiKeyPlusItem } from './ApiKeyPlusItem.tsx'
+import type { ApiKeyPlusInjected } from './ApiKeyPlusItem.tsx'
+import { ApiKeySheet } from './ApiKeySheet.tsx'
+import type { ApiKeySheetInjected } from './ApiKeySheet.tsx'
+import { INITIAL_API_KEY_SHEET } from './api-key-store.ts'
+import { DEEPSEEK_API_KEY_REF } from './deepseek-key-test.ts'
 import { ModelsSection } from './ModelsSection.tsx'
 import type { ModelsSectionInjected } from './ModelsSection.tsx'
 import { DeepSeekOnboardingDialog } from './DeepSeekOnboardingDialog.tsx'
@@ -134,4 +142,54 @@ export function apply(ctx: ClientContext): void {
     order: 0,
     inject: deepSeekOnboardingInjected,
   }, DeepSeekOnboardingDialog))
+
+  const apiKeyStore = createSnapshotStore(INITIAL_API_KEY_SHEET)
+  const refreshApiKey = async (): Promise<void> => {
+    try {
+      const response = await connection.api.credentials.describe({ refs: [DEEPSEEK_API_KEY_REF] })
+      if (!response.result.ok) return
+      const view = response.result.value.credentials[DEEPSEEK_API_KEY_REF]
+      const current = apiKeyStore.getSnapshot()
+      apiKeyStore.set({
+        ...current,
+        configured: view?.configured === true,
+        writable: view?.writable !== false,
+      })
+    } catch {
+      // describe failed; keep the last known configured/writable badges.
+    }
+  }
+  const openSheet = (): void => {
+    apiKeyStore.set({ ...apiKeyStore.getSnapshot(), open: true })
+  }
+  const closeSheet = (): void => {
+    apiKeyStore.set({ ...apiKeyStore.getSnapshot(), open: false })
+  }
+
+  ctx.effect(() => ctx.remote.$on('credentials/updated', () => { void refreshApiKey() }), 'ui-settings-models: api-key badge')
+
+  ctx.slots.inject('conversation.input.plus', () => ctx.slots.register({
+    name: 'conversation.input.plus',
+    id: 'api-key',
+    order: 30,
+    locale: NS,
+    inject: (): ApiKeyPlusInjected => ({
+      hooks: { apiKey: apiKeyStore },
+      openSheet,
+      refresh: refreshApiKey,
+    }),
+  }, ApiKeyPlusItem))
+
+  ctx.slots.inject('shell.overlay', () => ctx.slots.register({
+    name: 'shell.overlay',
+    id: 'api-key',
+    order: 30,
+    locale: NS,
+    inject: (): ApiKeySheetInjected => ({
+      hooks: { apiKey: apiKeyStore },
+      closeSheet,
+      refresh: refreshApiKey,
+      api: connection.api,
+    }),
+  }, ApiKeySheet))
 }

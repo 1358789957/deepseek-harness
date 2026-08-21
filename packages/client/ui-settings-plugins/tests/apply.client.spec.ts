@@ -34,19 +34,24 @@ async function bench() {
     },
   } as never)
   await ctx.plugin(SettingsScopeBinder).await()
+  ctx.provide('layout', { showPage: vi.fn() })
+  ctx.provide('settingsPanel', { open: vi.fn(), close: vi.fn() })
   return { ctx, slots: ctx.get('slots') as SlotRegistry, describeCredentials }
 }
 
 function declareRoot(slots: SlotRegistry): () => void {
   return slots.register({
     name: 'root',
-    children: { 'settings.section': { kind: 'list', scope: 'root' } },
+    children: {
+      'settings.section': { kind: 'list', scope: 'root' },
+      'sidebar.nav': { kind: 'list', scope: 'root' },
+    },
   } as never, () => null)
 }
 
 describe('ui-settings-plugins apply', () => {
   it('declares the services it uses', () => {
-    expect(inject).toEqual(['slots', 'locale', 'connection', 'remote', 'settingsScope'])
+    expect(inject).toEqual(['slots', 'locale', 'connection', 'remote', 'settingsScope', 'layout', 'settingsPanel'])
   })
 
   it('registers one Plugins section and declares the tab and card slots', async () => {
@@ -59,6 +64,7 @@ describe('ui-settings-plugins apply', () => {
     expect(section.options).toMatchObject({ id: 'plugins', order: 15 })
     // The nav label is a locale-following thunk; owners resolve it at read time.
     expect(resolveSlotLabel(section.options.label)).toBe('插件')
+    expect(slots.entries('sidebar.nav')[0]!.options).toMatchObject({ id: 'plugins', order: 0 })
     expect(slots.spec('settings.plugins.tab')).toMatchObject({ kind: 'list', scope: 'root' })
     const tab = slots.entries('settings.plugins.tab')[0]!
     expect(tab.options).toMatchObject({ id: 'configurable', order: 0 })
@@ -153,6 +159,7 @@ describe('ui-settings-plugins apply', () => {
     await fiber.dispose()
 
     expect(slots.entries('settings.section')).toHaveLength(0)
+    expect(slots.entries('sidebar.nav')).toHaveLength(0)
     expect(slots.spec('settings.plugins.tab')).toBeUndefined()
     expect(slots.spec('settings.plugin.item')).toBeUndefined()
   })

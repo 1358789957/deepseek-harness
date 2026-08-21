@@ -50,6 +50,7 @@ function snapshotOf(overrides: Partial<ConversationSnapshot> = {}): Conversation
 
 interface BenchOptions {
   planEntry?: React.ReactNode
+  plusEntry?: React.ReactNode
   /** The `plan` projection value the standard-kit useProjection serves. */
   plan?: { active: boolean; pending: boolean }
   modelEntry?: React.ReactNode
@@ -139,6 +140,7 @@ function bench(over?: BenchOptions) {
     slotCalls.push({ key, owner })
     if (key === 'conversation.input.plan') return over?.planEntry ?? null
     if (key === 'conversation.input.model') return over?.modelEntry ?? null
+    if (key === 'conversation.input.plus') return over?.plusEntry ?? null
     return null
   }) as InputBarProps['renderSlot']
   const props: InputBarProps = {
@@ -681,7 +683,7 @@ describe('running and lock semantics', () => {
     })
     expect(textarea.disabled).toBe(true)
     expect(textarea.placeholder).toBe('父会话已离线，无法继续发送；仍可停止当前运行')
-    expect((view.getByLabelText('命令') as HTMLButtonElement).disabled).toBe(true)
+    expect((view.getByRole('button', { name: '更多' }) as HTMLButtonElement).disabled).toBe(false)
     expect(button.getAttribute('aria-label')).toBe('发送消息')
     expect(button.disabled).toBe(true)
     expect(interruptButton?.disabled).toBe(false)
@@ -729,7 +731,7 @@ describe('running and lock semantics', () => {
     const { textarea, view } = bench({ disabled: true })
     expect(textarea.disabled).toBe(true)
     expect(textarea.placeholder).toBe('会话不可用')
-    expect((view.getByLabelText('命令') as HTMLButtonElement).disabled).toBe(true)
+    expect((view.getByRole('button', { name: '更多' }) as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('idle primary sends and disables on empty draft', () => {
@@ -976,7 +978,7 @@ describe('running and lock semantics', () => {
     expect(textarea.readOnly).toBe(true)
     expect(textarea.getAttribute('aria-haspopup')).toBe('menu')
     expect(textarea.getAttribute('aria-expanded')).toBe('false')
-    expect((view.getByLabelText('命令') as HTMLButtonElement).disabled).toBe(true)
+    expect((view.getByRole('button', { name: '更多' }) as HTMLButtonElement).disabled).toBe(false)
 
     fireEvent.click(textarea)
     fireEvent.keyDown(textarea, { key: 'Enter' })
@@ -1153,13 +1155,13 @@ describe('strips and variants', () => {
   })
 })
 
-describe('command launcher chrome and control seats', () => {
-  it('renders the command launcher; the Access chip is absent without the permissions projection; the control seats render EMPTY without entries', () => {
+describe('plus menu chrome and control seats', () => {
+  it('renders the plus control; the Access chip is absent without the permissions projection; the control seats render EMPTY without entries', () => {
     const { view, slotCalls } = bench()
-    expect(view.getByLabelText('命令')).toBeTruthy()
+    expect(view.getByRole('button', { name: '更多' })).toBeTruthy()
     // Capability absent (no projection value): the chip renders nothing.
     expect(view.queryByLabelText(/^访问模式/)).toBeNull()
-    // Every seat dispatched, nothing rendered.
+    // Plan and model seats dispatch immediately; plus renders only while open.
     expect(slotCalls.map(c => c.key)).toEqual([
       'conversation.input.plan', 'conversation.input.model',
     ])
@@ -1167,16 +1169,66 @@ describe('command launcher chrome and control seats', () => {
     expect(view.queryByLabelText('Model')).toBeNull()
   })
 
-  it('passes the textarea selection to the command menu launcher and reflects its expanded state', () => {
+  it('opens the plus menu locally and does not launch the command menu', () => {
     const toggleCommandMenu = vi.fn()
-    const { view, textarea, menuLauncher } = bench({ draft: 'draft text', toggleCommandMenu })
-    textarea.setSelectionRange(2, 7)
-    const launcher = view.getByLabelText('命令')
-    expect(launcher.getAttribute('aria-expanded')).toBe('false')
-    fireEvent.click(launcher)
-    expect(toggleCommandMenu).toHaveBeenCalledExactlyOnceWith({ start: 2, end: 7 })
-    act(() => { menuLauncher.set('command') })
-    expect(launcher.getAttribute('aria-expanded')).toBe('true')
+    const { view, slotCalls, props } = bench({
+      toggleCommandMenu,
+      plusEntry: <button type="button" role="menuitem">Plan</button>,
+    })
+    const plus = view.getByRole('button', { name: '更多' })
+    expect(plus.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(plus)
+    expect(toggleCommandMenu).not.toHaveBeenCalled()
+    expect(plus.getAttribute('aria-expanded')).toBe('true')
+    expect(slotCalls.some(call => call.key === 'conversation.input.plus')).toBe(true)
+    expect(slotCalls.find(call => call.key === 'conversation.input.plus')?.owner)
+      .toMatchObject({ locked: false })
+    expect(view.getByRole('menu', { name: '更多' })).toBeTruthy()
+    expect(view.getByRole('menuitem', { name: 'Plan' })).toBeTruthy()
+
+    fireEvent.keyDown(document, { key: 'Enter' })
+    expect(plus.getAttribute('aria-expanded')).toBe('true')
+    fireEvent.pointerDown(view.getByRole('menu', { name: '更多' }))
+    expect(plus.getAttribute('aria-expanded')).toBe('true')
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(plus.getAttribute('aria-expanded')).toBe('false')
+    expect(view.queryByRole('menu', { name: '更多' })).toBeNull()
+
+    fireEvent.click(plus)
+    fireEvent.pointerDown(document.body)
+    expect(plus.getAttribute('aria-expanded')).toBe('false')
+
+    fireEvent.click(plus)
+    expect(plus.getAttribute('aria-expanded')).toBe('true')
+    view.rerender(<InputBar {...props} sessionId={'s2' as SessionId} />)
+    expect(view.queryByRole('menu', { name: '更多' })).toBeNull()
+  })
+
+  it('places the plus menu below the button, then to the right when below does not fit', () => {
+    const { view } = bench({
+      plusEntry: <button type="button" role="menuitem">Plan</button>,
+    })
+    const plus = view.getByRole('button', { name: '更多' }) as HTMLButtonElement
+    plus.getBoundingClientRect = () => ({
+      top: 80, right: 68, bottom: 108, left: 40, width: 28, height: 28, x: 40, y: 80, toJSON: () => ({}),
+    })
+    fireEvent.click(plus)
+    const menu = view.getByRole('menu', { name: '更多' }) as HTMLDivElement
+    Object.defineProperty(menu, 'offsetWidth', { configurable: true, value: 220 })
+    Object.defineProperty(menu, 'offsetHeight', { configurable: true, value: 200 })
+    act(() => { window.dispatchEvent(new Event('resize')) })
+    expect(menu.style.top).toBe('116px')
+    expect(menu.style.left).toBe('40px')
+
+    plus.getBoundingClientRect = () => ({
+      top: 500, right: 68, bottom: 528, left: 40, width: 28, height: 28, x: 40, y: 500, toJSON: () => ({}),
+    })
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 600 })
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 })
+    act(() => { window.dispatchEvent(new Event('resize')) })
+    expect(menu.style.left).toBe('76px')
+    expect(menu.style.top).toBe('312px')
   })
 
   it('the Access chip renders the projection value and submits a non-Full-access pick directly', async () => {
@@ -1317,7 +1369,7 @@ describe('command launcher chrome and control seats', () => {
   it('disabled locks the Access chip and command launcher (running does not)', () => {
     const permissions = { options: [{ value: 'workspace-write', name: 'workspace-write' }], currentValue: 'workspace-write' }
     const { view } = bench({ disabled: true, permissions })
-    expect((view.getByLabelText('命令') as HTMLButtonElement).disabled).toBe(true)
+    expect((view.getByRole('button', { name: '更多' }) as HTMLButtonElement).disabled).toBe(true)
     expect((view.getByLabelText(/^访问模式/) as HTMLButtonElement).disabled).toBe(true)
     cleanup()
     const live = bench({ running: true, permissions })

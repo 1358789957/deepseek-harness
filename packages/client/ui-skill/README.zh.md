@@ -10,6 +10,8 @@ pick 会落下字面文本 `/name `，发出的提示词中也是同一段字面
 
 `/client` 导出接口只有插件主体（`apply`／`inject`）；source 对象是注册 effect 的内部实现。
 
+加号菜单的 Skill 行（右侧 chevron）会关闭菜单并打开 `shell.page` id `skills`，用同一份 `skill.list` 缓存列出目录（没有会话时列出宿主 cwd）；它不会打开「设置 → 插件」。左侧导航把内置（`bundled`、`project-agents`）和导入分开。每行有复选框——新名称默认勾选；`dsh.skill-enabled` 只存关掉的集合；未勾选的行仍列出，但不进 slash 目录。实心「导入 SKILL.md」按钮把选中的文件写入 `dsh.imported-skills` 叠加层；之后 `skills/change` 里同名的宿主行优先。空态按分组：「还没有技能。把 skill 文件放到技能目录后再来看。」／「还没有导入的技能」。
+
 ## skill 工具行
 
 浏览器插件还会把 `skill` wire 名称注册进 `ui-tool` 的 keyed `tool.call.toolview` slot。收起的行以与 Bash 行相同的中性视觉层级显示 14 像素的 skill 文档与闪光组合图标、`Skill` 标题、分隔符和请求加载的 skill 名称；运行中的工具调用带有 transcript（文本记录）的扫光效果，失败时用错误首行替换名称，中断的工具调用则使用警告状态。已结算的行以整行作为展开入口，展开后显示一个尺寸受限的 `Instructions` 卡片，其中原样呈现持久化的工具输出；可用时还会提供标准执行轨迹的 `Inspect` 入口。该行的名称、生命周期和正文只派生自 `ui-tool` 提供的冻结的工具调用／工具结果切片，绝不读取当前 skill 目录，因此即使已安装的 skill 或其描述发生变化，回放仍保持稳定。

@@ -30,11 +30,18 @@
  * accent row derived only from each logged call/result slice.
  */
 // Type-only: the carrier types, the forwarded Host-event face and the ctx.remote merge.
-import type { ConnectionHandle, SessionId, SkillEntry } from '@deepseek-ai/dsh-api-remotes/client'
-import type { ClientContext, ISessions } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ConnectionHandle, SkillEntry } from '@deepseek-ai/dsh-api-remotes/client'
+import type { ClientContext, ISessions, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
 import type { InputTriggerServiceContract, InputTriggerSource } from '@deepseek-ai/dsh-client-ui-input-trigger/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+import { SkillPage } from './SkillPage.tsx'
+import type { SkillPageInjected } from './SkillPage.tsx'
+import { loadDisabledSkills } from './skill-enabled.ts'
+import { SkillPlusItem } from './SkillPlusItem.tsx'
+import type { SkillPlusInjected } from './SkillPlusItem.tsx'
 import { SkillRow } from './SkillRow.tsx'
 import { en, NS, zh, type SkillKey } from './locales.ts'
 
@@ -54,7 +61,7 @@ interface CatalogFetch {
 }
 
 /** Required services: reference source faces plus the tool-row and locale registries. */
-export const inject = ['inputTriggers', 'connection', 'sessions', 'slots', 'locale', 'remote']
+export const inject = ['inputTriggers', 'connection', 'sessions', 'slots', 'locale', 'remote', 'layout']
 
 /**
  * Client plugin body: register the '/' source, dictionaries, and keyed tool row.
@@ -71,7 +78,11 @@ export function apply(ctx: ClientContext): void {
   const sessions = ctx.get('sessions') as ISessions
   // Session-keyed catalog cache; single-flight per key. Plugin-closure state:
   // the fiber effect below is its teardown boundary.
-  const fetches = new Map<SessionId, CatalogFetch>()
+  const fetches = new Map<string, CatalogFetch>()
+  const pageListeners = new Set<() => void>()
+  const notifyPages = (): void => {
+    for (const listener of [...pageListeners]) listener()
+  }
   // Per-session lexicon invalidation listeners (subscribeLexicon consumers).
   const lexiconListeners = new Map<SessionId, Set<() => void>>()
 
@@ -88,38 +99,46 @@ export function apply(ctx: ClientContext): void {
     }
   }
 
-  const fetchCatalog = (sessionId: SessionId): Promise<readonly SkillEntry[]> => {
-    if (sessions.subagentAddress(sessionId) !== undefined) return Promise.resolve([])
-    const existing = fetches.get(sessionId)
+  const fetchCatalog = (sessionId: SessionId | undefined): Promise<readonly SkillEntry[]> => {
+    if (sessionId !== undefined && sessions.subagentAddress(sessionId) !== undefined) {
+      return Promise.resolve([])
+    }
+    const key = sessionId ?? 'host'
+    const existing = fetches.get(key)
     if (existing !== undefined) return existing.promise
     const abort = new AbortController()
     const promise = (async () => {
-      const { result } = await skills.list({ sessionId }, abort.signal)
+      const { result } = await skills.list(
+        sessionId === undefined ? {} : { sessionId },
+        abort.signal,
+      )
       if (!result.ok) throw new Error(`skill.list failed: ${result.error.code}: ${result.error.message}`)
       return result.value.skills
     })()
     const entry: CatalogFetch = { promise, abort }
-    fetches.set(sessionId, entry)
+    fetches.set(key, entry)
     promise.then(
       // Settled snapshot backs the synchronous lexicon reads.
       (skills) => {
         entry.settled = skills
-        notifyLexicon(sessionId)
+        if (sessionId !== undefined) notifyLexicon(sessionId)
+        notifyPages()
       },
       // A failed fetch must not poison the key: the next consumer retries.
       () => {
-        if (fetches.get(sessionId) === entry) fetches.delete(sessionId)
+        if (fetches.get(key) === entry) fetches.delete(key)
       },
     )
     return promise
   }
 
-  const invalidate = (key: SessionId): void => {
+  const invalidate = (key: string): void => {
     const entry = fetches.get(key)
     if (entry === undefined) return
     fetches.delete(key)
     entry.abort.abort()
-    notifyLexicon(key)
+    notifyLexicon(key as SessionId)
+    notifyPages()
   }
 
   const clearAll = (): void => {
@@ -138,8 +157,9 @@ export function apply(ctx: ClientContext): void {
       const skills = await fetchCatalog(session.sessionId)
       // Superseded keystroke: the shared fetch stays warm, this caller yields.
       if (signal.aborted) return []
+      const disabled = loadDisabledSkills()
       return skills
-        .filter(skill => skill.name.startsWith(query))
+        .filter(skill => !disabled.has(skill.name) && skill.name.startsWith(query))
         .map(skill => ({
           name: skill.name,
           // The user-only marker rides the description (the menu's only
@@ -153,7 +173,10 @@ export function apply(ctx: ClientContext): void {
       fetchCatalog(session.sessionId).catch(() => {})
     },
     lexicon(session) {
-      return fetches.get(session.sessionId)?.settled?.map(skill => skill.name)
+      const disabled = loadDisabledSkills()
+      return fetches.get(session.sessionId)?.settled
+        ?.filter(skill => !disabled.has(skill.name))
+        .map(skill => skill.name)
     },
     subscribeLexicon(session, listener) {
       const key = session.sessionId
@@ -180,6 +203,7 @@ export function apply(ctx: ClientContext): void {
   // A preset decides which skill providers an agent reads, so a switched
   // session's cached catalog belongs to the composition it no longer runs.
   ctx.remote.$on('agent-preset/selected', invalidate)
+  ctx.remote.$on('skills/change', clearAll)
   ctx.on('connection/reset', clearAll)
   ctx.effect(() => {
     const unregister = inputTriggers.registerSource(source)
@@ -188,4 +212,45 @@ export function apply(ctx: ClientContext): void {
       clearAll()
     }
   }, 'ui-skill: source')
+
+  ctx.slots.inject('conversation.input.plus', () => ctx.slots.register({
+    name: 'conversation.input.plus',
+    id: 'skill',
+    order: 20,
+    locale: NS,
+    inject: (): SkillPlusInjected => ({
+      openSkills: () => { ctx.layout.showPage('skills') },
+    }),
+  }, SkillPlusItem))
+
+  ctx.slots.inject('shell.page', () => ctx.slots.register({
+    name: 'shell.page',
+    id: 'skills',
+    order: 30,
+    locale: NS,
+    inject: (): SkillPageInjected => ({
+      listSkills: async (sessionId: SessionId | undefined) => {
+        try {
+          const catalog = await fetchCatalog(sessionId)
+          return catalog.map(skill => ({
+            name: skill.name,
+            description: skill.description,
+            source: skill.source,
+          }))
+        } catch {
+          // A failed catalog still opens the page; the empty copy is the recovery.
+          return []
+        }
+      },
+      subscribe: (listener) => {
+        pageListeners.add(listener)
+        return () => { pageListeners.delete(listener) }
+      },
+      setEnabled: (_name, _enabled) => {
+        for (const key of [...fetches.keys()]) notifyLexicon(key as SessionId)
+        notifyPages()
+      },
+      close: () => { ctx.layout.showPage('home') },
+    }),
+  }, SkillPage))
 }

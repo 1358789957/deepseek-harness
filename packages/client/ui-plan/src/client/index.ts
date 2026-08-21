@@ -16,6 +16,8 @@ import type {} from '@deepseek-ai/dsh-client-locale/client'
 // Type-only: pulls the `plan` SessionProjectionMap merge for useProjection.
 import type {} from '@deepseek-ai/dsh-plan-mode/client'
 import { PlanChip } from './PlanModeControl.tsx'
+import { PlanPlusItem } from './PlanPlusItem.tsx'
+import type { PlanPlusInjected } from './PlanPlusItem.tsx'
 import { en, zh, type PlanKey } from './locales.ts'
 
 export type { PlanKey } from './locales.ts'
@@ -49,17 +51,30 @@ export const inject = ['slots', 'remote', 'remote.commands', 'locale']
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-plan: dictionaries')
 
+  const runPlan = async (sessionId: SessionId, line: string): Promise<string | null> => {
+    const result = await ctx.remote.commands.execute(sessionId, line)
+    if (!result.ok) return `${result.error.message} (${result.error.code})`
+    if (result.value === undefined) return `unknown command: ${line}`
+    return null
+  }
+
   ctx.slots.inject('conversation.input.plan', () => ctx.slots.register({
     name: 'conversation.input.plan',
     locale: NS,
     inject: (sessionId: SessionId): PlanChipInjected => ({
       // Failure strings stay English (error-surface policy: not localized).
-      exitPlanMode: async () => {
-        const result = await ctx.remote.commands.execute(sessionId, '/plan off')
-        if (!result.ok) return `${result.error.message} (${result.error.code})`
-        if (result.value === undefined) return 'unknown command: /plan off'
-        return null
-      },
+      exitPlanMode: () => runPlan(sessionId, '/plan off'),
     }),
   }, PlanChip))
+
+  ctx.slots.inject('conversation.input.plus', () => ctx.slots.register({
+    name: 'conversation.input.plus',
+    id: 'plan',
+    order: 0,
+    locale: NS,
+    inject: (sessionId: SessionId | undefined): PlanPlusInjected => ({
+      enterPlanMode: sessionId === undefined ? undefined : () => runPlan(sessionId, '/plan'),
+      exitPlanMode: sessionId === undefined ? undefined : () => runPlan(sessionId, '/plan off'),
+    }),
+  }, PlanPlusItem))
 }

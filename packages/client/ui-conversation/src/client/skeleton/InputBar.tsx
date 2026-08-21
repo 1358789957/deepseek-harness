@@ -6,8 +6,8 @@
  * region-slot content) ride the owner props. Session facts
  * (running/removed/promptError) are self-selected via useSession. */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { ChangeEvent, KeyboardEvent, MouseEvent, ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import type { ChangeEvent, CSSProperties, KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import clsx from 'clsx'
 import {
   IconPlusOutline16, IconWarningOutline16, Toast, Tooltip,
@@ -31,6 +31,7 @@ import {
 } from '../image-labels.ts'
 import { ContextMeter } from './ContextMeter.tsx'
 import { PermissionSelect } from './PermissionSelect.tsx'
+import { placePlusMenu } from './plus-menu-placement.ts'
 import css from './InputBar.module.css'
 
 /** Decoration product of the no-session state (no machine, empty draft). */
@@ -45,7 +46,7 @@ export type InputBarProps = ComposerBarProps
 
 export function InputBar({
   useSession, useInput, inputActions, keyboard, addImages, removeImage, draftImages,
-  resolveSubmitMode, toggleCommandMenu, stop, command, t,
+  resolveSubmitMode, stop, command, t,
   renderSlot, useNotices, useLexicon, useMenuLauncher,
   useProjection, sessionId, variant, disabled: inert = false, blocked,
   workspacePickerOpen = false, onRequestWorkspace,
@@ -75,6 +76,11 @@ export function InputBar({
   const empty = draft.trim() === '' && attachments.length === 0
   const [preview, setPreview] = useState<ComposerAttachment | null>(null)
   const [dragActive, setDragActive] = useState(false)
+  const [plusOpen, setPlusOpen] = useState(false)
+  const [plusMenuStyle, setPlusMenuStyle] = useState<CSSProperties | undefined>(undefined)
+  const plusRef = useRef<HTMLDivElement | null>(null)
+  const plusBtnRef = useRef<HTMLButtonElement | null>(null)
+  const plusMenuRef = useRef<HTMLDivElement | null>(null)
   // Transient error banner (image-intake rejections and prompt failures): the
   // seq keys the Toast so an identical repeated message restarts the
   // hold-then-fade cycle instead of silently reusing the faded one.
@@ -199,7 +205,6 @@ export function InputBar({
   const revealSelectionFocus = (el: HTMLTextAreaElement): void => {
     // selectionStart/End are number|null in lib.dom; the type-aware lint program narrows them.
     const caret = el.selectionDirection === 'backward' ? el.selectionStart : el.selectionEnd
-    // oxlint-disable-next-line typescript/no-unnecessary-condition
     revealCaret(caret ?? el.value.length)
   }
 
@@ -282,7 +287,6 @@ export function InputBar({
     // IME guard so a composition-closing Shift+Enter still breaks the line.
     if (e.key === 'Enter' && e.shiftKey) return
     // keyCode 229 is the legacy IME-composition signal engines emit without isComposing.
-    // oxlint-disable-next-line typescript/no-deprecated
     const composing = composingRef.current || e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
       if (keyboard.arbitrate(e.key === 'ArrowUp' ? 'up' : 'down', composing) === 'consumed') e.preventDefault()
@@ -345,7 +349,6 @@ export function InputBar({
     const next = e.target.value
     keyboard.setDraft(next)
     // selectionStart is number|null in lib.dom; the type-aware lint program narrows it.
-    // oxlint-disable-next-line typescript/no-unnecessary-condition
     keyboard.track(next, e.target.selectionStart ?? next.length)
   }
 
@@ -358,12 +361,10 @@ export function InputBar({
   // backdrop click handler below. Undo/redo must NOT reach the browser: the
   // machine owns the transaction log.
   // selectionStart/End are number|null in lib.dom; the type-aware lint program narrows them.
-  /* oxlint-disable typescript/no-unnecessary-condition */
   const selectionOf = (el: HTMLTextAreaElement) => ({
     start: el.selectionStart ?? 0,
     end: el.selectionEnd ?? el.selectionStart ?? 0,
   })
-  /* oxlint-enable typescript/no-unnecessary-condition */
 
   const onCopyOrCut = (e: React.ClipboardEvent<HTMLTextAreaElement>, cut: boolean): void => {
     if (input === undefined || keyboard === undefined) return // absent machine: no draft can be copied or cut
@@ -533,10 +534,51 @@ export function InputBar({
     inputRef.current?.focus({ preventScroll: true })
   }
 
-  const onToggleCommandMenu = (): void => {
-    const el = inputRef.current
-    if (el !== null) toggleCommandMenu?.(selectionOf(el))
-  }
+  useEffect(() => { setPlusOpen(false) }, [sessionId])
+
+  useEffect(() => {
+    if (!plusOpen) return
+    const onDown = (event: PointerEvent): void => {
+      if (event.target instanceof Node && !plusRef.current?.contains(event.target)) {
+        setPlusOpen(false)
+      }
+    }
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') setPlusOpen(false)
+    }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [plusOpen])
+
+  useLayoutEffect(() => {
+    if (!plusOpen) {
+      setPlusMenuStyle(undefined)
+      return
+    }
+    const place = (): void => {
+      const button = plusBtnRef.current
+      const menu = plusMenuRef.current
+      /* v8 ignore next -- the refs attach before this layout effect and the listeners die with it. */
+      if (button === null || menu === null) return
+      const next = placePlusMenu(
+        button.getBoundingClientRect(),
+        { width: menu.offsetWidth, height: menu.offsetHeight },
+        { width: window.innerWidth, height: window.innerHeight },
+      )
+      setPlusMenuStyle({ top: next.top, left: next.left })
+    }
+    place()
+    window.addEventListener('scroll', place, true)
+    window.addEventListener('resize', place)
+    return () => {
+      window.removeEventListener('scroll', place, true)
+      window.removeEventListener('resize', place)
+    }
+  }, [plusOpen])
 
   // Ordinary sessions retain their primary Send/Stop toggle. A continuable
   // child keeps Send as the primary action and exposes Stop independently so
@@ -731,20 +773,38 @@ export function InputBar({
         </div>
         <div className={css.row}>
           <div className={css.tools}>
-            <Tooltip label={t('input.commands')} side="top" delayMs={500}>
-              <button
-                type="button"
-                className={css.add}
-                aria-label={t('input.commands')}
-                aria-haspopup="listbox"
-                aria-expanded={commandMenuOpen}
-                disabled={locked || toggleCommandMenu === undefined}
-                onMouseDown={keepFocus}
-                onClick={onToggleCommandMenu}
-              >
-                <IconPlusOutline16 size={14} />
-              </button>
-            </Tooltip>
+            <div ref={plusRef} className={css.plusWrap}>
+              <Tooltip label={t('input.plus')} side="top" delayMs={500}>
+                <button
+                  ref={plusBtnRef}
+                  type="button"
+                  className={css.add}
+                  aria-label={t('input.plus')}
+                  aria-haspopup="menu"
+                  aria-expanded={plusOpen}
+                  disabled={removed}
+                  onMouseDown={keepFocus}
+                  onClick={() => { setPlusOpen(current => !current) }}
+                >
+                  <IconPlusOutline16 size={14} />
+                </button>
+              </Tooltip>
+              {plusOpen && (
+                <div
+                  ref={plusMenuRef}
+                  className={css.plusMenu}
+                  role="menu"
+                  aria-label={t('input.plus')}
+                  style={{
+                    visibility: plusMenuStyle === undefined ? 'hidden' : 'visible',
+                    top: plusMenuStyle?.top ?? 0,
+                    left: plusMenuStyle?.left ?? 0,
+                  }}
+                >
+                  {renderSlot('conversation.input.plus', { onClose: () => { setPlusOpen(false) }, locked })}
+                </div>
+              )}
+            </div>
             <div className={css.modes}>
               {accessSelect}
               {renderSlot('conversation.input.plan', { locked })}

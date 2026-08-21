@@ -37,14 +37,23 @@ export type SettingsRootInjected = {
     sections: HostObservable<readonly SettingsSectionRow[]>
     /** settings.onboarding ledger projected into coordinator order. */
     onboardingSteps: HostObservable<readonly SettingsOnboardingStep[]>
+    /** Modal open state and selected section id. */
+    panel: HostObservable<{ open: boolean; sectionId?: string }>
   }
+  /**
+   * Open the settings modal.
+   * @param sectionId - optional `settings.section` id to select.
+   */
+  openPanel: (sectionId?: string) => void
+  /** Close the settings modal and clear the selected section. */
+  closePanel: () => void
 }
 
 /**
  * Full component props of the settings shell root: the sidebar owner share
  * (wide/rail state) plus the declared render shares and the injected face
- * (hooks compartment bound to useSections). No store is registered — modal
- * open state and active section id are component-local viewing state.
+ * (hooks compartment bound to useSections / usePanel). Modal open state
+ * lives on the settingsPanel snapshot so other plugins can open a section.
  */
 export type SettingsRootComponentProps =
   PropsRuntime<'sidebar.settings'>

@@ -44,6 +44,7 @@ const SCROLLBAR_LINGER_MS = 2000
 export function SidebarRoot({
   collapsed,
   width,
+  page,
   startSession,
   toggleSidebar,
   t,
@@ -185,6 +186,12 @@ export function SidebarRoot({
           {wide && <span className={clsx(css.newSessionLabel, css.wide)}>{t('session.new')}</span>}
         </button>
       </Tooltip>
+
+      {wide && (
+        <div className={css.navArea}>
+          {renderSlot('sidebar.nav', { wide, page })}
+        </div>
+      )}
 
       {/* The browsing region fills the column between the controls and the
           foot in both states; its rail icon column rides the same slot. */}

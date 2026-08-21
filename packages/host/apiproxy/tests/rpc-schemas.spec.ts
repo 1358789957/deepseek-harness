@@ -411,19 +411,20 @@ describe('workspace domain schemas', () => {
 describe('skills domain schemas', () => {
   it('validates the list request/value pair', () => {
     expect(skillListRequestSchema.parse({ sessionId: 's1' })).toEqual({ sessionId: 's1' })
-    // The wire is session-addressed only: a sessionId-less payload fails.
-    expect(() => skillListRequestSchema.parse({})).toThrow()
+    expect(skillListRequestSchema.parse({})).toEqual({})
     expect(skillListValueSchema.parse({ skills: [] }).skills).toEqual([])
     const value = skillListValueSchema.parse({ skills: [
-      { name: 'commit-helper', description: 'Git commits', whenToUse: 'when committing', modelInvocable: true },
-      { name: 'bare', description: 'No guidance', modelInvocable: false },
+      { name: 'commit-helper', description: 'Git commits', whenToUse: 'when committing', modelInvocable: true, source: 'project-agents' },
+      { name: 'bare', description: 'No guidance', modelInvocable: false, source: 'user-dsh' },
     ] })
     expect(value.skills[0]?.whenToUse).toBe('when committing')
+    expect(value.skills[0]?.source).toBe('project-agents')
     expect(value.skills[1]?.whenToUse).toBeUndefined()
     expect(value.skills[1]?.modelInvocable).toBe(false)
-    expect(() => skillEntrySchema.parse({ name: '', description: 'd', modelInvocable: true })).toThrow()
-    // modelInvocable is required wire data: an entry without it fails.
+    expect(() => skillEntrySchema.parse({ name: '', description: 'd', modelInvocable: true, source: 'bundled' })).toThrow()
+    // modelInvocable and source are required wire data.
     expect(() => skillEntrySchema.parse({ name: 'n', description: 'd' })).toThrow()
+    expect(() => skillEntrySchema.parse({ name: 'n', description: 'd', modelInvocable: true })).toThrow()
   })
 })
 

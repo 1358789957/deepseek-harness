@@ -312,7 +312,7 @@
 .tools {
   flex: 1 1 auto;
   min-width: 0;
-  gap: 12px;
+  gap: 16px;
   overflow: hidden;
 }
 
@@ -322,7 +322,7 @@
 
 .trailing {
   flex: none;
-  gap: 8px;
+  gap: 12px;
 }
 
 .trailing .modes {
@@ -350,6 +350,27 @@
 .add:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.plusWrap {
+  position: relative;
+}
+
+.plusMenu {
+  position: fixed;
+  z-index: 100;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 32px));
+  margin: 0;
+  padding: 4px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 12px;
+  background: var(--dsw-specific-menu);
+  box-shadow: var(--dsw-shadow-lv3);
 }
 
 /* Plan / Read-only / model — native <select>, chip-like closed chrome

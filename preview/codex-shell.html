@@ -8,13 +8,13 @@
   <style>
     html, body { margin: 0; height: 100%; background: #f3f3f3; color: var(--dsw-alias-label-primary); }
     .app { position: relative; display: flex; flex-direction: column; height: 100%; background: #f3f3f3; }
-    .chrome { flex: none; height: 32px; display: flex; align-items: center; padding: 0 0 0 8px; background: #f3f3f3; color: #5f5f5f; user-select: none; }
+    .chrome { flex: none; height: 32px; display: flex; align-items: center; padding: 0 8px 0 12px; background: #f3f3f3; color: #5f5f5f; user-select: none; }
     .chrome .cbtn { width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: inherit; display: grid; place-items: center; cursor: pointer; padding: 0; }
     .chrome .cbtn:hover { background: rgba(0,0,0,0.05); }
     .chrome .cbtn.off { color: #c4c4c4; cursor: default; }
     .chrome .cbtn.off:hover { background: transparent; }
-    .chrome .menus { display: flex; align-items: center; gap: 2px; margin-left: 4px; }
-    .chrome .mlabel { height: 24px; padding: 0 8px; border: 0; border-radius: 4px; background: transparent; color: #4a4a4a; font: inherit; font-size: 12.5px; cursor: pointer; }
+    .chrome .menus { display: flex; align-items: center; gap: 8px; margin-left: 12px; }
+    .chrome .mlabel { height: 24px; padding: 0 12px; border: 0; border-radius: 4px; background: transparent; color: #4a4a4a; font: inherit; font-size: 12.5px; cursor: pointer; }
     .chrome .mlabel:hover { background: rgba(0,0,0,0.05); }
     .chrome .win { display: flex; align-items: stretch; margin-left: auto; height: 100%; }
     .chrome .win button { width: 46px; height: 100%; border: 0; background: transparent; color: #3d3d3d; display: grid; place-items: center; cursor: pointer; padding: 0; }
@@ -47,11 +47,11 @@
     .project .chev { margin-left: 2px; }
     .card { position: relative; z-index: 1; width: 100%; box-sizing: border-box; margin-top: 34px; border: 1px solid rgba(0,0,0,0.04); border-radius: 16px; background: #fff; padding: 14px 16px 10px; box-shadow: 0 4px 16px rgba(15,23,42,0.05); }
     .card textarea { display: block; width: 100%; box-sizing: border-box; min-height: 72px; margin: 0; padding: 0; border: 0; resize: none; outline: none; background: transparent; font: inherit; font-size: 14px; color: var(--dsw-alias-label-primary); }
-    .bar { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
-    .trail { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+    .bar { display: flex; align-items: center; gap: 10px; margin-top: 8px; min-width: 0; }
+    .trail { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; min-width: 0; }
     .add { width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: var(--dsw-alias-label-secondary); font-size: 18px; cursor: pointer; }
     .add:hover, .add.open { background: var(--dsw-alias-interactive-bg-hover); }
-    .amenu { position: absolute; left: 12px; bottom: 48px; z-index: 20; width: 220px; padding: 4px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); display: none; }
+    .amenu { position: fixed; z-index: 20; width: 220px; padding: 4px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); display: none; }
     .amenu.show { display: flex; flex-direction: column; }
     .acell { display: flex; align-items: center; height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
     .acell:hover, .acell.on { background: var(--dsw-alias-interactive-bg-hover); }
@@ -66,6 +66,22 @@
     .subhead button { width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font-size: 18px; cursor: pointer; }
     .subhead button:hover { background: var(--dsw-alias-interactive-bg-hover); }
     .subbody { flex: 1; overflow: auto; padding: 16px 20px 20px; }
+    .skill-body { display: flex; gap: 16px; min-height: 280px; }
+    .skill-main { flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+    .skill-import { align-self: flex-start; height: 32px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--dsw-alias-label-primary); color: var(--dsw-alias-bg-layer-2); font: inherit; font-size: 13px; cursor: pointer; }
+    .skill-nav { width: 132px; flex: none; display: flex; flex-direction: column; gap: 4px; }
+    .skill-nav button { display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; cursor: pointer; }
+    .skill-nav button.on, .skill-nav button:hover { background: var(--dsw-specific-sidebar-nav-item-active); color: var(--dsw-alias-label-primary); }
+    .skill-nav .cnt { color: var(--dsw-alias-label-tertiary); font-size: 12px; }
+    .skill-list { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .skill-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--dsw-alias-interactive-bg-hover); }
+    .skill-row .meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .skill-row .nm { font-size: 13px; }
+    .skill-row .ds { font-size: 12px; color: var(--dsw-alias-label-tertiary); }
+    .skill-row .src { font-size: 11px; color: var(--dsw-alias-label-caption); }
+    .jtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .jtable th, .jtable td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--dsw-alias-border-l2); }
+    .jtable th { color: var(--dsw-alias-label-tertiary); font-weight: 500; }
     .sform { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
     .sform input, .sform select { height: 36px; box-sizing: border-box; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; padding: 0 10px; background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; }
     .job { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 8px; border-radius: 8px; font-size: 13px; }
@@ -78,10 +94,16 @@
     .about .kfield { width: 100%; height: 36px; box-sizing: border-box; margin: 0 0 14px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; padding: 0 10px; background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; }
     .about .kacts { display: flex; justify-content: flex-end; gap: 8px; }
     .about .ghostbtn { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; cursor: pointer; }
-    .model { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 8px; border: 0; border-radius: 24px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .model { display: inline-flex; align-items: center; gap: 4px; height: 28px; max-width: 200px; min-width: 0; padding: 0 8px; border: 0; border-radius: 24px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .model-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .model:hover, .model.open { background: var(--dsw-alias-interactive-bg-hover); }
-    .effort { color: var(--dsw-alias-label-caption); }
+    .effort { color: var(--dsw-alias-label-caption); flex: none; }
+    .bar > .preset { display: none; }
     .preset { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 8px; border: 0; border-radius: 24px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+    @media (max-width: 720px) {
+      .effort { display: none; }
+      .model { max-width: 140px; }
+    }
     .preset:hover, .preset.open { background: var(--dsw-alias-interactive-bg-hover); }
     .pmenu { position: absolute; left: 44px; bottom: 48px; z-index: 20; width: 320px; padding: 4px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); display: none; }
     .pmenu.show { display: flex; flex-direction: column; }
@@ -158,7 +180,7 @@
     .keys .rowk { display: flex; justify-content: space-between; gap: 16px; min-height: 28px; font-size: 13px; }
     .keys .rowk span:last-child { color: var(--dsw-alias-label-tertiary); }
 
-    .shead { display: flex; align-items: center; gap: 2px; height: 28px; margin: 10px 2px 4px; }
+    .shead { display: flex; align-items: center; gap: 8px; height: 28px; margin: 10px 2px 4px; }
     .slabel { flex: none; font-size: 12px; font-weight: 500; color: var(--dsw-alias-label-tertiary); margin-right: auto; padding-left: 6px; }
     .sicon { width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: var(--dsw-alias-label-secondary); display: grid; place-items: center; cursor: pointer; padding: 0; flex: none; }
     .sicon:hover { background: var(--dsw-alias-interactive-bg-hover); }
@@ -287,16 +309,16 @@
           <div class="card">
           <textarea id="draft" placeholder="描述你想要构建的内容"></textarea>
           <div class="bar">
-            <button class="add" id="plusBtn" type="button" aria-label="命令">+</button>
+            <button class="add" id="plusBtn" type="button" aria-label="更多">+</button>
             <button class="preset" id="presetBtn" type="button" title="即将开始的这个会话所用的 Agent 预设">标准模式 ▾</button>
             <div class="trail">
-            <button class="model" id="modelBtn" type="button" aria-label="选择模型，当前 DeepSeek-V4-Flash，推理等级 High">DeepSeek-V4-Flash <span class="effort">High</span> ▾</button>
+            <button class="model" id="modelBtn" type="button" aria-label="选择模型，当前 DeepSeek-V4-Flash，推理等级 High"><span class="model-name">DeepSeek-V4-Flash</span> <span class="effort">High</span> ▾</button>
             <button class="send" id="btnSend" type="button" aria-label="发送" disabled>
               <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden><path d="M8.3125 0.98C8.67 1.05 8.98 1.20 9.26 1.43C9.49 1.61 9.73 1.86 9.98 2.11L14.71 6.83L13.29 8.25L9 3.96V15.04H7V3.96L2.71 8.25L1.29 6.83L6.02 2.11C6.27 1.86 6.51 1.61 6.74 1.43C6.98 1.24 7.28 1.04 7.69 0.98C7.90 0.95 8.10 0.96 8.31 0.98Z" fill="currentColor"/></svg>
             </button>
             </div>
           </div>
-          <div class="amenu" id="plusMenu" role="menu" aria-label="命令">
+          <div class="amenu" id="plusMenu" role="menu" aria-label="更多">
             <button class="acell" type="button" id="plusPlan">Plan <span class="aval" id="plusPlanState">关</span></button>
             <div class="asep"></div>
             <button class="acell mode on" type="button" data-mode="标准模式">标准模式</button>
@@ -433,7 +455,18 @@
       <div class="subpage">
         <div class="subhead"><button id="skillBack" type="button" aria-label="返回">‹</button><span>Skill</span></div>
         <div class="subbody">
-          <div class="sempty">还没有技能。把 skill 文件放到技能目录后再来看。</div>
+          <div class="skill-body">
+            <nav class="skill-nav">
+              <button type="button" class="on" id="skillNavBuiltin" data-g="builtin">内置 <span class="cnt" id="skillCntBuiltin">0</span></button>
+              <button type="button" id="skillNavImported" data-g="imported">导入 <span class="cnt" id="skillCntImported">0</span></button>
+            </nav>
+            <div class="skill-main">
+              <button class="skill-import" id="skillImport" type="button">导入 SKILL.md</button>
+              <input id="skillFile" type="file" accept=".md,text/markdown" hidden />
+              <div class="sempty" id="skillImportErr" hidden></div>
+              <div class="skill-list" id="skillList"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -569,6 +602,22 @@
       document.getElementById('plusPlanState').textContent = planOn ? '开' : '关'
       draft.placeholder = planOn ? '描述你想要计划的内容' : '描述你想要构建的内容'
     }
+    const placePlus = () => {
+      const r = plusBtn.getBoundingClientRect()
+      const mw = plusMenu.offsetWidth || 220
+      const mh = plusMenu.offsetHeight || 280
+      const gap = 8
+      const margin = 8
+      const below = r.bottom + gap
+      if (below + mh <= window.innerHeight - margin) {
+        plusMenu.style.top = below + 'px'
+        plusMenu.style.left = Math.min(Math.max(r.left, margin), window.innerWidth - mw - margin) + 'px'
+        return
+      }
+      const right = r.right + gap
+      plusMenu.style.top = Math.min(Math.max(r.top, margin), window.innerHeight - mh - margin) + 'px'
+      plusMenu.style.left = (right + mw <= window.innerWidth - margin ? right : Math.max(margin, window.innerWidth - mw - margin)) + 'px'
+    }
     const hidePlus = () => { plusMenu.classList.remove('show'); plusBtn.classList.remove('open') }
     const hideKeySheet = () => { keySheet.classList.remove('show'); keyInput.value = '' }
     const hideComposerMenus = () => {
@@ -585,36 +634,162 @@
       pmenu.classList.remove('show'); pbtn.classList.remove('open')
       plusMenu.classList.toggle('show')
       plusBtn.classList.toggle('open', plusMenu.classList.contains('show'))
+      if (plusMenu.classList.contains('show')) placePlus()
     }
+    window.addEventListener('resize', () => {
+      if (plusMenu.classList.contains('show')) placePlus()
+    })
     const skillPage = document.getElementById('skillPage')
     const jobPage = document.getElementById('jobPage')
     const openPage = (el) => { hideComposerMenus(); el.classList.add('show') }
     const hidePage = (el) => el.classList.remove('show')
-    const jobWhenLabel = { '每小时': '每小时', '每天': '每天', '每周': '每周' }
+    const cadenceMs = { hourly: 3600000, daily: 86400000, weekly: 604800000 }
+    const cadenceLabel = { hourly: '每小时', daily: '每天', weekly: '每周' }
     const loadJobs = () => {
-      try { return JSON.parse(localStorage.getItem('dsh.jobs') || '[]') } catch { return [] }
+      try {
+        const raw = JSON.parse(localStorage.getItem('dsh.scheduled-jobs') || '[]')
+        return Array.isArray(raw) ? raw.filter(j => j && typeof j.name === 'string' && (j.cadence === 'hourly' || j.cadence === 'daily' || j.cadence === 'weekly')) : []
+      } catch { return [] }
     }
-    const saveJobs = (jobs) => localStorage.setItem('dsh.jobs', JSON.stringify(jobs))
+    const saveJobs = (jobs) => localStorage.setItem('dsh.scheduled-jobs', JSON.stringify(jobs))
+    const nextRun = (createdAt, cadence) => {
+      const period = cadenceMs[cadence]
+      const now = Date.now()
+      const first = createdAt + period
+      if (now < first) return first
+      return createdAt + Math.ceil((now - createdAt) / period) * period
+    }
     const paintJobs = () => {
       const box = document.getElementById('jobList')
       const jobs = loadJobs()
       if (!jobs.length) { box.innerHTML = '<div class="sempty">还没有定时任务</div>'; return }
-      box.innerHTML = ''
-      jobs.forEach((j, i) => {
-        const row = document.createElement('div')
-        row.className = 'job'
-        row.innerHTML = '<span></span><span class="when"></span><button class="del" type="button" aria-label="删除">×</button>'
-        row.children[0].textContent = j.name
-        row.children[1].textContent = j.when
-        row.querySelector('.del').onclick = () => {
-          const next = loadJobs().filter((_, idx) => idx !== i)
-          saveJobs(next)
+      const now = Date.now()
+      box.innerHTML = '<table class="jtable"><thead><tr><th>名称</th><th>周期/规则</th><th>状态</th><th>下次</th><th>操作</th></tr></thead><tbody></tbody></table>'
+      const body = box.querySelector('tbody')
+      jobs.forEach((j) => {
+        const tr = document.createElement('tr')
+        const state = now >= (j.createdAt || 0) + cadenceMs[j.cadence] ? '已逾期' : '已安排'
+        tr.innerHTML = '<td></td><td></td><td></td><td></td><td><button class="del" type="button">删除</button></td>'
+        tr.children[0].textContent = j.name
+        tr.children[1].textContent = cadenceLabel[j.cadence]
+        tr.children[2].textContent = state
+        tr.children[3].textContent = new Date(nextRun(j.createdAt || now, j.cadence)).toLocaleString()
+        tr.querySelector('.del').onclick = () => {
+          saveJobs(loadJobs().filter(x => x.id !== j.id))
           paintJobs()
         }
+        body.appendChild(tr)
+      })
+    }
+    const BUILTIN_SKILLS = [
+      { name: 'dsh-archive-agent-notes', description: '归档、恢复和审查 Agent Notes', source: 'project-agents' },
+      { name: 'dsh-code-review', description: '按本仓库标准审查 pull request', source: 'project-agents' },
+      { name: 'dsh-doc-site-sync', description: '发布和核对文档站点页面', source: 'project-agents' },
+      { name: 'dsh-doc-standards', description: '文档层级、教程和篇幅预算', source: 'project-agents' },
+      { name: 'dsh-find-simplifications', description: '寻找可删除的重复或过度建设', source: 'project-agents' },
+      { name: 'dsh-merging-stacked-prs', description: '按官方栈落地依赖 PR', source: 'project-agents' },
+      { name: 'dsh-pre-push-checks', description: '推送前选择最小测试集', source: 'project-agents' },
+      { name: 'dsh-prose-standard', description: '文档和注释的行文标准', source: 'project-agents' },
+      { name: 'dsh-trim-cot-leakage', description: '去掉像推理记录的散文', source: 'project-agents' },
+      { name: 'dsh-translate-docs', description: '成对维护中英文档', source: 'project-agents' },
+      { name: 'record-browser-gif', description: '录制浏览器操作 GIF', source: 'project-agents' },
+    ]
+    let skillGroup = 'builtin'
+    const loadDisabledSkills = () => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem('dsh.skill-enabled') || '{"disabled":[]}')
+        return new Set(Array.isArray(parsed.disabled) ? parsed.disabled : [])
+      } catch { return new Set() }
+    }
+    const saveDisabledSkills = (disabled) => {
+      localStorage.setItem('dsh.skill-enabled', JSON.stringify({ disabled: [...disabled] }))
+    }
+    const loadImportedSkills = () => {
+      try {
+        const raw = JSON.parse(localStorage.getItem('dsh.imported-skills') || '[]')
+        return Array.isArray(raw) ? raw.filter(s => s && typeof s.name === 'string' && s.name && typeof s.description === 'string') : []
+      } catch { return [] }
+    }
+    const saveImportedSkills = (rows) => {
+      localStorage.setItem('dsh.imported-skills', JSON.stringify(rows))
+    }
+    const parseSkillMd = (text, fileName) => {
+      const body = text.replace(/^\uFEFF/, '')
+      const fence = body.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)
+      const fm = fence ? fence[1] : ''
+      const rest = fence ? body.slice(fence[0].length) : body
+      const field = (key) => {
+        const line = fm.split(/\r?\n/).find(row => row.startsWith(key + ':'))
+        return line ? line.slice(key.length + 1).trim().replace(/^['"]|['"]$/g, '') : ''
+      }
+      const stem = (fileName.split('/').pop() || '').replace(/\.md$/i, '')
+      const name = field('name') || (stem.toLowerCase() === 'skill' ? '' : stem)
+      if (!name) return null
+      const first = rest.split(/\r?\n/).map(x => x.trim()).find(x => x)
+      return { name, description: field('description') || first || '', source: 'imported' }
+    }
+    const paintSkills = () => {
+      const disabled = loadDisabledSkills()
+      const hostNames = new Set(BUILTIN_SKILLS.map(s => s.name))
+      const imported = loadImportedSkills().filter(s => !hostNames.has(s.name))
+      document.getElementById('skillCntBuiltin').textContent = String(BUILTIN_SKILLS.length)
+      document.getElementById('skillCntImported').textContent = String(imported.length)
+      document.getElementById('skillNavBuiltin').classList.toggle('on', skillGroup === 'builtin')
+      document.getElementById('skillNavImported').classList.toggle('on', skillGroup === 'imported')
+      const box = document.getElementById('skillList')
+      const rows = skillGroup === 'builtin' ? BUILTIN_SKILLS : imported
+      if (!rows.length) {
+        box.innerHTML = '<div class="sempty">' + (skillGroup === 'builtin' ? '还没有技能。把 skill 文件放到技能目录后再来看。' : '还没有导入的技能') + '</div>'
+        return
+      }
+      box.innerHTML = ''
+      rows.forEach((s) => {
+        const row = document.createElement('label')
+        row.className = 'skill-row'
+        row.innerHTML = '<input type="checkbox" /><div class="meta"><span class="nm"></span><span class="ds"></span><span class="src"></span></div>'
+        const boxEl = row.querySelector('input')
+        boxEl.checked = !disabled.has(s.name)
+        boxEl.setAttribute('aria-label', '启用 ' + s.name)
+        boxEl.onchange = () => {
+          const next = loadDisabledSkills()
+          if (boxEl.checked) next.delete(s.name)
+          else next.add(s.name)
+          saveDisabledSkills(next)
+        }
+        row.querySelector('.nm').textContent = s.name
+        row.querySelector('.ds').textContent = s.description
+        row.querySelector('.src').textContent = s.source
         box.appendChild(row)
       })
     }
-    document.getElementById('plusSkillFold').onclick = (e) => { e.stopPropagation(); openPage(skillPage) }
+    document.getElementById('skillNavBuiltin').onclick = () => { skillGroup = 'builtin'; paintSkills() }
+    document.getElementById('skillNavImported').onclick = () => { skillGroup = 'imported'; paintSkills() }
+    document.getElementById('skillImport').onclick = () => document.getElementById('skillFile').click()
+    document.getElementById('skillFile').onchange = (e) => {
+      const file = e.target.files && e.target.files[0]
+      e.target.value = ''
+      const err = document.getElementById('skillImportErr')
+      if (!file) return
+      file.text().then((text) => {
+        const row = parseSkillMd(text, file.name)
+        if (!row) {
+          err.hidden = false
+          err.textContent = '不是有效的 SKILL.md'
+          return
+        }
+        const next = loadImportedSkills().filter(s => s.name !== row.name)
+        next.push(row)
+        saveImportedSkills(next)
+        err.hidden = true
+        err.textContent = ''
+        skillGroup = 'imported'
+        paintSkills()
+      }).catch(() => {
+        err.hidden = false
+        err.textContent = '不是有效的 SKILL.md'
+      })
+    }
+    document.getElementById('plusSkillFold').onclick = (e) => { e.stopPropagation(); openPage(skillPage); paintSkills() }
     document.getElementById('openSched').onclick = () => { hideBoard(); openPage(jobPage); paintJobs() }
     const jobsView = document.getElementById('jobsView')
     const hideBoard = () => {
@@ -625,25 +800,10 @@
       const list = document.getElementById('boardList')
       const lab = jobsView.querySelector('.lab')
       const desc = jobsView.querySelector('.desc')
-      const rows = sessions.filter(s => s.messages && s.messages.length)
       list.innerHTML = ''
-      if (!rows.length) {
-        lab.textContent = '暂无任务'
-        desc.textContent = '进行中的任务会显示在这里'
-        desc.style.display = ''
-        return
-      }
-      lab.textContent = '进行中'
-      desc.style.display = 'none'
-      rows.forEach(s => {
-        const b = document.createElement('button')
-        b.type = 'button'
-        b.className = 'jrow'
-        b.innerHTML = '<span></span><span class="jst">进行中</span>'
-        b.children[0].textContent = s.title
-        b.onclick = () => { hideBoard(); openSession(s.id) }
-        list.appendChild(b)
-      })
+      lab.textContent = '暂无任务'
+      desc.textContent = '进行中的任务会显示在这里'
+      desc.style.display = ''
     }
     const showBoard = () => {
       closeSettings()
@@ -663,9 +823,10 @@
       e.preventDefault()
       const name = document.getElementById('jobName').value.trim()
       const when = document.getElementById('jobWhen').value
+      const cadence = when === '每小时' ? 'hourly' : when === '每周' ? 'weekly' : 'daily'
       if (!name) return
       const jobs = loadJobs()
-      jobs.push({ name, when })
+      jobs.push({ id: 'sched-' + Date.now(), name, cadence, createdAt: Date.now() })
       saveJobs(jobs)
       document.getElementById('jobName').value = ''
       paintJobs()
@@ -689,12 +850,12 @@
       keyInput.focus()
     }
     const keyMsg = document.getElementById('keyTestMsg')
-    const currentKey = () => keyInput.value.trim() || localStorage.getItem('dsh.apiKey') || ''
+    const currentKey = () => keyInput.value.trim()
     document.getElementById('keyMask').onclick = hideKeySheet
     document.getElementById('keySave').onclick = () => {
       const v = keyInput.value.trim()
       if (!v) { keyMsg.textContent = '先填密钥'; return }
-      localStorage.setItem('dsh.apiKey', v)
+      localStorage.removeItem('dsh.apiKey')
       localStorage.setItem('dsh.hasApiKey', '1')
       hideKeySheet()
       paintKeyState()
@@ -728,7 +889,7 @@
       const v = b.querySelector('.mval')
       if (v && v.textContent.includes('DeepSeek')) {
         const name = v.textContent.replace(' ›','').trim()
-        btn.innerHTML = name + ' <span class="effort">High</span> ▾'
+        btn.innerHTML = '<span class="model-name">' + name + '</span> <span class="effort">High</span> ▾'
       }
       hideComposerMenus()
     })

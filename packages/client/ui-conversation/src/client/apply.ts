@@ -281,7 +281,10 @@ export function apply(ctx: Context): void {
     store: chatStore,
     inject: (): ConversationSessionHeaderInjected => ({
       views,
-      open: (id) => { sessions.open(id) },
+      open: (id) => {
+        layout.showPage('home')
+        sessions.open(id)
+      },
     }),
   }, ConversationSessionHeader)
 
@@ -301,6 +304,7 @@ export function apply(ctx: Context): void {
     children: {
       'conversation.input.plan': { kind: 'single', scope: 'session' },
       'conversation.input.model': { kind: 'single', scope: 'session' },
+      'conversation.input.plus': { kind: 'list', scope: 'session-maybe' },
     },
     inject: (sessionId: SessionId | undefined): ComposerBarInjected => {
       if (sessionId === undefined) {

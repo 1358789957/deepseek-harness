@@ -86,6 +86,10 @@ describe('ui-settings-general apply', () => {
     const before = await bench()
     declare(before.slots)
     await before.ctx.plugin({ inject: [...inject], apply }).await()
+    expect(before.ctx.get('settingsPanel')).toMatchObject({
+      open: expect.any(Function),
+      close: expect.any(Function),
+    })
     for (const [name, component] of SEATS) {
       expect(before.slots.entries(name)[0]!.component).toBe(component)
     }

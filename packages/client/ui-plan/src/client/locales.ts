@@ -6,6 +6,8 @@ export const zh = {
   'chip.on.title': 'plan mode 已开启 — 点击关闭（/plan off）',
   'chip.off.aria': 'plan mode 已关闭，按下开启',
   'chip.off.title': 'plan mode 已关闭 — 点击开启（/plan）',
+  'plus.on': '开',
+  'plus.off': '关',
 } satisfies Record<string, string>
 
 /** The plan namespace key union. */
@@ -17,4 +19,6 @@ export const en = {
   'chip.on.title': 'Plan mode on — click to turn off (/plan off)',
   'chip.off.aria': 'Plan mode off, press to turn on',
   'chip.off.title': 'Plan mode off — click to turn on (/plan)',
+  'plus.on': 'On',
+  'plus.off': 'Off',
 } satisfies Record<PlanKey, string>

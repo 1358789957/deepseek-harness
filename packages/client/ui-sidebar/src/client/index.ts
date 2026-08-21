@@ -7,7 +7,7 @@ import { SidebarRoot } from './SidebarRoot.tsx'
 import { en, zh, type SidebarKey } from './locales.ts'
 
 export type {
-  SidebarFooterActionOwnerProps, SidebarRootComponentProps, SidebarRootInjected,
+  SidebarFooterActionOwnerProps, SidebarNavOwnerProps, SidebarRootComponentProps, SidebarRootInjected,
   SidebarSectionOwnerProps, SidebarSettingsOwnerProps,
 } from './contract/slots.ts'
 export type { SidebarKey } from './locales.ts'
@@ -34,7 +34,10 @@ export function apply(ctx: ClientContext): void {
   const injectProps = (): SidebarRootInjected => ({
     // The shell's New Session button rides the runtime's shared action
     // (current Session Workspace, then recent Workspace).
-    startSession: (workspaceId) => { ctx.workspaces.startSession(workspaceId) },
+    startSession: (workspaceId) => {
+      ctx.layout.showPage('home')
+      ctx.workspaces.startSession(workspaceId)
+    },
     toggleSidebar: () => { ctx.layout.toggleSidebar() },
   })
   ctx.effect(
@@ -46,6 +49,7 @@ export function apply(ctx: ClientContext): void {
       // registers the foot trigger + settings panel.
       children: {
         'sidebar.workspaces': { kind: 'single', scope: 'root' },
+        'sidebar.nav': { kind: 'list', scope: 'root' },
         'sidebar.settings': { kind: 'single', scope: 'root' },
         'sidebar.footer.action': { kind: 'list', scope: 'root' },
       },

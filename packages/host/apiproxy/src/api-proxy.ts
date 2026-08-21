@@ -3205,9 +3205,35 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
     skills: {
       // Skill lookup never creates or resumes an agent: the session address
       // resolves to a canonical cwd from the host-resident session header, and
-      // the view scope is the live agent or the preset's standing key.
+      // the view scope is the live agent or the preset's standing key. A
+      // missing sessionId lists the host process cwd through the host registry.
       async list(request) {
         const { sessionId } = request.payload
+        const toEntry = (skill: {
+          name: string
+          description: string
+          whenToUse?: string
+          invocation: { modelInvocable: boolean }
+          source?: string
+        }) => ({
+          name: skill.name,
+          description: skill.description,
+          ...skill.whenToUse === undefined ? {} : { whenToUse: skill.whenToUse },
+          modelInvocable: skill.invocation.modelInvocable,
+          source: typeof skill.source === 'string' && skill.source !== '' ? skill.source : 'bundled',
+        })
+        if (sessionId === undefined) {
+          const skillRegistry = ctx.get('skills')
+          if (skillRegistry === undefined) {
+            return err(request, { code: 'internal', message: 'skill registry is absent: the host composition does not mount @deepseek-ai/dsh-skill', details: {} })
+          }
+          try {
+            const skills = (await skillRegistry.list({ cwd: process.cwd() })).filter(isUserInvocable)
+            return ok(request, { skills: skills.map(toEntry) })
+          } catch (error: unknown) {
+            return err(request, { code: 'internal', message: `skill listing failed: ${String(error)}`, details: {} })
+          }
+        }
         const session = ctx.sessions.get(sessionId)
         if (session === undefined) {
           return err(request, {
@@ -3243,14 +3269,7 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
         const scope = await presenterScopeFor(sessionId, session)
         try {
           const skills = (await skillRegistry.list({ cwd, scope })).filter(isUserInvocable)
-          return ok(request, {
-            skills: skills.map(skill => ({
-              name: skill.name,
-              description: skill.description,
-              ...skill.whenToUse === undefined ? {} : { whenToUse: skill.whenToUse },
-              modelInvocable: skill.invocation.modelInvocable,
-            })),
-          })
+          return ok(request, { skills: skills.map(toEntry) })
         } catch (error: unknown) {
           return err(request, { code: 'internal', message: `skill listing failed: ${String(error)}`, details: {} })
         }

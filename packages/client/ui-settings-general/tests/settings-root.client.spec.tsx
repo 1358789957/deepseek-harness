@@ -2,7 +2,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useEffect, useState } from 'react'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-web-react'
 import type { SettingsRootComponentProps } from '../src/client/shell-contract.ts'
+import { SettingsPanelController } from '../src/client/service.ts'
 import { SettingsRoot } from '../src/client/SettingsRoot.tsx'
 
 afterEach(cleanup)
@@ -61,9 +64,14 @@ function mount({
       byId: { 'active-session': { blank: false } },
     })) as never
   const unusedHook = (() => { throw new Error('unused by SettingsRoot') }) as never
+  const panelStore = createSnapshotStore<{ open: boolean; sectionId?: string }>({ open: false })
+  const panel = new SettingsPanelController(panelStore)
   const props: SettingsRootComponentProps = {
     useSessions,
     useWorkspaces: unusedHook,
+    usePanel: bindSnapshotSelector(panelStore),
+    openPanel: (sectionId?: string) => { panel.open(sectionId) },
+    closePanel: () => { panel.close() },
     wide,
     useOnboardingSteps: select => select(steps),
     useSections: (select) => {

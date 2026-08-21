@@ -16,6 +16,7 @@ function fakePanels(): PanelActions {
     setNarrow: vi.fn(),
     openDetails: vi.fn(),
     closeDetails: vi.fn(),
+    showPage: vi.fn(),
   }
 }
 
@@ -34,6 +35,15 @@ describe('LayoutController', () => {
     expect(panels.closeDetails).toHaveBeenCalledTimes(1)
     expect(panels.setSidebar).not.toHaveBeenCalled()
     expect(panels.setDetails).not.toHaveBeenCalled()
+  })
+
+  it('forwards showPage after attach and drops it before the root entry mounts', () => {
+    const service = new LayoutController()
+    expect(() => { service.showPage('jobs') }).not.toThrow()
+    const panels = fakePanels()
+    service.attachPanels(panels)
+    service.showPage('jobs')
+    expect(panels.showPage).toHaveBeenCalledExactlyOnceWith('jobs')
   })
 
   it('fails loud before the root entry wired its actions', () => {

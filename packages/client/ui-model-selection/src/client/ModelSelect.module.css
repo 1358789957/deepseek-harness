@@ -40,10 +40,17 @@
 }
 
 .triggerLabel {
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@container (max-width: 420px) {
+  .triggerEffort {
+    display: none;
+  }
 }
 
 /* Effort value beside the model name (mock's 'High': same 13/20/500, caption tone). */

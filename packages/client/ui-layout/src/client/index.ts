@@ -83,6 +83,12 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      * `id` is added beside the shipped entries instead of replacing them.
      */
     'shell.overlay': { kind: 'list'; scope: 'root' }
+    /**
+     * Full-height page that covers the conversation column. Entries register
+     * by `id`; AppFrame renders `only` the store's current `page` while that
+     * page is not `'home'`. The conversation stays mounted underneath.
+     */
+    'shell.page': { kind: 'list'; scope: 'root'; owner: ShellPageOwnerProps }
   }
 }
 
@@ -98,6 +104,14 @@ export interface SidebarOwnerProps {
   collapsed: boolean
   /** Rendered column width in px (SIDEBAR_COLLAPSED when collapsed). */
   width: number
+  /** Current center-column page (`'home'` or a `shell.page` id). */
+  page: string
+}
+
+/** Owner share of one `shell.page` entry: the page id currently showing. */
+export interface ShellPageOwnerProps {
+  /** Current center-column page id (matches this entry when it is visible). */
+  page: string
 }
 
 /** Conversation owner share: business state and actions belong to the registrant. */
@@ -112,7 +126,7 @@ export interface DetailsOwnerProps {
 }
 
 /** Required services (cordis fiber inject — the loader passes all module exports as an object plugin). */
-export const inject = ['slots', 'theme']
+export const inject = ['slots', 'theme', 'sessions']
 
 /**
  * Client plugin body: provide ctx.layout, then one register() call — AppFrame
@@ -131,6 +145,7 @@ export function apply(ctx: ClientContext): void {
         'conversation': { kind: 'single', scope: 'session-maybe' },
         'details': { kind: 'single', scope: 'session' },
         'shell.overlay': { kind: 'list', scope: 'root' },
+        'shell.page': { kind: 'list', scope: 'root' },
       },
       // Exclusive store: the factory itself — the framework instantiates per
       // entry and delivers useStore/actions to AppFrame as standard props.
@@ -148,6 +163,16 @@ export function apply(ctx: ClientContext): void {
       void disposeService()
     }
   }, 'ui-layout: service + root registration')
+
+  ctx.effect(() => {
+    let last = ctx.sessions.list.getSnapshot().current
+    return ctx.sessions.list.subscribe(() => {
+      const current = ctx.sessions.list.getSnapshot().current
+      if (current === last) return
+      last = current
+      layout.showPage('home')
+    })
+  }, 'ui-layout: session change returns home')
 
   // Theme presentation: pure DOM writes from resolved snapshots — initial
   // state through the getter once, then event-driven only; no React path.

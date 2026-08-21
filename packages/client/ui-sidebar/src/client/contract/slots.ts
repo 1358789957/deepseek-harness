@@ -33,6 +33,11 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      * package's 'sidebar' entry; each action receives only the column state.
      */
     'sidebar.footer.action': { kind: 'list'; scope: 'root'; owner: SidebarFooterActionOwnerProps }
+    /**
+     * Additive nav rows between New Session and the workspace browser.
+     * Rendered only while the column is wide; the rail has no distinct icons.
+     */
+    'sidebar.nav': { kind: 'list'; scope: 'root'; owner: SidebarNavOwnerProps }
   }
 }
 
@@ -62,6 +67,14 @@ export interface SidebarFooterActionOwnerProps {
   wide: boolean
 }
 
+/** Owner share of one wide-only nav row between New Session and workspaces. */
+export interface SidebarNavOwnerProps {
+  /** Whether the sidebar renders wide content (false = 56px rail). */
+  wide: boolean
+  /** Current center-column page (`'home'` or a `shell.page` id). */
+  page: string
+}
+
 /**
  * Registrant-private injected share (arrives via the register inject
  * factory). The shell keeps only its own controls: starting a Session from
@@ -85,5 +98,5 @@ export type SidebarRootInjected = {
  */
 export type SidebarRootComponentProps =
   PropsRuntime<'sidebar'>
-  & PropsRenderSlots<'sidebar.workspaces' | 'sidebar.settings' | 'sidebar.footer.action'>
+  & PropsRenderSlots<'sidebar.workspaces' | 'sidebar.settings' | 'sidebar.footer.action' | 'sidebar.nav'>
   & SidebarRootInjected & PropsLocale<'sidebar'>
