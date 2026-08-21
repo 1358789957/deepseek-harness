@@ -2,7 +2,8 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { resolveSlotLabel, type BoundActions } from '@deepseek-ai/dsh-client-ui-slots'
 import {
-  resolveWorkspacePath, type ISessions, type SessionId,
+  createSnapshotStore, resolveWorkspacePath, type ISessions, type SessionId,
+  type SnapshotStore,
 } from '@deepseek-ai/dsh-client-runtime/client'
 // Type-only: the ctx.settingsScope Context merge. Cross-plugin collaboration
 // goes through the service, never a value import (client bundle purity gate).
@@ -35,6 +36,7 @@ import { queueDockEntry } from './queue/QueueDock.tsx'
 import { ConversationRoot } from './skeleton/ConversationRoot.tsx'
 import { ConversationSession, ConversationSessionHeader } from './skeleton/ConversationSession.tsx'
 import { DetailsPanel } from './skeleton/DetailsPanel.tsx'
+import { ReviewHeaderAction, type ReviewHeaderInjected } from './skeleton/ReviewHeaderAction.tsx'
 import { en, NS, zh, type ConversationKey } from './locales.ts'
 import { registerConversationNodes } from './conversation-nodes/register.ts'
 import { registerChatNodeRenderers } from './chat/register-node-renderers.ts'
@@ -109,6 +111,13 @@ function selectApproval({ interactions }: ComposerChainProps): ApprovalWait | nu
   return interactions.find((i): i is ApprovalWait => i.kind === 'approval') ?? null
 }
 
+
+/** Header Review pressed-state; AppFrame's rendered `open` is the authority. */
+function setDetailsOpen(store: SnapshotStore<{ open: boolean }>, open: boolean): void {
+  if (store.getSnapshot().open === open) return
+  store.set({ open })
+}
+
 /** Mounts the conversation plugin.
  * @param ctx - Client root context.
  */
@@ -117,6 +126,14 @@ export function apply(ctx: Context): void {
   const workspaces = ctx.workspaces
   const layout = ctx.layout
   const slots = ctx.slots
+  const detailsOpen = createSnapshotStore({ open: false })
+  const openSessionFile = (sessionId: SessionId, path: string): void => {
+    const cwd = sessions.list.getSnapshot().byId[sessionId]?.cwd
+    void workspaces.openPath(resolveWorkspacePath(cwd, path)).catch(() => {
+      // Host/OS open failures stay silent; the native app surfaces its own
+      // error dialog when the path is unusable.
+    })
+  }
 
   registerConversationNodes(ctx)
   registerChatNodeRenderers(ctx)
@@ -389,16 +406,11 @@ export function apply(ctx: Context): void {
       return {
         openDetails: (target) => {
           actions.select(target)
+          setDetailsOpen(detailsOpen, true)
           layout.openDetails()
         },
         fileMentions: owner => ctx.get('chatFileMentions')?.forClosing(owner),
-        openFile: (path) => {
-          const cwd = sessions.list.getSnapshot().byId[sessionId]?.cwd
-          void workspaces.openPath(resolveWorkspacePath(cwd, path)).catch(() => {
-            // Host/OS open failures stay silent in the chat row; the native
-            // app surfaces its own error dialog when the path is unusable.
-          })
-        },
+        openFile: (path) => { openSessionFile(sessionId, path) },
         loadOlder: () => { void scoped.loadOlder() },
         loadImage: attachment => conversation.resolveImage(sessionId, attachment),
         // Unregistered 'trajectory' id is safe: the tab ring falls back to
@@ -448,9 +460,37 @@ export function apply(ctx: Context): void {
       'conversation.details.tool': { kind: 'single', scope: 'session' },
     },
     store: chatStore,
-    inject: (): DetailsInjected => ({
-      closeDetails: () => { layout.closeDetails() },
+    inject: (sessionId: SessionId): DetailsInjected => ({
+      closeDetails: () => {
+        setDetailsOpen(detailsOpen, false)
+        layout.closeDetails()
+      },
+      setColumnOpen: (open) => { setDetailsOpen(detailsOpen, open) },
+      openFile: (path) => { openSessionFile(sessionId, path) },
     }),
   }, DetailsPanel)
+
+  // Additive Review toggle: the details column has no product click of its
+  // own, so this header utility is the open/close entry (Codex "Review").
+  ctx.slots.inject('conversation.session.header.utilities', () => ctx.slots.register({
+    name: 'conversation.session.header.utilities',
+    id: 'review',
+    order: 0,
+    locale: NS,
+    store: chatStore,
+    inject: (_sessionId, actions): ReviewHeaderInjected => ({
+      hooks: { detailsOpen },
+      toggleDetails: () => {
+        if (detailsOpen.getSnapshot().open) {
+          setDetailsOpen(detailsOpen, false)
+          layout.closeDetails()
+        } else {
+          actions.select(null)
+          setDetailsOpen(detailsOpen, true)
+          layout.openDetails()
+        }
+      },
+    }),
+  }, ReviewHeaderAction))
 
 }

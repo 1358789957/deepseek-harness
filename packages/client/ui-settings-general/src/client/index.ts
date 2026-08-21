@@ -2,7 +2,7 @@
  * Settings shell and ownerless-copy plugin, browser half: renders the
  * `sidebar.settings` occupant — panel chrome, section navigation, and the
  * onboarding stage — and registers everything on the Settings pages that
- * belongs to no single feature: the trigger/header chrome content,
+ * belongs to no single feature: the trigger/header/search chrome content,
  * local-document action, General section, and `settings` dictionaries.
  * Feature-owned rows and sections stay with their features.
  * Export discipline: packages/client/AGENTS.md.
@@ -21,7 +21,7 @@ import type {
   SettingsOnboardingStep, SettingsRootInjected, SettingsSectionRow,
 } from './shell-contract.ts'
 import { SettingsRoot } from './SettingsRoot.tsx'
-import { CloseLabel, HeaderContent, TriggerContent } from './chrome.tsx'
+import { CloseLabel, HeaderContent, SearchEmpty, SearchField, TriggerContent } from './chrome.tsx'
 import { GeneralSection } from './GeneralSection.tsx'
 import { SettingsDocumentAction } from './SettingsDocumentAction.tsx'
 import type { SettingsDocumentActionInjected } from './SettingsDocumentAction.tsx'
@@ -29,7 +29,7 @@ import { refreshDocumentIfLoaded, SettingsDocumentStore } from './settings-docum
 import { en, zh, type SettingsKey } from './locales.ts'
 
 export type {
-  CloseLabelProps, HeaderContentProps, TriggerContentProps,
+  CloseLabelProps, HeaderContentProps, SearchEmptyProps, SearchFieldProps, TriggerContentProps,
 } from './chrome.tsx'
 export type {
   GeneralSectionComponentProps,
@@ -146,6 +146,8 @@ export function apply(ctx: ClientContext): void {
       'settings.header': { kind: 'single', scope: 'root' },
       'settings.action': { kind: 'list', scope: 'root' },
       'settings.close': { kind: 'single', scope: 'root' },
+      'settings.search': { kind: 'single', scope: 'root' },
+      'settings.searchEmpty': { kind: 'single', scope: 'root' },
       'settings.section': { kind: 'list', scope: 'root' },
       'settings.onboarding': { kind: 'list', scope: 'root' },
     },
@@ -167,6 +169,10 @@ export function apply(ctx: ClientContext): void {
   }
   ctx.slots.inject('settings.close', () =>
     ctx.slots.register({ name: 'settings.close', locale: NS }, CloseLabel))
+  ctx.slots.inject('settings.search', () =>
+    ctx.slots.register({ name: 'settings.search', locale: NS }, SearchField))
+  ctx.slots.inject('settings.searchEmpty', () =>
+    ctx.slots.register({ name: 'settings.searchEmpty', locale: NS }, SearchEmpty))
   ctx.slots.inject('settings.section', () => ctx.slots.register({
     name: 'settings.section',
     id: 'general',

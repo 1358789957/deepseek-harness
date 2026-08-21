@@ -179,8 +179,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
     'conversation.input.left': { kind: 'list'; scope: 'session'; owner: InputZone }
     /**
      * The right end of the same tool row, before the primary send button —
-     * the seat for a control the user reaches on the way to sending (the
-     * model select sits in its own named seat just left of here). Same
+     * the seat for a control the user reaches on the way to sending. Same
      * {@link InputZone} owner share and the same one-row height budget as
      * `conversation.input.left`.
      */
@@ -210,13 +209,13 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      */
     'conversation.input.plan': { kind: 'single'; scope: 'session'; owner: InputControlOwnerProps }
     /**
-     * The named model-select seat at the right end of the composer tool row,
-     * left of the send button — one occupant, so taking it means rendering the
-     * whole model affordance yourself. Same `locked`-only owner share and same
-     * renders-nothing-while-empty contract as the plan seat. Note the composer
-     * deliberately keeps this seat LIVE while it refuses text for a
-     * model-related block: every such block is one the user clears by picking
-     * a model here.
+     * The named model-select seat on the left of the composer tool row
+     * (after attach / plan, left of send) — one occupant, so taking it means
+     * rendering the whole model + reasoning-effort affordance yourself. Same
+     * `locked`-only owner share and same renders-nothing-while-empty contract
+     * as the plan seat. Note the composer deliberately keeps this seat LIVE
+     * while it refuses text for a model-related block: every such block is
+     * one the user clears by picking a model here.
      */
     'conversation.input.model': { kind: 'single'; scope: 'session'; owner: InputControlOwnerProps }
   }
@@ -719,6 +718,17 @@ export type ChatViewSlotProps =
 export interface DetailsInjected {
   /** Close the details panel (layout geometry stays with ctx.layout). */
   closeDetails: () => void
+  /**
+   * Mirror AppFrame's rendered details `open` into the header Review bit.
+   * Session switches and concession change that bit without calling closeDetails.
+   * @param open - true when the details track has a non-zero rendered width.
+   */
+  setColumnOpen: (open: boolean) => void
+  /**
+   * Open a tool-arg filesystem path with the host OS default application
+   * (relative paths resolve against the session cwd).
+   */
+  openFile: (path: string) => void
 }
 
 /** Full details-slot props: selection store, Tool output seat, injected close callback, and locale. */

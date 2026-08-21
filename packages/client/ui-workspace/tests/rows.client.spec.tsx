@@ -338,6 +338,20 @@ describe('workspace browser rows', () => {
     }
   })
 
+  it('archives from the hover × without opening the session', () => {
+    const onOpen = vi.fn()
+    const onArchive = vi.fn()
+    const node: SessionNode = {
+      id: sid('s1'), title: 'One', blank: false, running: false,
+      runningSubagentCount: 0, completed: false, updatedAt: 0,
+    }
+    render(<SessionNodeItem node={node} currentId={undefined} now={0} onOpen={onOpen}
+      onRename={vi.fn()} onFork={vi.fn()} onArchive={onArchive} t={t} />)
+    fireEvent.click(screen.getByRole('button', { name: '归档会话' }))
+    expect(onArchive).toHaveBeenCalledWith(node.id)
+    expect(onOpen).not.toHaveBeenCalled()
+  })
+
   it('session row menu opens without opening the session and dispatches rename, fork, and archive', () => {
     const onOpen = vi.fn()
     const onRename = vi.fn()

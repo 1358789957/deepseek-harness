@@ -100,12 +100,12 @@ describe('WorkspaceBrowser.module.css list', () => {
     expect(declarations('.fade')?.get('height')).toBe('24px')
     expect(declarations('.sessionOverflowButton')?.get('height')).toBe('28px')
     expect(declarations('.searchExpanded')?.get('height')).toBe('30px')
-    expect(rowDeclarations('.projectRow')?.get('height')).toBe('34px')
-    expect(rowDeclarations('.sessionRow')?.get('height')).toBe('32px')
+    expect(rowDeclarations('.projectRow')?.get('height')).toBe('28px')
+    expect(rowDeclarations('.sessionRow')?.get('height')).toBe('28px')
     expect(rowDeclarations('.flatSessionRowWithoutStatus .title')?.get('margin-left')).toBe('0')
-    expect(rowDeclarations('.searchResultRow')?.get('min-height')).toBe('48px')
+    expect(rowDeclarations('.searchResultRow')?.get('min-height')).toBe('40px')
     expect(rowDeclarations('.sessionRow.selected')?.get('background'))
-      .toBe('var(--dsw-alias-interactive-bg-hover)')
+      .toBe('var(--dsw-alias-interactive-bg-active)')
   })
 
   it('pins both rail controls to the shared left anchor during the column slide', () => {

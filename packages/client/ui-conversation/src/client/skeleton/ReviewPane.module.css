@@ -1,0 +1,219 @@
+/* Review body: three standing sections (变更 / 提交 / 任务). */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.section {
+  min-width: 0;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.sectionHead .sectionTitle {
+  margin-bottom: 0;
+}
+
+.sectionLabel {
+  margin: 0;
+  font: var(--dsw-font-xs-13);
+  font-weight: 600;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.sectionCount {
+  min-width: 16px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-caption);
+  font: var(--dsw-font-xs-13);
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+  text-align: center;
+}
+
+.sectionStats {
+  display: flex;
+  gap: 8px;
+  font: var(--dsw-font-xs-13);
+  font-variant-numeric: tabular-nums;
+}
+
+.empty {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--dsw-alias-interactive-bg-hover);
+  font: var(--dsw-font-xs-13);
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list > li {
+  min-width: 0;
+}
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font: var(--dsw-font-xs-13);
+  text-align: left;
+  color: var(--dsw-alias-label-primary);
+}
+
+.file:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.file:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: -2px;
+}
+
+.fileIcon {
+  flex: none;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.fileIdentity {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.fileName {
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filePath {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dsw-alias-label-caption);
+  font: var(--dsw-font-xs-13);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileStats {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.add {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.del {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.todo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 30px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font: var(--dsw-font-xs-13);
+  color: var(--dsw-alias-label-secondary);
+}
+
+.todo:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.todo[data-status='completed'] .todoContent {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.glyph {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+}
+
+.glyphCompleted {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.glyphPending {
+  color: var(--dsw-alias-label-caption);
+}
+
+.glyphProgress {
+  color: var(--dsw-alias-state-business-primary);
+  animation: review-todo-spin 1s linear infinite;
+}
+
+@keyframes review-todo-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.todoContent {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glyphProgress {
+    animation: none;
+  }
+}

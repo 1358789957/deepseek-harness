@@ -750,10 +750,10 @@ export function InputBar({
               {renderSlot('conversation.input.plan', { locked })}
             </div>
             {leftItems}
+            {renderSlot('conversation.input.model', { locked: modelSeatLocked })}
           </div>
           <div className={css.trailing}>
             {rightItems}
-            {renderSlot('conversation.input.model', { locked: modelSeatLocked })}
             <ContextMeter useProjection={useProjection} t={t} />
             {interruptible && (
               <Tooltip label={t('input.stop')} side="top" delayMs={500}>

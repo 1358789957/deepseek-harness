@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>DeepSeek Harness · PR2</title>
+  <link rel="stylesheet" href="../packages/client/ui-theme/src/styles/base.css" />
+  <link rel="stylesheet" href="../packages/client/ui-theme/src/styles/design-platform.css" />
+  <style>
+    html, body { margin: 0; height: 100%; background: #f3f3f3; color: var(--dsw-alias-label-primary); }
+    .app { position: relative; display: flex; flex-direction: column; height: 100%; background: #f3f3f3; }
+    .chrome { flex: none; height: 32px; display: flex; align-items: center; padding: 0 0 0 8px; background: #f3f3f3; color: #5f5f5f; user-select: none; }
+    .chrome .cbtn { width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: inherit; display: grid; place-items: center; cursor: pointer; padding: 0; }
+    .chrome .cbtn:hover { background: rgba(0,0,0,0.05); }
+    .chrome .cbtn.off { color: #c4c4c4; cursor: default; }
+    .chrome .cbtn.off:hover { background: transparent; }
+    .chrome .menus { display: flex; align-items: center; gap: 2px; margin-left: 4px; }
+    .chrome .mlabel { height: 24px; padding: 0 8px; border: 0; border-radius: 4px; background: transparent; color: #4a4a4a; font: inherit; font-size: 12.5px; cursor: pointer; }
+    .chrome .mlabel:hover { background: rgba(0,0,0,0.05); }
+    .chrome .win { display: flex; align-items: stretch; margin-left: auto; height: 100%; }
+    .chrome .win button { width: 46px; height: 100%; border: 0; background: transparent; color: #3d3d3d; display: grid; place-items: center; cursor: pointer; padding: 0; }
+    .chrome .win button:hover { background: rgba(0,0,0,0.06); }
+    .chrome .win .x:hover { background: #e81123; color: #fff; }
+    .cols { display: flex; flex: 1; min-height: 0; }
+    .sidebar { width: 264px; flex: none; display: flex; flex-direction: column; padding: 12px 10px; background: #f3f3f3; z-index: 1; }
+    .brand { display: flex; align-items: center; gap: 4px; font-size: 17px; font-weight: 700; padding: 2px 2px 10px; letter-spacing: -0.02em; }
+    .brand .bname { padding: 0 6px; white-space: nowrap; color: #111; }
+    .brand.searching .bname { display: none; }
+    .brand .ssrch { margin-left: auto; }
+    .brand.searching .ssrch { flex: 1; height: 28px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; background: var(--dsw-alias-bg-layer-1); padding: 0 2px 0 4px; }
+    .brand.searching .ssrch input { display: block; }
+    .brand.searching #btnSearchX { display: grid; }
+    .new { height: 32px; border: 0; border-radius: 8px; background: var(--dsw-specific-sidebar-nav-item-active); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; text-align: left; padding: 0 10px; }
+    .sec { margin: 16px 8px 6px; font-size: 12px; color: var(--dsw-alias-label-tertiary); }
+    .muted { padding: 0 8px; font-size: 13px; color: var(--dsw-alias-label-tertiary); }
+    .grow { flex: 1; }
+    .trigger { display: flex; align-items: center; gap: 8px; height: 34px; width: 100%; border: 0; border-radius: 12px; background: transparent; color: var(--dsw-alias-label-primary); font: inherit; font-size: 14px; padding: 0 10px; cursor: pointer; }
+    .trigger:hover { background: var(--dsw-alias-interactive-bg-hover); }
+    .shortcut { margin-left: auto; color: var(--dsw-alias-label-tertiary); font-size: 12px; }
+    .main { flex: 1; position: relative; min-width: 0; background: #fff; z-index: 2; border-radius: 12px 12px 0 0; overflow: hidden; box-shadow: 0 -1px 0 rgba(15,23,42,0.04), -2px 0 8px rgba(15,23,42,0.04); }
+    .hero { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 0 48px 72px; }
+    .logo { position: absolute; top: 200px; left: 50%; transform: translateX(-50%); color: var(--dsw-alias-label-primary); }
+    .headline { display: flex; align-items: center; gap: 10px; font-size: 32px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
+    .badge { font-size: 11px; line-height: 16px; padding: 1px 6px; border-radius: 4px; background: var(--dsw-alias-bg-layer-3); color: var(--dsw-alias-label-tertiary); }
+    .stack { position: relative; width: min(100%, 720px); display: flex; flex-direction: column; align-items: stretch; }
+    .project { position: absolute; left: 0; right: 0; top: 0; z-index: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: flex-start; gap: 8px; height: 52px; margin: 0; padding: 0 16px 14px; border: 0; border-radius: 16px; background: #efefef; color: #6a6a6a; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .project svg { flex: none; color: #8a8a8a; }
+    .project .chev { margin-left: 2px; }
+    .card { position: relative; z-index: 1; width: 100%; box-sizing: border-box; margin-top: 34px; border: 1px solid rgba(0,0,0,0.04); border-radius: 16px; background: #fff; padding: 14px 16px 10px; box-shadow: 0 4px 16px rgba(15,23,42,0.05); }
+    .card textarea { display: block; width: 100%; box-sizing: border-box; min-height: 72px; margin: 0; padding: 0; border: 0; resize: none; outline: none; background: transparent; font: inherit; font-size: 14px; color: var(--dsw-alias-label-primary); }
+    .bar { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+    .trail { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+    .add { width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: var(--dsw-alias-label-secondary); font-size: 18px; cursor: pointer; }
+    .model { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 8px; border: 0; border-radius: 24px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .model:hover, .model.open { background: var(--dsw-alias-interactive-bg-hover); }
+    .effort { color: var(--dsw-alias-label-caption); }
+    .preset { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 8px; border: 0; border-radius: 24px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .preset:hover, .preset.open { background: var(--dsw-alias-interactive-bg-hover); }
+    .pmenu { position: absolute; left: 44px; bottom: 48px; z-index: 20; width: 320px; padding: 4px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); display: none; }
+    .pmenu.show { display: flex; flex-direction: column; }
+    .pcell { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 52px; padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-primary); font: inherit; text-align: left; cursor: pointer; }
+    .pcell:hover, .pcell.on { background: var(--dsw-alias-interactive-bg-hover); }
+    .pname { font-size: 13px; font-weight: 500; }
+    .pdesc { font-size: 12px; color: var(--dsw-alias-label-tertiary); line-height: 1.35; }
+    .send { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--dsw-alias-label-primary); color: var(--dsw-alias-bg-layer-2); display: grid; place-items: center; cursor: pointer; }
+    .send:disabled { opacity: 0.28; }
+    .menu { position: absolute; right: 48px; bottom: 48px; z-index: 20; width: 240px; padding: 4px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); display: none; }
+    .menu.show { display: flex; flex-direction: column; }
+    .mcell { display: flex; align-items: center; height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+    .mcell:hover { background: var(--dsw-alias-interactive-bg-hover); }
+    .mval { margin-left: auto; color: var(--dsw-alias-label-tertiary); }
+    .overlay { position: absolute; top: 32px; left: 0; right: 0; bottom: 0; z-index: 40; display: none; align-items: center; justify-content: center; }
+    .overlay.show { display: flex; }
+    .mask { position: absolute; inset: 0; background: var(--dsw-alias-bg-mask-1); }
+    .panel { position: relative; z-index: 1; display: flex; width: calc(100% - 32px); height: min(640px, calc(100% - 48px)); border-radius: 20px; overflow: hidden; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); }
+    .nav { width: 188px; flex: none; display: flex; flex-direction: column; gap: 8px; padding: 14px 12px 12px 0; background: var(--dsw-alias-bg-layer-2); border-right: 1px solid rgba(15,23,42,0.08); }
+    .back { display: inline-flex; align-items: center; gap: 6px; height: 28px; margin: 0 8px 6px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; cursor: pointer; width: calc(100% - 16px); text-align: left; }
+    .back:hover { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
+    .navTitle { padding: 0 12px; font-size: 13px; color: var(--dsw-alias-label-secondary); }
+    .search { margin: 0 8px; }
+    .search input { width: 100%; height: 32px; box-sizing: border-box; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; padding: 0 10px 0 12px; background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; }
+    .cell { display: flex; align-items: center; height: 36px; margin: 0 8px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; width: calc(100% - 16px); text-align: left; cursor: pointer; }
+    .cell.on, .cell:hover { background: var(--dsw-specific-sidebar-nav-item-active); color: var(--dsw-alias-label-primary); }
+    .body { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--dsw-alias-bg-layer-2); box-shadow: -3px 0 8px rgba(15,23,42,0.03); z-index: 1; }
+    .head { display: flex; align-items: center; min-height: 54px; padding: 0 20px; font-size: 16px; font-weight: 500; }
+    .x { margin-left: auto; border: 0; background: transparent; font-size: 18px; cursor: pointer; color: var(--dsw-alias-label-secondary); }
+    .opts { flex: 1; overflow: auto; padding: 0 24px 24px; }
+    .h2 { margin: 0 0 12px; font-size: 16px; }
+    .row { display: flex; align-items: center; justify-content: space-between; min-height: 40px; font-size: 14px; }
+    .item { display: flex; align-items: center; min-height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13px; }
+    .item:hover { background: var(--dsw-alias-interactive-bg-hover); }
+    .item small { margin-left: auto; color: var(--dsw-alias-label-tertiary); }
+    .sidebar.hid { display: none; }
+    .app.max .main { border-radius: 0; box-shadow: none; }
+    .app.max .chrome { height: 32px; }
+    .bar-pop { position: fixed; z-index: 80; min-width: 220px; padding: 4px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 10px; background: #fff; box-shadow: 0 8px 24px rgba(15,23,42,0.12); display: none; flex-direction: column; }
+    .bar-pop.show { display: flex; }
+    .bar-pop button { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+    .bar-pop button:hover { background: var(--dsw-alias-interactive-bg-hover); }
+    .bar-pop button:disabled { opacity: 0.4; cursor: default; }
+    .bar-pop .k { margin-left: auto; color: var(--dsw-alias-label-tertiary); font-size: 12px; }
+    .bar-pop .sep { height: 1px; margin: 4px 6px; background: var(--dsw-alias-border-l2); }
+    .about { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; z-index: 70; }
+    .about.show { display: flex; }
+    .about .card2 { position: relative; z-index: 1; width: 360px; padding: 22px 22px 16px; border-radius: 16px; background: #fff; box-shadow: var(--dsw-shadow-lv3); }
+    .about h3 { margin: 0 0 8px; font-size: 16px; font-weight: 600; }
+    .about p { margin: 0 0 16px; font-size: 13px; color: var(--dsw-alias-label-secondary); line-height: 1.5; }
+    .about .ok { height: 32px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--dsw-alias-label-primary); color: #fff; font: inherit; font-size: 13px; cursor: pointer; }
+    .ghost { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: #ececec; z-index: 90; color: #555; font-size: 14px; }
+    .ghost.show { display: flex; }
+    .ghost button { margin-left: 8px; height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.08); font: inherit; font-size: 13px; cursor: pointer; }
+    .mainhead { position: absolute; top: 0; right: 0; left: 0; z-index: 3; display: flex; align-items: center; justify-content: flex-end; height: 44px; padding: 0 14px; pointer-events: none; }
+    .mainhead button { pointer-events: auto; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: #8a8a8a; display: grid; place-items: center; cursor: pointer; }
+    .mainhead button:hover, .mainhead button.on { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
+    .review { width: 300px; flex: none; display: flex; flex-direction: column; background: #fff; border-left: 1px solid rgba(0,0,0,0.06); min-height: 0; }
+    .review.hid { display: none; }
+    .review .rh { display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 0 12px 0 14px; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 14px; font-weight: 500; }
+    .review .rx { width: 22px; height: 22px; border: 0; border-radius: 6px; background: transparent; color: var(--dsw-alias-label-secondary); font-size: 16px; cursor: pointer; }
+    .review .rx:hover { background: var(--dsw-alias-interactive-bg-hover); }
+    .review .rb { flex: 1; overflow: auto; padding: 16px 14px 24px; display: flex; flex-direction: column; gap: 22px; }
+    .review .sec label { display: block; margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--dsw-alias-label-secondary); }
+    .review .empty { padding: 6px 8px; border-radius: 8px; background: var(--dsw-alias-interactive-bg-hover); font-size: 13px; color: var(--dsw-alias-label-tertiary); }
+    .keys .rowk { display: flex; justify-content: space-between; gap: 16px; min-height: 28px; font-size: 13px; }
+    .keys .rowk span:last-child { color: var(--dsw-alias-label-tertiary); }
+
+    .shead { display: flex; align-items: center; gap: 2px; height: 28px; margin: 10px 2px 4px; }
+    .slabel { flex: none; font-size: 12px; font-weight: 500; color: var(--dsw-alias-label-tertiary); margin-right: auto; padding-left: 6px; }
+    .sicon { width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: var(--dsw-alias-label-secondary); display: grid; place-items: center; cursor: pointer; padding: 0; flex: none; }
+    .sicon:hover { background: var(--dsw-alias-interactive-bg-hover); }
+    .ssrch { display: flex; align-items: center; gap: 2px; min-width: 28px; }
+    .ssrch input { display: none; flex: 1; min-width: 0; height: 24px; border: 0; outline: none; background: transparent; color: var(--dsw-alias-label-primary); font: inherit; font-size: 12px; }
+    #btnSearchX { display: none; }
+    .slist { flex: 1; min-height: 0; overflow: auto; padding: 2px 0 8px; }
+    .wsg { margin: 2px 0 8px; }
+    .wsh { display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; width: 100%; text-align: left; cursor: pointer; }
+    .wsh:hover { background: var(--dsw-alias-interactive-bg-hover); }
+    .wsh .chev { width: 10px; color: var(--dsw-alias-label-tertiary); transition: transform 120ms; }
+    .wsg.shut .chev { transform: rotate(-90deg); }
+    .wsg.shut .srows { display: none; }
+    .srow { display: flex; align-items: center; height: 32px; margin: 1px 0; padding: 0 10px 0 24px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; width: 100%; text-align: left; cursor: pointer; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .srow:hover, .srow.on { background: var(--dsw-specific-sidebar-nav-item-active); }
+    .srow .xrow { display: none; margin-left: auto; width: 20px; height: 20px; border: 0; border-radius: 6px; background: transparent; color: var(--dsw-alias-label-tertiary); cursor: pointer; }
+    .srow:hover .xrow { display: grid; place-items: center; }
+    .sempty { padding: 8px 10px; font-size: 13px; color: var(--dsw-alias-label-tertiary); }
+    .foot { display: flex; flex-direction: column; gap: 2px; }
+    .hero.chat { justify-content: flex-end; gap: 12px; padding: 0 48px 18px; }
+    .hero.chat .logo, .hero.chat .headline { display: none; }
+    .hero.chat .project { display: none; }
+    .hero.chat .card { margin-top: 0; }
+    .thread { display: none; width: min(100%, 720px); flex: 1; min-height: 0; overflow: auto; padding: 52px 4px 8px; flex-direction: column; gap: 14px; }
+    .hero.chat .thread { display: flex; }
+    .bubble { max-width: 92%; font-size: 14px; line-height: 1.55; }
+    .bubble.user { align-self: flex-end; background: #f2f2f2; border-radius: 16px; padding: 10px 14px; }
+    .bubble.bot { align-self: stretch; color: var(--dsw-alias-label-primary); padding: 2px 4px; }
+    .themes { display: flex; gap: 10px; margin: 8px 0 16px; }
+    .theme { flex: 1; height: 78px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: #fff; cursor: pointer; font: inherit; font-size: 12px; color: var(--dsw-alias-label-secondary); }
+    .theme.on { outline: 2px solid #111; outline-offset: 1px; color: var(--dsw-alias-label-primary); }
+    .theme.light { background: linear-gradient(#fff, #f4f4f4); }
+    .theme.dark { background: linear-gradient(#2a2a2a, #111); color: #ddd; }
+    .theme.sys { background: linear-gradient(135deg, #fff 50%, #222 50%); }
+    .seg { display: inline-flex; gap: 6px; }
+    .seg button { height: 28px; padding: 0 10px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; background: #fff; font: inherit; font-size: 12px; cursor: pointer; }
+    .seg button.on { background: #111; color: #fff; border-color: #111; }
+
+    .kbar { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
+    .kbar input { flex: 1; height: 34px; box-sizing: border-box; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; padding: 0 12px; background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; }
+    .kadd { width: 34px; height: 34px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; background: #fff; color: var(--dsw-alias-label-secondary); font-size: 18px; line-height: 1; cursor: pointer; }
+    .kadd:hover { background: var(--dsw-alias-interactive-bg-hover); }
+    .krow { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 2px; border-bottom: 1px solid rgba(15,23,42,0.05); }
+    .kmeta { flex: 1; min-width: 0; }
+    .kname { font-size: 13.5px; font-weight: 500; }
+    .kdesc { margin-top: 2px; font-size: 12px; color: var(--dsw-alias-label-tertiary); line-height: 1.4; }
+    .kkeys { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 42%; }
+    .kchip { height: 22px; padding: 0 8px; border-radius: 6px; background: #f1f1f1; color: #333; font-size: 12px; display: inline-flex; align-items: center; white-space: nowrap; }
+    .knone { font-size: 12px; color: var(--dsw-alias-label-tertiary); }
+    .kacts { display: flex; gap: 0; flex: none; }
+    .kacts button { width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: #9a9a9a; cursor: pointer; display: grid; place-items: center; padding: 0; }
+    .kacts button:hover { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
+    .hint { margin-top: 8px; font-size: 12px; color: var(--dsw-alias-label-tertiary); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="chrome">
+      <button class="cbtn" id="btnSide" type="button" aria-label="切换侧栏">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.6" stroke="currentColor" stroke-width="1.2"/><path d="M6.25 3.25v9.5" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+      <button class="cbtn" id="btnBack" type="button" aria-label="后退">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8 10 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="cbtn off" id="btnFwd" type="button" aria-label="前进" disabled>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="menus">
+        <button class="mlabel" id="mFile" type="button">File</button>
+        <button class="mlabel" id="mEdit" type="button">Edit</button>
+        <button class="mlabel" id="mView" type="button">View</button>
+        <button class="mlabel" id="mHelp" type="button">Help</button>
+      </div>
+      <div class="win">
+        <button id="btnMin" type="button" aria-label="最小化"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 5h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+        <button id="btnMax" type="button" aria-label="最大化"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><rect x="1.4" y="1.4" width="7.2" height="7.2" rx="0.6" stroke="currentColor" stroke-width="1.2"/></svg></button>
+        <button class="x" id="btnClose" type="button" aria-label="关闭"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 2l6 6M8 2 2 8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+    <div class="cols">
+    <aside class="sidebar">
+      <div class="brand" id="brand">
+        <span class="bname">DSH</span>
+        <div class="ssrch" id="ssrch">
+          <button class="sicon" id="btnSearch" type="button" aria-label="搜索会话" title="搜索会话">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.4" stroke="currentColor" stroke-width="1.3"/><path d="M10.4 10.4 14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+          <input id="sessQ" type="search" placeholder="搜索会话…" autocomplete="off" />
+          <button class="sicon" id="btnSearchX" type="button" aria-label="清除搜索">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3 3 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="new" id="btnNew" type="button">新会话</button>
+      <button class="trigger" id="openPlugins" type="button" style="margin-top:4px">插件</button>
+      <div class="shead" id="shead">
+        <span class="slabel" id="slabel">工作区</span>
+        <button class="sicon sact" id="btnView" type="button" aria-label="视图选项" title="视图选项">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 4.5h11M4.5 8h7M6.5 11.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+        <button class="sicon sact" id="btnAddWs" type="button" aria-label="添加工作区" title="添加工作区">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.2 4.2h4l1 1.2H12.8c.6 0 1 .4 1 1v5.2c0 .6-.4 1-1 1H3.2c-.6 0-1-.4-1-1V5.2c0-.6.4-1 1-1Z" stroke="currentColor" stroke-width="1.2"/><path d="M10.2 8.2v3.2M8.6 9.8h3.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="slist" id="slist"></div>
+      <div class="foot">
+        <button class="trigger" id="open" type="button">设置 <span class="shortcut">Ctrl+,</span></button>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="mainhead"><button type="button" id="btnReview" class="on" aria-label="展开右侧栏" title="展开右侧栏">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.6" y="2.1" width="12.8" height="11.8" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M10.6 3.1v9.8" stroke="currentColor" stroke-width="1.2"/></svg>
+        </button></div>
+      <div class="hero">
+        <svg class="logo" width="40" height="29" viewBox="0 0 23.16 17.04" fill="none" aria-hidden="true"><path d="M22.9168 1.43018C22.6713 1.31018 22.5658 1.53918 22.4223 1.65519C22.3733 1.69269 22.3318 1.74169 22.2903 1.78669C21.9317 2.1697 21.5127 2.42121 20.9657 2.39121C20.1657 2.34621 19.4827 2.59771 18.8787 3.20973C18.7502 2.45521 18.3236 2.0047 17.6746 1.71569C17.3351 1.56568 16.9916 1.41518 16.7536 1.08867C16.5876 0.856163 16.5421 0.597155 16.4591 0.341647C16.4061 0.187643 16.3536 0.0301382 16.1761 0.00363739C15.9836 -0.0263635 15.9081 0.135141 15.8326 0.270145C15.5306 0.822162 15.4136 1.43018 15.4251 2.0462C15.4516 3.43174 16.0366 4.53527 17.1991 5.3203C17.3311 5.4103 17.3651 5.5003 17.3236 5.63181C17.2441 5.90231 17.1501 6.16482 17.0671 6.43533C17.0141 6.60784 16.9351 6.64584 16.7501 6.57033C16.1121 6.30383 15.5611 5.90931 15.074 5.4328C14.2475 4.63328 13.5 3.75075 12.568 3.05973C12.349 2.89822 12.13 2.74822 11.9034 2.60522C10.9524 1.68169 12.028 0.923165 12.277 0.833162C12.5375 0.739159 12.3675 0.41615 11.5259 0.42015C10.6844 0.42365 9.91439 0.705658 8.93286 1.08117C8.78935 1.13767 8.63835 1.17867 8.48384 1.21267C7.59332 1.04367 6.66829 1.00617 5.70226 1.11517C3.88321 1.31768 2.43016 2.1777 1.36213 3.64575C0.0790928 5.4103 -0.222916 7.41536 0.146595 9.50642C0.535106 11.7105 1.66014 13.535 3.38869 14.9616C5.18125 16.4406 7.24581 17.1657 9.60138 17.0266C11.0319 16.9441 12.6245 16.7526 14.421 15.2321C14.874 15.4576 15.3496 15.5476 16.1381 15.6151C16.7456 15.6716 17.3306 15.5851 17.7836 15.4911C18.4931 15.3411 18.4441 14.6841 18.1876 14.5636C16.1081 13.595 16.5646 13.9891 16.1496 13.67C17.2061 12.42 18.8202 10.1979 19.3182 7.17235C19.3672 6.83834 19.4297 6.36783 19.4222 6.09732C19.4182 5.93231 19.4562 5.86831 19.6447 5.84931C20.1657 5.78931 20.6712 5.64681 21.1357 5.3913C22.4833 4.65528 23.0268 3.44624 23.1548 1.9972C23.1738 1.77569 23.1508 1.54668 22.9168 1.43018ZM11.1749 14.4736C9.15936 12.889 8.18184 12.3675 7.77832 12.39C7.40081 12.4125 7.46881 12.8445 7.55182 13.126C7.63882 13.404 7.75182 13.5955 7.91033 13.8396C8.01983 14.0011 8.09533 14.2411 7.80083 14.4216C7.15181 14.8231 6.02327 14.2866 5.97027 14.2601C4.65673 13.4865 3.5587 12.4655 2.78467 11.069C2.03715 9.72493 1.60314 8.28289 1.53164 6.74384C1.51264 6.37233 1.62214 6.24082 1.99215 6.17332C2.47916 6.08332 2.98118 6.06432 3.46769 6.13582C5.52476 6.43633 7.27581 7.35586 8.74385 8.8129C9.58188 9.64243 10.2159 10.634 10.8689 11.6025C11.5634 12.631 12.3105 13.611 13.262 14.4146C13.598 14.6961 13.866 14.9101 14.1225 15.0681C13.349 15.1546 12.058 15.1731 11.1749 14.4746L11.1749 14.4736ZM12.141 8.25988C12.141 8.09488 12.273 7.96338 12.439 7.96338C12.4765 7.96338 12.5105 7.97088 12.541 7.98188C12.5825 7.99688 12.6205 8.01938 12.6505 8.05338C12.7035 8.10588 12.7335 8.18088 12.7335 8.25988C12.7335 8.42489 12.6015 8.55639 12.4355 8.55639C12.2695 8.55639 12.141 8.42489 12.141 8.25988ZM15.1415 9.79893C14.949 9.87793 14.7565 9.94544 14.5715 9.95294C14.2845 9.96794 13.9715 9.85143 13.8015 9.70893C13.5375 9.48742 13.3485 9.36342 13.2695 8.97691C13.2355 8.8119 13.2545 8.55639 13.2845 8.40989C13.3525 8.09438 13.277 7.89187 13.0545 7.70787C12.8735 7.55786 12.643 7.51636 12.39 7.51636C12.2955 7.51636 12.209 7.47486 12.1445 7.44136C12.039 7.38886 11.9519 7.25735 12.035 7.09585C12.0615 7.04335 12.19 6.91584 12.22 6.89334C12.5635 6.69784 12.9595 6.76184 13.326 6.90834C13.6655 7.04735 13.9225 7.30236 14.292 7.66287C14.6695 8.09838 14.7375 8.21838 14.9525 8.54539C15.1225 8.8009 15.277 9.06341 15.3831 9.36392C15.4471 9.55142 15.3641 9.70493 15.1415 9.79893Z" fill="currentColor"/></svg>
+        <div class="headline"><span>What should we build?</span></div>
+        <div class="thread" id="thread"></div>
+        <div class="stack">
+          <button class="project" id="btnProject" type="button" aria-label="Choose project">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M2.2 4.2h4.1l1.1 1.3H13.8c.6 0 1 .4 1 1v5.3c0 .6-.4 1-1 1H2.2c-.6 0-1-.4-1-1V5.2c0-.6.4-1 1-1Z" stroke="currentColor" stroke-width="1.2"/><path d="M2.2 4.2V3.6c0-.6.4-1 1-1h2.2l.8.8" stroke="currentColor" stroke-width="1.2"/></svg>
+            Choose project
+            <svg class="chev" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="card">
+          <textarea id="draft" placeholder="描述你想要构建的内容"></textarea>
+          <div class="bar">
+            <button class="add" type="button" aria-label="命令">+</button>
+            <button class="preset" id="presetBtn" type="button" title="即将开始的这个会话所用的 Agent 预设">标准模式 ▾</button>
+            <div class="trail">
+            <button class="model" id="modelBtn" type="button" aria-label="选择模型，当前 DeepSeek-V4-Flash，推理等级 High">DeepSeek-V4-Flash <span class="effort">High</span> ▾</button>
+            <button class="send" id="btnSend" type="button" aria-label="发送" disabled>
+              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden><path d="M8.3125 0.98C8.67 1.05 8.98 1.20 9.26 1.43C9.49 1.61 9.73 1.86 9.98 2.11L14.71 6.83L13.29 8.25L9 3.96V15.04H7V3.96L2.71 8.25L1.29 6.83L6.02 2.11C6.27 1.86 6.51 1.61 6.74 1.43C6.98 1.24 7.28 1.04 7.69 0.98C7.90 0.95 8.10 0.96 8.31 0.98Z" fill="currentColor"/></svg>
+            </button>
+            </div>
+          </div>
+          <div class="pmenu" id="presetMenu" role="menu" aria-label="智能体预设">
+            <button class="pcell on" type="button"><span class="pname">标准模式</span><span class="pdesc">文件编辑、Shell、检索、Skills、计划、目标、子代理和工作流</span></button>
+            <button class="pcell" type="button"><span class="pname">PTC 模式</span><span class="pdesc">标准能力，工具经 Code Mode SDK 用一段 TypeScript 组合多步操作</span></button>
+            <button class="pcell" type="button"><span class="pname">极简模式</span><span class="pdesc">只留持久 bash 和 str_replace_editor</span></button>
+            <button class="pcell" type="button"><span class="pname">创造模式</span><span class="pdesc">标准能力，加上运行时检查和自定义预设创作</span></button>
+          </div>
+          <div class="menu" id="modelMenu" role="menu" aria-label="模型与推理等级">
+            <button class="mcell" type="button">模型 <span class="mval">DeepSeek-V4-Flash ›</span></button>
+            <button class="mcell" type="button">模型 <span class="mval">DeepSeek-V4-Pro ›</span></button>
+            <button class="mcell" type="button">推理等级 <span class="mval">High ›</span></button>
+          </div>
+        </div>
+      </div>
+      </div>
+    </main>
+    <aside class="review" id="review">
+      <div class="rh">审查 <button class="rx" id="btnReviewX" type="button" aria-label="关闭审查">×</button></div>
+      <div class="rb">
+        <div class="sec"><label>变更</label><div class="empty">暂无文件变更</div></div>
+        <div class="sec"><label>本轮产出</label><div class="empty">暂无产出</div></div>
+        <div class="sec"><label>任务</label><div class="empty">暂无任务</div></div>
+      </div>
+    </aside>
+    </div>
+          <div class="overlay" id="settings">
+        <div class="mask" id="mask"></div>
+        <div class="panel">
+          <nav class="nav">
+            <button class="back" id="close" type="button">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5 5.5 8 10 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Back to app
+            </button>
+            <div class="navTitle">设置</div>
+            <div class="search"><input placeholder="搜索设置" /></div>
+            <button class="cell on" type="button" data-p="g">通用</button>
+            <button class="cell" type="button" data-p="ap">外观</button>
+            <button class="cell" type="button" data-p="k">键盘快捷键</button>
+            <button class="cell" type="button" data-p="m">模型</button>
+            <button class="cell" type="button" data-p="p">插件</button>
+            <button class="cell" type="button" data-p="a">智能体预设</button>
+          </nav>
+          <div class="body">
+            <div class="head"><span id="t">通用</span></div>
+            <div class="opts" id="opts">
+              <div class="row"><span>语言</span><span class="seg"><button class="on" data-lang="auto" type="button">跟随系统</button><button data-lang="zh" type="button">中文</button><button data-lang="en" type="button">English</button></span></div>
+              <div class="row"><span>回车发送</span><span class="seg"><button class="on" data-enter="1" type="button">Enter</button><button data-enter="0" type="button">Ctrl+Enter</button></span></div>
+              <div class="row"><span>权限</span><span class="seg"><button class="on" data-perm="ask" type="button">询问</button><button data-perm="auto" type="button">自动</button></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+
+    <div class="bar-pop" id="popProject"></div>
+    <div class="bar-pop" id="popViewOpts">
+      <button type="button" data-g="workspace">按工作区</button>
+      <button type="button" data-g="flat">单列表</button>
+      <div class="sep"></div>
+      <button type="button" data-o="manual">手动排序</button>
+      <button type="button" data-o="updated">最近更新</button>
+    </div>
+    <div class="bar-pop" id="popFile">
+      <button type="button" data-act="new">新会话 <span class="k">Ctrl+N</span></button>
+      <button type="button" data-act="folder">打开工作区…</button>
+      <div class="sep"></div>
+      <button type="button" data-act="close">关闭窗口 <span class="k">Ctrl+W</span></button>
+      <button type="button" data-act="quit">退出 <span class="k">Ctrl+Q</span></button>
+    </div>
+    <div class="bar-pop" id="popEdit">
+      <button type="button" data-act="undo">撤销 <span class="k">Ctrl+Z</span></button>
+      <button type="button" data-act="redo">重做 <span class="k">Ctrl+Y</span></button>
+      <div class="sep"></div>
+      <button type="button" data-act="cut">剪切 <span class="k">Ctrl+X</span></button>
+      <button type="button" data-act="copy">复制 <span class="k">Ctrl+C</span></button>
+      <button type="button" data-act="paste">粘贴 <span class="k">Ctrl+V</span></button>
+      <button type="button" data-act="delete">删除</button>
+      <div class="sep"></div>
+      <button type="button" data-act="select">全选 <span class="k">Ctrl+A</span></button>
+      <div class="sep"></div>
+      <button type="button" data-act="settings">设置… <span class="k">Ctrl+,</span></button>
+    </div>
+    <div class="bar-pop" id="popView">
+      <button type="button" data-act="side">切换侧栏 <span class="k">Ctrl+B</span></button>
+      <button type="button" data-act="review">切换审查栏</button>
+      <div class="sep"></div>
+      <button type="button" data-act="zoomin">放大 <span class="k">Ctrl++</span></button>
+      <button type="button" data-act="zoomout">缩小 <span class="k">Ctrl+-</span></button>
+      <button type="button" data-act="zoomreset">实际大小 <span class="k">Ctrl+0</span></button>
+      <div class="sep"></div>
+      <button type="button" data-act="max">全屏 <span class="k">F11</span></button>
+    </div>
+    <div class="bar-pop" id="popHelp">
+      <button type="button" data-act="docs">文档</button>
+      <button type="button" data-act="keys">键盘快捷键</button>
+      <div class="sep"></div>
+      <button type="button" data-act="about">关于 DeepSeek Harness</button>
+    </div>
+    <div class="about" id="about">
+      <div class="mask" id="aboutMask"></div>
+      <div class="card2">
+        <h3>DeepSeek Harness</h3>
+        <p>对话优先的本地预览。File / Edit / View / Help 和窗口按键都已接上真实动作。</p>
+        <button class="ok" id="aboutOk" type="button">好</button>
+      </div>
+    </div>
+    <div class="about" id="keys">
+      <div class="mask" id="keysMask"></div>
+      <div class="card2 keys">
+        <h3>键盘快捷键</h3>
+        <div class="rowk"><span>新会话</span><span>Ctrl+N</span></div>
+        <div class="rowk"><span>设置</span><span>Ctrl+,</span></div>
+        <div class="rowk"><span>切换侧栏</span><span>Ctrl+B</span></div>
+        <div class="rowk"><span>全屏</span><span>F11</span></div>
+        <button class="ok" id="keysOk" type="button">好</button>
+      </div>
+    </div>
+    <div class="ghost" id="ghost"><span id="ghostText">已最小化</span><button id="ghostBack" type="button">还原</button></div>
+  <script>
+    const o = document.getElementById('settings')
+    const draft = document.getElementById('draft')
+    const send = document.getElementById('btnSend')
+    const pages = {
+      g: '<div class="row"><span>语言</span><span class="seg"><button class="on" data-lang="auto" type="button">跟随系统</button><button data-lang="zh" type="button">中文</button><button data-lang="en" type="button">English</button></span></div><div class="row"><span>回车发送</span><span class="seg"><button class="on" data-enter="1" type="button">Enter</button><button data-enter="0" type="button">Ctrl+Enter</button></span></div><div class="row"><span>权限</span><span class="seg"><button class="on" data-perm="ask" type="button">询问</button><button data-perm="auto" type="button">自动</button></span></div><p class="hint">这三项是 DSH 通用设置里已有的。Codex 的 Pets / Voice / Account 没有对应能力，不搬。</p>',
+      ap: '<div class="themes"><button class="theme sys on" data-theme="sys" type="button">跟随系统</button><button class="theme light" data-theme="light" type="button">浅色</button><button class="theme dark" data-theme="dark" type="button">深色</button></div>',
+      k: '<div class="kbar"><input id="kq" type="search" placeholder="搜索快捷键" autocomplete="off" /><button class="kadd" type="button" aria-label="添加快捷键">+</button></div><div id="klist"></div>',
+      m: '<div class="item">DeepSeek-V4-Flash</div><div class="item">DeepSeek-V4-Pro</div>',
+      p: '<div class="item">Shell <small>@deepseek-ai/dsh-host-bash</small></div><div class="item">Web search <small>@deepseek-ai/dsh-host-web-search</small></div>',
+      a: '<div class="item">标准模式</div><div class="item">PTC 模式</div><div class="item">极简模式</div><div class="item">创造模式</div>',
+    }
+    const prefs = { lang: 'auto', theme: 'sys', enter: '1', perm: 'ask' }
+    const SHORTCUTS = [{"t": "新聊天", "d": "开始新聊天", "k": ["Ctrl+N", "Ctrl+Shift+O"]}, {"t": "新建临时聊天", "d": "开始一个不会出现在历史中的聊天", "k": ["Ctrl+Shift+N"]}, {"t": "快速聊天", "d": "在快速编写器中开始轻量聊天", "k": ["Ctrl+Alt+N"]}, {"t": "归档聊天", "d": "归档当前聊天", "k": ["Ctrl+Shift+A"]}, {"t": "新建独立聊天", "d": "在任何项目之外开始新聊天", "k": ["Ctrl+Alt+O"]}, {"t": "打开侧边聊天", "d": "在侧边聊天中打开当前聊天", "k": ["Ctrl+Alt+S"]}, {"t": "标记为未读", "d": "将当前聊天标记为未读", "k": ["Ctrl+Shift+U"]}, {"t": "在新窗口中打开", "d": "在新窗口中打开当前聊天", "k": []}, {"t": "切换置顶状态", "d": "置顶或取消置顶当前聊天", "k": ["Ctrl+Alt+P"]}, {"t": "复制为 Markdown", "d": "把当前对话复制为 Markdown", "k": []}, {"t": "分叉聊天", "d": "从当前聊天分出一支", "k": []}, {"t": "重命名聊天", "d": "重命名当前聊天", "k": []}, {"t": "打开模型选择器", "d": "打开编写器的模型选择器", "k": ["Ctrl+Shift+M"]}, {"t": "打开项目选择器", "d": "打开编写器的项目选择器", "k": ["Ctrl+Alt+Shift+O"]}, {"t": "发送消息", "d": "发送当前编写器中的消息", "k": []}, {"t": "添加照片", "d": "向编写器添加照片", "k": []}, {"t": "附加文件和文件夹", "d": "向编写器附加文件和文件夹", "k": []}, {"t": "开始听写", "d": "在当前编写器中开始听写", "k": ["Ctrl+Shift+D"]}, {"t": "切换语音聊天", "d": "开始或结束语音聊天", "k": ["Ctrl+Shift+V"]}, {"t": "切换语音聊天麦克风", "d": "静音或取消静音语音聊天麦克风", "k": []}, {"t": "切换语音聊天音频", "d": "静音或取消静音语音聊天输出", "k": []}, {"t": "结束语音聊天", "d": "结束当前语音通话", "k": []}, {"t": "切换 Fast 模式", "d": "打开或关闭 Fast 模式", "k": []}, {"t": "提高推理强度", "d": "提高当前推理等级", "k": []}, {"t": "降低推理强度", "d": "降低当前推理等级", "k": []}, {"t": "循环推理强度", "d": "在推理等级之间循环", "k": []}, {"t": "切换计划模式", "d": "打开或关闭计划模式", "k": []}, {"t": "切换 Local/Worktree", "d": "在本地与 worktree 之间切换", "k": []}, {"t": "切换 Cloud/Local", "d": "在云端与本地运行之间切换", "k": []}, {"t": "批准请求", "d": "批准当前请求", "k": ["Enter"]}, {"t": "拒绝请求", "d": "拒绝当前请求", "k": ["Escape"]}, {"t": "撤销上一步", "d": "撤销最近一次应用操作", "k": ["Ctrl+Z"]}, {"t": "重做上一步", "d": "重做最近一次应用操作", "k": ["Ctrl+Y", "Ctrl+Shift+Z"]}, {"t": "剪切", "d": "剪切所选内容", "k": ["Ctrl+X"]}, {"t": "复制", "d": "复制所选内容", "k": ["Ctrl+C"]}, {"t": "粘贴", "d": "粘贴剪贴板内容", "k": ["Ctrl+V"]}, {"t": "全选", "d": "全选当前内容", "k": ["Ctrl+A"]}, {"t": "设置", "d": "打开设置", "k": ["Ctrl+,"]}, {"t": "显示键盘快捷键", "d": "显示当前可用的快捷键", "k": ["Ctrl+/"]}, {"t": "打开文件夹", "d": "把本地项目加到应用", "k": ["Ctrl+O"]}, {"t": "新窗口", "d": "打开新窗口", "k": []}, {"t": "关闭", "d": "关闭当前窗口", "k": ["Ctrl+W"]}, {"t": "退出", "d": "退出应用", "k": ["Ctrl+Q"]}, {"t": "切换边栏", "d": "显示或隐藏侧栏", "k": ["Ctrl+B"]}, {"t": "切换底部面板", "d": "显示或隐藏底部面板", "k": ["Ctrl+J"]}, {"t": "打开终端", "d": "打开终端", "k": []}, {"t": "显示/隐藏文件树", "d": "显示或隐藏文件树", "k": ["Ctrl+Shift+E"]}, {"t": "打开审阅标签", "d": "打开审阅标签", "k": ["Ctrl+Shift+G"]}, {"t": "切换审阅面板", "d": "显示或隐藏当前聊天的审阅", "k": ["Ctrl+Alt+B"]}, {"t": "切换最大化审阅面板", "d": "最大化或还原审阅面板", "k": []}, {"t": "查找", "d": "在当前聊天中搜索", "k": ["Ctrl+F"]}, {"t": "转到行", "d": "跳到当前文件的某一行", "k": ["Ctrl+L"]}, {"t": "搜索聊天", "d": "搜索聊天记录", "k": []}, {"t": "搜索文件", "d": "搜索文件", "k": []}, {"t": "清除全部未读", "d": "将所有聊天和计划任务更新标为已读", "k": ["Shift+Escape"]}, {"t": "下一个需要关注的聊天", "d": "切到下一条待回复或有未读的聊天", "k": ["Ctrl+Alt+A"]}, {"t": "上一个聊天", "d": "切到上一个聊天", "k": ["Ctrl+Shift+["]}, {"t": "下一个聊天", "d": "切到下一个聊天", "k": ["Ctrl+Shift+]"]}, {"t": "上一个标签", "d": "切到上一个标签", "k": ["Ctrl+Shift+["]}, {"t": "下一个标签", "d": "切到下一个标签", "k": ["Ctrl+Shift+]"]}, {"t": "上一个最近查看的聊天", "d": "循环到上一个最近查看的聊天", "k": ["Ctrl+Shift+Tab"]}, {"t": "下一个最近查看的聊天", "d": "循环到下一个最近查看的聊天", "k": ["Ctrl+Tab"]}, {"t": "聚焦主聊天", "d": "把焦点放到主聊天", "k": []}, {"t": "聚焦侧边聊天", "d": "把焦点放到侧边聊天", "k": []}, {"t": "切换活动视图", "d": "打开或关闭侧栏活动视图", "k": ["Ctrl+Alt+U"]}, {"t": "转到聊天 1", "d": "打开此快捷位上的可见聊天", "k": ["Ctrl+1"]}, {"t": "转到聊天 2", "d": "打开此快捷位上的可见聊天", "k": ["Ctrl+2"]}, {"t": "转到聊天 3", "d": "打开此快捷位上的可见聊天", "k": ["Ctrl+3"]}, {"t": "转到聊天 4", "d": "打开此快捷位上的可见聊天", "k": ["Ctrl+4"]}, {"t": "转到聊天 5", "d": "打开此快捷位上的可见聊天", "k": ["Ctrl+5"]}, {"t": "转到聊天 6", "d": "打开此快捷位上的可见聊天", "k": ["Ctrl+6"]}, {"t": "转到聊天 7", "d": "打开此快捷位上的可见聊天", "k": ["Ctrl+7"]}, {"t": "转到聊天 8", "d": "打开此快捷位上的可见聊天", "k": ["Ctrl+8"]}, {"t": "转到聊天 9", "d": "打开此快捷位上的可见聊天", "k": ["Ctrl+9"]}, {"t": "返回", "d": "在导航历史中后退", "k": ["Ctrl+[", "鼠标后退"]}, {"t": "前进", "d": "在导航历史中前进", "k": []}, {"t": "打开浏览器标签页", "d": "打开新的浏览器标签", "k": ["Ctrl+T"]}, {"t": "显示/隐藏浏览器面板", "d": "显示或隐藏浏览器面板", "k": ["Ctrl+Shift+B"]}, {"t": "聚焦浏览器地址栏", "d": "聚焦应用内浏览器地址栏", "k": ["Ctrl+L"]}, {"t": "浏览器返回", "d": "浏览器后退", "k": []}, {"t": "浏览器前进", "d": "浏览器前进", "k": []}, {"t": "重新加载浏览器页面", "d": "重新加载应用内浏览器页面", "k": []}, {"t": "强制重新加载浏览器页面", "d": "强制重新加载应用内浏览器页面", "k": []}, {"t": "放大", "d": "放大界面", "k": ["Ctrl++"]}, {"t": "缩小", "d": "缩小界面", "k": ["Ctrl+-"]}, {"t": "实际大小", "d": "恢复到实际大小", "k": ["Ctrl+0"]}, {"t": "切换全屏", "d": "进入或退出全屏", "k": ["F11"]}, {"t": "显示宠物", "d": "显示或隐藏宠物", "k": []}, {"t": "切换置顶摘要", "d": "显示或隐藏置顶摘要", "k": []}, {"t": "打开命令菜单", "d": "打开命令菜单", "k": []}, {"t": "提交或推送", "d": "提交或推送当前更改", "k": []}, {"t": "创建 PR", "d": "创建拉取请求", "k": []}, {"t": "创建草稿 PR", "d": "创建草稿拉取请求", "k": []}, {"t": "创建分支", "d": "创建新分支", "k": []}, {"t": "合并 PR", "d": "合并拉取请求", "k": []}, {"t": "在 GitHub 打开 PR", "d": "在 GitHub 打开当前拉取请求", "k": []}, {"t": "切换到 Chat", "d": "切换到 Chat 模式", "k": ["Alt+1"]}, {"t": "切换到 Work", "d": "切换到 Work 模式", "k": ["Alt+2"]}, {"t": "切换到 Codex", "d": "切换到 Codex 模式", "k": ["Alt+3"]}, {"t": "MCP", "d": "打开 MCP 设置", "k": []}, {"t": "个性", "d": "打开个性设置", "k": []}, {"t": "从其他 AI 应用导入", "d": "从其他 AI 应用导入", "k": []}, {"t": "管理计划任务", "d": "管理已安排的任务", "k": []}, {"t": "前往技能", "d": "打开技能", "k": []}, {"t": "强制重新加载技能", "d": "强制重新加载技能", "k": []}, {"t": "Codex Micro 设置", "d": "打开 Codex Micro 设置", "k": []}, {"t": "反馈", "d": "发送反馈", "k": []}, {"t": "注销", "d": "退出登录", "k": []}, {"t": "环境操作 1", "d": "运行此快捷位上的环境操作", "k": ["Ctrl+Shift+D"]}, {"t": "环境操作 2", "d": "运行此快捷位上的环境操作", "k": []}, {"t": "环境操作 3", "d": "运行此快捷位上的环境操作", "k": []}, {"t": "环境操作 4", "d": "运行此快捷位上的环境操作", "k": []}, {"t": "环境操作 5", "d": "运行此快捷位上的环境操作", "k": []}, {"t": "环境操作 6", "d": "运行此快捷位上的环境操作", "k": []}, {"t": "环境操作 7", "d": "运行此快捷位上的环境操作", "k": []}, {"t": "环境操作 8", "d": "运行此快捷位上的环境操作", "k": []}, {"t": "环境操作 9", "d": "运行此快捷位上的环境操作", "k": []}, {"t": "切换调试菜单", "d": "显示或隐藏内部调试菜单", "k": ["Alt+D"]}, {"t": "开始跟踪记录", "d": "开始或停止跟踪记录", "k": ["Ctrl+Shift+S"]}]
+    const paintShortcuts = () => {
+      const list = document.getElementById('klist')
+      if (!list) return
+      const qel = document.getElementById('kq')
+      const q = (qel && qel.value || '').trim().toLowerCase()
+      const rows = SHORTCUTS.filter(s => !q || (s.t + ' ' + s.d + ' ' + s.k.join(' ')).toLowerCase().includes(q))
+      list.innerHTML = rows.map(s => {
+        const keys = s.k.length ? s.k.map(x => '<span class="kchip">' + x + '</span>').join('') : '<span class="knone">未分配</span>'
+        return '<div class="krow"><div class="kmeta"><div class="kname">' + s.t + '</div><div class="kdesc">' + s.d + '</div></div><div class="kkeys">' + keys + '</div><div class="kacts"><button type="button" aria-label="编辑"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M11.2 2.8a1.4 1.4 0 0 1 2 2L6 12l-2.6.6L4 10l7.2-7.2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button><button type="button" aria-label="删除"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3.5 4.5h9M6.5 4.5V3.2h3v1.3M5.2 4.5l.5 8.2h4.6l.5-8.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>'
+      }).join('') || '<div class="sempty">无匹配快捷键</div>'
+      if (qel && !qel.dataset.bound) {
+        qel.dataset.bound = '1'
+        qel.addEventListener('input', paintShortcuts)
+      }
+    }
+    const bindOpts = () => {
+      const mark = (sel, key, val) => {
+        opts.querySelectorAll(sel).forEach(b => b.classList.toggle('on', b.dataset[key] === val))
+      }
+      mark('[data-lang]', 'lang', prefs.lang)
+      mark('[data-theme]', 'theme', prefs.theme)
+      mark('[data-enter]', 'enter', prefs.enter)
+      mark('[data-perm]', 'perm', prefs.perm)
+      opts.querySelectorAll('[data-lang]').forEach(b => b.onclick = () => { prefs.lang = b.dataset.lang; bindOpts() })
+      opts.querySelectorAll('[data-theme]').forEach(b => b.onclick = () => { prefs.theme = b.dataset.theme; document.documentElement.dataset.theme = prefs.theme; bindOpts() })
+      opts.querySelectorAll('[data-enter]').forEach(b => b.onclick = () => { prefs.enter = b.dataset.enter; bindOpts() })
+      opts.querySelectorAll('[data-perm]').forEach(b => b.onclick = () => { prefs.perm = b.dataset.perm; bindOpts() })
+    }
+    const hist = ['home']
+    let hi = 0
+    const snap = () => o.classList.contains('show') ? 'settings' : 'home'
+    const paintNav = () => {
+      document.getElementById('btnBack').classList.toggle('off', hi <= 0)
+      document.getElementById('btnBack').disabled = hi <= 0
+      document.getElementById('btnFwd').classList.toggle('off', hi >= hist.length - 1)
+      document.getElementById('btnFwd').disabled = hi >= hist.length - 1
+    }
+    const apply = (name) => { name === 'settings' ? o.classList.add('show') : o.classList.remove('show') }
+    const push = (name) => {
+      if (hist[hi] === name) return
+      hist.splice(hi + 1)
+      hist.push(name)
+      hi = hist.length - 1
+      apply(name)
+      paintNav()
+    }
+    const openSettings = () => push('settings')
+    const closeSettings = () => push('home')
+    document.getElementById('open').onclick = openSettings
+    document.getElementById('close').onclick = closeSettings
+    document.getElementById('mask').onclick = closeSettings
+    const opts = document.getElementById('opts')
+    document.querySelectorAll('.nav .cell').forEach(b => b.onclick = () => {
+      document.querySelectorAll('.nav .cell').forEach(x => x.classList.remove('on'))
+      b.classList.add('on')
+      document.getElementById('t').textContent = b.textContent
+      opts.innerHTML = pages[b.dataset.p]
+      bindOpts()
+      paintShortcuts()
+    })
+    document.querySelector('.nav .search input').addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase()
+      document.querySelectorAll('.nav .cell').forEach(c => {
+        c.style.display = !q || c.textContent.toLowerCase().includes(q) ? '' : 'none'
+      })
+    })
+    bindOpts()
+    const btn = document.getElementById('modelBtn')
+    const menu = document.getElementById('modelMenu')
+    const pbtn = document.getElementById('presetBtn')
+    const pmenu = document.getElementById('presetMenu')
+    const hideComposerMenus = () => {
+      menu.classList.remove('show'); btn.classList.remove('open')
+      pmenu.classList.remove('show'); pbtn.classList.remove('open')
+    }
+    btn.onclick = () => { menu.classList.toggle('show'); btn.classList.toggle('open'); pmenu.classList.remove('show'); pbtn.classList.remove('open'); hideBarPops() }
+    pbtn.onclick = () => { pmenu.classList.toggle('show'); pbtn.classList.toggle('open'); menu.classList.remove('show'); btn.classList.remove('open'); hideBarPops() }
+    pmenu.querySelectorAll('.pcell').forEach(b => b.onclick = () => {
+      pmenu.querySelectorAll('.pcell').forEach(x => x.classList.remove('on'))
+      b.classList.add('on')
+      pbtn.firstChild.textContent = b.querySelector('.pname').textContent + ' '
+      hideComposerMenus()
+    })
+    menu.querySelectorAll('.mcell').forEach(b => b.onclick = () => {
+      const v = b.querySelector('.mval')
+      if (v && v.textContent.includes('DeepSeek')) {
+        const name = v.textContent.replace(' ›','').trim()
+        btn.innerHTML = name + ' <span class="effort">High</span> ▾'
+      }
+      hideComposerMenus()
+    })
+    draft.addEventListener('input', () => { send.disabled = !draft.value.trim() })
+    send.onclick = () => {
+      if (!draft.value.trim()) return
+      draft.value = ''
+      send.disabled = true
+    }
+
+    const pops = { File: 'popFile', Edit: 'popEdit', View: 'popView', Help: 'popHelp' }
+    const hideBarPops = () => document.querySelectorAll('.bar-pop').forEach(p => p.classList.remove('show'))
+    const showPop = (id, anchor) => {
+      hideBarPops(); hideComposerMenus()
+      const pop = document.getElementById(id)
+      const r = anchor.getBoundingClientRect()
+      pop.style.left = r.left + 'px'
+      pop.style.top = (r.bottom + 4) + 'px'
+      pop.classList.add('show')
+    }
+    ;['mFile','mEdit','mView','mHelp'].forEach(id => {
+      const b = document.getElementById(id)
+      b.onclick = (e) => {
+        e.stopPropagation()
+        const pop = document.getElementById(pops[b.textContent])
+        if (pop.classList.contains('show')) hideBarPops()
+        else showPop(pop.id, b)
+      }
+    })
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.bar-pop') && !e.target.closest('.mlabel')) hideBarPops()
+    })
+
+    const focusDraft = () => { draft.focus() }
+    const hero = document.querySelector('.hero')
+    const thread = document.getElementById('thread')
+    const newChat = () => { draft.value = ''; send.disabled = true; closeSettings(); hideBarPops(); hero.classList.remove('chat'); thread.innerHTML = ''; focusDraft() }
+    const toggleSide = () => document.querySelector('.sidebar').classList.toggle('hid')
+    const toggleMax = () => {
+      const app = document.querySelector('.app')
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(() => {})
+        app.classList.add('max')
+      } else {
+        document.exitFullscreen?.().catch(() => {})
+        app.classList.remove('max')
+      }
+    }
+    const ghost = document.getElementById('ghost')
+    const showGhost = (text) => { document.getElementById('ghostText').textContent = text; ghost.classList.add('show') }
+    const hideGhost = () => ghost.classList.remove('show')
+    document.getElementById('ghostBack').onclick = hideGhost
+    const minimize = () => { hideBarPops(); showGhost('已最小化') }
+    const closeWin = () => { hideBarPops(); showGhost('窗口已关闭') }
+    const about = document.getElementById('about')
+    const showAbout = () => { hideBarPops(); about.classList.add('show') }
+    const hideAbout = () => about.classList.remove('show')
+    document.getElementById('aboutOk').onclick = hideAbout
+    document.getElementById('aboutMask').onclick = hideAbout
+
+    const runEdit = async (act) => {
+      focusDraft()
+      if (act === 'undo') document.execCommand('undo')
+      else if (act === 'redo') document.execCommand('redo')
+      else if (act === 'cut') document.execCommand('cut')
+      else if (act === 'copy') document.execCommand('copy')
+      else if (act === 'select') { draft.select() }
+      else if (act === 'delete') document.execCommand('delete')
+      else if (act === 'paste') {
+        try {
+          const text = await navigator.clipboard.readText()
+          const s = draft.selectionStart, e = draft.selectionEnd
+          draft.setRangeText(text, s, e, 'end')
+          draft.dispatchEvent(new Event('input'))
+        } catch {
+          document.execCommand('paste')
+        }
+      }
+    }
+    const review = document.getElementById('review')
+    const btnReview = document.getElementById('btnReview')
+    const paintReview = () => btnReview.classList.toggle('on', !review.classList.contains('hid'))
+    const toggleReview = () => { review.classList.toggle('hid'); paintReview() }
+    const hideReview = () => { review.classList.add('hid'); paintReview() }
+    let z = 1
+    const applyZoom = () => { document.querySelector('.main').style.zoom = z }
+    const zoomBy = (d) => { z = Math.min(1.5, Math.max(0.7, Math.round((z + d) * 10) / 10)); applyZoom() }
+    const openFolder = async () => {
+      hideBarPops()
+      const label = document.getElementById('btnProject')
+      if (window.showDirectoryPicker) {
+        try {
+          const dir = await window.showDirectoryPicker()
+          label.lastChild && (label.childNodes[label.childNodes.length-2] || label)
+          const text = [...label.childNodes].find(n => n.nodeType === 3 && n.textContent.trim())
+          if (text) text.textContent = '\n            ' + dir.name + '\n            '
+          else label.append(dir.name)
+        } catch {}
+      } else {
+        label.focus()
+      }
+    }
+    const keys = document.getElementById('keys')
+    const showKeys = () => { hideBarPops(); keys.classList.add('show') }
+    const hideKeys = () => keys.classList.remove('show')
+    document.getElementById('keysOk').onclick = hideKeys
+    document.getElementById('keysMask').onclick = hideKeys
+    const openDocs = () => { hideBarPops(); window.open('https://github.com/deepseek-ai/deepseek-harness', '_blank', 'noopener') }
+    const act = (name) => {
+      if (name === 'new') addSession()
+      else if (name === 'folder') openFolder()
+      else if (name === 'settings') { hideBarPops(); openSettings() }
+      else if (name === 'close' || name === 'quit') closeWin()
+      else if (name === 'side') { hideBarPops(); toggleSide() }
+      else if (name === 'review') { hideBarPops(); toggleReview() }
+      else if (name === 'zoomin') { hideBarPops(); zoomBy(0.1) }
+      else if (name === 'zoomout') { hideBarPops(); zoomBy(-0.1) }
+      else if (name === 'zoomreset') { hideBarPops(); z = 1; applyZoom() }
+      else if (name === 'max') { hideBarPops(); toggleMax() }
+      else if (name === 'docs') openDocs()
+      else if (name === 'keys') showKeys()
+      else if (name === 'about') showAbout()
+      else runEdit(name)
+    }
+    document.querySelectorAll('.bar-pop button').forEach(b => b.onclick = () => act(b.dataset.act))
+    document.getElementById('btnSide').onclick = toggleSide
+    document.getElementById('btnBack').onclick = () => { if (hi > 0) { hi--; apply(hist[hi]); paintNav() } }
+    document.getElementById('btnFwd').onclick = () => { if (hi < hist.length - 1) { hi++; apply(hist[hi]); paintNav() } }
+    document.getElementById('btnMin').onclick = minimize
+    document.getElementById('btnMax').onclick = toggleMax
+    document.getElementById('btnClose').onclick = closeWin
+    document.getElementById('btnNew').onclick = newChat
+    document.getElementById('btnReview').onclick = toggleReview
+    document.getElementById('btnReviewX').onclick = hideReview
+
+    const shead = document.getElementById('shead')
+    const slabel = document.getElementById('slabel')
+    const sessQ = document.getElementById('sessQ')
+    const slist = document.getElementById('slist')
+    const workspaces = [
+      { id: 'shengchang', name: '声场', open: true },
+      { id: 'ungrouped', name: '未分组', open: true },
+    ]
+    const sessions = [
+      { id: 's1', ws: 'shengchang', title: '跳转轨交互', messages: [
+        { role: 'user', text: '把跳转轨做成声场那样，悬停预览，点击跳到那一轮。' },
+        { role: 'bot', text: '左侧细轨，悬停出预览卡，点击跳到对应轮次。键盘也能上下走。' },
+      ]},
+      { id: 's2', ws: 'shengchang', title: '审查栏对齐', messages: [
+        { role: 'user', text: '右侧审查栏按 Codex 密度收一下。' },
+        { role: 'bot', text: '变更 / 本轮产出 / 任务三块已经按空态铺好，文件行点开就能看。' },
+      ]},
+      { id: 's3', ws: 'ungrouped', title: 'Codex 壳预览', messages: [
+        { role: 'user', text: '对话页顶部按 Codex 做圆角裁剪。' },
+        { role: 'bot', text: '主栏做成内缩圆角卡片，标题栏按键都接上了。' },
+      ]},
+    ]
+    let groupBy = 'workspace'
+    let orderBy = 'updated'
+    let activeSid = ''
+    let currentWs = 'ungrouped'
+    const paintList = () => {
+      slabel.textContent = groupBy === 'workspace' ? '工作区' : (orderBy === 'updated' ? '最近' : '会话')
+      const q = sessQ.value.trim().toLowerCase()
+      const rows = sessions.filter(s => !q || s.title.toLowerCase().includes(q))
+      if (!rows.length) {
+        slist.innerHTML = '<div class="sempty">' + (q ? '无匹配会话' : '暂无会话') + '</div>'
+        return
+      }
+      const mkRow = (s) => {
+        const b = document.createElement('button')
+        b.className = 'srow' + (s.id === activeSid ? ' on' : '')
+        b.type = 'button'
+        b.textContent = s.title
+        const x = document.createElement('button')
+        x.className = 'xrow'
+        x.type = 'button'
+        x.setAttribute('aria-label', '归档会话')
+        x.textContent = '×'
+        x.onclick = (e) => {
+          e.stopPropagation()
+          const i = sessions.findIndex(x => x.id === s.id)
+          if (i >= 0) sessions.splice(i, 1)
+          if (activeSid === s.id) activeSid = sessions[0] ? sessions[0].id : ''
+          paintList()
+        }
+        b.appendChild(x)
+        b.onclick = () => { openSession(s.id) }
+        return b
+      }
+      slist.innerHTML = ''
+      if (q || groupBy === 'flat') {
+        rows.forEach(s => slist.appendChild(mkRow(s)))
+        return
+      }
+      workspaces.forEach(ws => {
+        const kids = rows.filter(s => s.ws === ws.id)
+        const g = document.createElement('div')
+        g.className = 'wsg' + (ws.open ? '' : ' shut')
+        const h = document.createElement('button')
+        h.className = 'wsh'
+        h.type = 'button'
+        h.innerHTML = '<span class="chev">▾</span><span>' + ws.name + '</span>'
+        h.onclick = () => { ws.open = !ws.open; paintList() }
+        const box = document.createElement('div')
+        box.className = 'srows'
+        kids.forEach(s => box.appendChild(mkRow(s)))
+        if (!kids.length) {
+          const empty = document.createElement('div')
+          empty.className = 'sempty'
+          empty.textContent = '暂无会话'
+          box.appendChild(empty)
+        }
+        g.appendChild(h)
+        g.appendChild(box)
+        slist.appendChild(g)
+      })
+    }
+    const openSearch = () => {
+      document.getElementById('brand').classList.add('searching')
+      sessQ.focus()
+    }
+    const closeSearch = () => {
+      sessQ.value = ''
+      document.getElementById('brand').classList.remove('searching')
+      paintList()
+    }
+    document.getElementById('btnSearch').onclick = (e) => { e.stopPropagation(); openSearch() }
+    document.getElementById('btnSearchX').onclick = (e) => { e.stopPropagation(); closeSearch() }
+    sessQ.addEventListener('input', paintList)
+    sessQ.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSearch() })
+    document.getElementById('btnView').onclick = (e) => {
+      e.stopPropagation()
+      const pop = document.getElementById('popViewOpts')
+      if (pop.classList.contains('show')) hideBarPops()
+      else showPop('popViewOpts', e.currentTarget)
+    }
+    document.querySelectorAll('#popViewOpts button').forEach(b => {
+      b.onclick = () => {
+        if (b.dataset.g) groupBy = b.dataset.g
+        if (b.dataset.o) orderBy = b.dataset.o
+        hideBarPops()
+        paintList()
+      }
+    })
+    document.getElementById('btnAddWs').onclick = async () => {
+      hideBarPops()
+      let name = '新工作区'
+      if (window.showDirectoryPicker) {
+        try { name = (await window.showDirectoryPicker()).name } catch { return }
+      }
+      if (workspaces.some(w => w.name === name)) return
+      workspaces.splice(workspaces.length - 1, 0, { id: 'ws-' + Date.now(), name, open: true })
+      paintList()
+    }
+    const openPlugins = () => {
+      openSettings()
+      document.querySelector('[data-p="p"]').click()
+    }
+    document.getElementById('openPlugins').onclick = openPlugins
+    const setProjectLabel = (name) => {
+      const label = document.getElementById('btnProject')
+      const text = [...label.childNodes].find(n => n.nodeType === 3 && n.textContent.trim())
+      if (text) text.textContent = '\n            ' + name + '\n            '
+    }
+    const paintThread = () => {
+      const s = sessions.find(x => x.id === activeSid)
+      thread.innerHTML = ''
+      if (!s || !s.messages.length) {
+        hero.classList.remove('chat')
+        return
+      }
+      hero.classList.add('chat')
+      s.messages.forEach(m => {
+        const d = document.createElement('div')
+        d.className = 'bubble ' + m.role
+        d.textContent = m.text
+        thread.appendChild(d)
+      })
+      thread.scrollTop = thread.scrollHeight
+    }
+    const openSession = (id) => {
+      activeSid = id
+      const s = sessions.find(x => x.id === id)
+      if (s) {
+        currentWs = s.ws
+        const ws = workspaces.find(w => w.id === s.ws)
+        if (ws) setProjectLabel(ws.name)
+      }
+      paintThread()
+      paintList()
+      closeSettings()
+    }
+    const commitSend = () => {
+      const text = draft.value.trim()
+      if (!text) return
+      let s = sessions.find(x => x.id === activeSid)
+      if (!s) {
+        s = { id: 's' + Date.now(), ws: currentWs, title: text.slice(0, 18), messages: [] }
+        sessions.unshift(s)
+        activeSid = s.id
+      } else if (!s.messages.length) {
+        s.title = text.slice(0, 18)
+      }
+      s.messages.push({ role: 'user', text })
+      s.messages.push({ role: 'bot', text: '已记下。继续说就行。' })
+      draft.value = ''
+      send.disabled = true
+      paintThread()
+      paintList()
+    }
+    send.onclick = commitSend
+    draft.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || e.shiftKey || e.isComposing) return
+      if (prefs.enter === '1' || ((e.ctrlKey || e.metaKey) && prefs.enter === '0')) {
+        e.preventDefault()
+        commitSend()
+      }
+    })
+    const paintProjectPop = () => {
+      const pop = document.getElementById('popProject')
+      pop.innerHTML = ''
+      workspaces.forEach(ws => {
+        const b = document.createElement('button')
+        b.type = 'button'
+        b.textContent = ws.name
+        b.onclick = () => {
+          currentWs = ws.id
+          setProjectLabel(ws.name)
+          hideBarPops()
+          const first = sessions.find(s => s.ws === ws.id)
+          if (first) openSession(first.id)
+          else { newChat(); paintList() }
+        }
+        pop.appendChild(b)
+      })
+    }
+    document.getElementById('btnProject').onclick = (e) => {
+      e.stopPropagation()
+      paintProjectPop()
+      const pop = document.getElementById('popProject')
+      if (pop.classList.contains('show')) hideBarPops()
+      else showPop('popProject', e.currentTarget)
+    }
+    const addSession = () => {
+      newChat()
+      const n = sessions.filter(s => s.title.startsWith('新会话')).length
+      const s = { id: 's' + Date.now(), ws: currentWs, title: n ? '新会话 ' + (n + 1) : '新会话', messages: [] }
+      sessions.unshift(s)
+      activeSid = s.id
+      paintList()
+    }
+    document.getElementById('btnNew').onclick = addSession
+    paintList()
+    paintNav()
+
+    document.addEventListener('keydown', (e) => {
+      const k = e.key.toLowerCase()
+      if ((e.ctrlKey || e.metaKey) && k === ',') { e.preventDefault(); openSettings() }
+      if ((e.ctrlKey || e.metaKey) && k === 'b') { e.preventDefault(); toggleSide() }
+      if ((e.ctrlKey || e.metaKey) && k === 'n') { e.preventDefault(); addSession() }
+      if (e.key === 'F11') { e.preventDefault(); toggleMax() }
+      if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) { e.preventDefault(); zoomBy(0.1) }
+      if ((e.ctrlKey || e.metaKey) && e.key === '-') { e.preventDefault(); zoomBy(-0.1) }
+      if ((e.ctrlKey || e.metaKey) && e.key === '0') { e.preventDefault(); z = 1; applyZoom() }
+      if ((e.ctrlKey || e.metaKey) && k === 'w') { e.preventDefault(); closeWin() }
+      if ((e.ctrlKey || e.metaKey) && k === 'q') { e.preventDefault(); closeWin() }
+      if (e.key === 'Escape') {
+        if (about.classList.contains('show')) hideAbout()
+        else if (keys.classList.contains('show')) hideKeys()
+        else if (o.classList.contains('show')) closeSettings()
+        else if (document.getElementById('brand').classList.contains('searching')) closeSearch()
+        else hideBarPops()
+      }
+    })
+
+    if (location.hash === '#search') openSearch()
+    if (location.hash === '#chat') openSession('s1')
+    if (location.hash === '#settings' || location.hash === '#plugins' || location.hash === '#shortcuts') openSettings()
+    if (location.hash === '#shortcuts') document.querySelector('[data-p="k"]').click()
+    if (location.hash === '#plugins') document.querySelector('[data-p="p"]').click()
+    if (location.hash === '#model') { menu.classList.add('show'); btn.classList.add('open') }
+    if (location.hash === '#preset') { pmenu.classList.add('show'); pbtn.classList.add('open') }
+    if (location.hash === '#file') showPop('popFile', document.getElementById('mFile'))
+    if (location.hash === '#view') showPop('popView', document.getElementById('mView'))
+    if (location.hash === '#edit') showPop('popEdit', document.getElementById('mEdit'))
+    if (location.hash === '#help') showPop('popHelp', document.getElementById('mHelp'))
+    if (location.hash === '#about') showAbout()
+  </script>
+</body>
+</html>

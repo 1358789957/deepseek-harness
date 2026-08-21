@@ -621,6 +621,9 @@ describe('ChatView', () => {
       turnEnds: new Map([[1, 4], [2, 6]]),
     })
     const view = render(<h.ChatView {...h.props} />)
+    expect(view.getByRole('navigation', { name: '对话消息地图' })).toBeTruthy()
+    expect(view.container.querySelector('[data-conversation-message="fixture:user:1"]')).toBeTruthy()
+    expect(view.container.querySelector('[data-conversation-message="fixture:user:5"]')).toBeTruthy()
     // Branch renders only under assistant answers; user bubbles keep copy alone.
     expect(view.getAllByRole('button', { name: '复制' })).toHaveLength(4)
     const branchButtons = view.getAllByRole('button', { name: '在新对话中分支' })

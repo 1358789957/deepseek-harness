@@ -371,7 +371,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'conversation.composer.bar\', () => ctx.slots.register(\n      { name: \'conversation.composer.bar\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:201',
+    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:200',
   },
   {
     key: 'conversation.composer.dock',
@@ -648,8 +648,8 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     key: 'conversation.input.model',
     kind: 'single',
     scope: 'session',
-    summary: 'The named model-select seat at the right end of the composer tool row, left of the send button — one occupant, so taking it means rendering the whole model affordance yourself.',
-    doc: 'The named model-select seat at the right end of the composer tool row,\nleft of the send button — one occupant, so taking it means rendering the\nwhole model affordance yourself. Same `locked`-only owner share and same\nrenders-nothing-while-empty contract as the plan seat. Note the composer\ndeliberately keeps this seat LIVE while it refuses text for a\nmodel-related block: every such block is one the user clears by picking\na model here.',
+    summary: 'The named model-select seat on the left of the composer tool row (after attach / plan, left of send) — one occupant, so taking it means rendering the whole model + reasoning-effort affordance yourself.',
+    doc: 'The named model-select seat on the left of the composer tool row\n(after attach / plan, left of send) — one occupant, so taking it means\nrendering the whole model + reasoning-effort affordance yourself. Same\n`locked`-only owner share and same renders-nothing-while-empty contract\nas the plan seat. Note the composer deliberately keeps this seat LIVE\nwhile it refuses text for a model-related block: every such block is\none the user clears by picking a model here.',
     registerOptions: [],
     ownerProps: [
       '/**\n * Owner share of the two named composer control seats (plan / model): the\n * bar passes its disable state; the filling entry owns everything else.\n */\nexport interface InputControlOwnerProps {\n  /** Session-removed lock (the bar\'s chrome disable state). */\n  locked: boolean\n}',
@@ -673,7 +673,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'conversation.input.model\', () => ctx.slots.register(\n      { name: \'conversation.input.model\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:221',
+    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:220',
   },
   {
     key: 'conversation.input.overlay',
@@ -753,14 +753,14 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'conversation.input.plan\', () => ctx.slots.register(\n      { name: \'conversation.input.plan\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:211',
+    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:210',
   },
   {
     key: 'conversation.input.right',
     kind: 'list',
     scope: 'session',
-    summary: 'The right end of the same tool row, before the primary send button — the seat for a control the user reaches on the way to sending (the model select sits in its own named seat just left of here).',
-    doc: 'The right end of the same tool row, before the primary send button —\nthe seat for a control the user reaches on the way to sending (the\nmodel select sits in its own named seat just left of here). Same\nInputZone owner share and the same one-row height budget as\n`conversation.input.left`.',
+    summary: 'The right end of the same tool row, before the primary send button — the seat for a control the user reaches on the way to sending.',
+    doc: 'The right end of the same tool row, before the primary send button —\nthe seat for a control the user reaches on the way to sending. Same\nInputZone owner share and the same one-row height budget as\n`conversation.input.left`.',
     registerOptions: [
       {
         name: 'id',
@@ -804,7 +804,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     occupants: [],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'conversation.input.right\', () => ctx.slots.register(\n      { name: \'conversation.input.right\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:187',
+    source: 'packages/client/ui-conversation/src/client/contract/slots.ts:186',
   },
   {
     key: 'conversation.session',
@@ -960,6 +960,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     slotInject: '',
     declaredBy: 'an entry in \'conversation.session.header\' (client-ui-conversation), so it exists while that entry is mounted',
     occupants: [
+      'client-ui-conversation ReviewHeaderAction id \'review\'',
       'session-log-export SessionLogDownloadHeaderAction id \'session-log-download\'',
     ],
     replaceRisk: 'none',
@@ -1022,10 +1023,10 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     kind: 'single',
     scope: 'session',
     summary: 'The right details column, shown when the layout opens it.',
-    doc: 'The right details column, shown when the layout opens it. OCCUPIED by\nui-conversation\'s DetailsPanel, which declares the tool-details seat\ninside it — registering here replaces the column and takes that seat\nwith it. Absent an occupant the column renders nothing.\n\nNo owner props: the framework injects the session id and hooks for the\n`session` scope, and `ctx.layout` owns whether the column is open.',
+    doc: 'The right details column, shown when the layout opens it. OCCUPIED by\nui-conversation\'s DetailsPanel, which declares the tool-details seat\ninside it — registering here replaces the column and takes that seat\nwith it. Absent an occupant the column renders nothing.\n\nOwner props carry the rendered column: `open` is a non-zero details\ntrack, and `available` is whether the details minimum still fits beside\nthe current sidebar and center floor. `ctx.layout` still owns the\nwidth preference; sessionId arrives as a framework-standard prop.',
     registerOptions: [],
     ownerProps: [
-      '/** Details owner share: empty — sessionId arrives as a framework-standard prop. */\nexport interface DetailsOwnerProps {}',
+      '/** Details owner share: live rendered column from the frame\'s concession solve. */\nexport interface DetailsOwnerProps {\n  /** True when the details track has a non-zero rendered width. */\n  open: boolean\n  /** True when DETAILS_MIN can be allocated beside the current sidebar and center floor. */\n  available: boolean\n}',
     ],
     ownerPropsReferences: [],
     standardProps: [
@@ -1046,7 +1047,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'details\', () => ctx.slots.register(\n      { name: \'details\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-layout/src/client/index.ts:72',
+    source: 'packages/client/ui-layout/src/client/index.ts:74',
   },
   {
     key: 'root',
@@ -1192,7 +1193,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.general.item\', () => ctx.slots.register(\n      { name: \'settings.general.item\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-settings/src/client/contract/slots.ts:88',
+    source: 'packages/client/ui-settings/src/client/contract/slots.ts:100',
   },
   {
     key: 'settings.header',
@@ -1264,7 +1265,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.onboarding\', () => ctx.slots.register(\n      { name: \'settings.onboarding\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-settings/src/client/contract/slots.ts:73',
+    source: 'packages/client/ui-settings/src/client/contract/slots.ts:85',
   },
   {
     key: 'settings.plugin.item',
@@ -1357,7 +1358,59 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.plugins.tab\', () => ctx.slots.register(\n      { name: \'settings.plugins.tab\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-settings/src/client/contract/slots.ts:62',
+    source: 'packages/client/ui-settings/src/client/contract/slots.ts:74',
+  },
+  {
+    key: 'settings.search',
+    kind: 'single',
+    scope: 'root',
+    summary: 'The nav search field.',
+    doc: 'The nav search field. The shell owns the query string and filters the\nprojected section labels; this seat supplies the input chrome and its\nlocalized placeholder. Absent contribution hides the field and leaves\nevery section visible.',
+    registerOptions: [],
+    ownerProps: [
+      '/**\n * Owner share of the settings nav search field. The shell owns the query\n * string; the seat paints the input and writes each keystroke back.\n */\nexport interface SettingsSearchOwnerProps {\n  /** Current nav filter text (unnormalized). */\n  query: string\n  /**\n   * Replace the nav filter text.\n   * @param query - next raw query string.\n   */\n  onQuery: (query: string) => void\n}',
+    ],
+    ownerPropsReferences: [],
+    standardProps: [
+      'useSessions: SnapshotSelectorHook<SessionListState>',
+      'useWorkspaces: SnapshotSelectorHook<import(\'./workspaces/service.ts\').WorkspaceListState>',
+    ],
+    keyDomain: '',
+    hookContext: '',
+    slotInject: '',
+    declaredBy: 'an entry in \'sidebar.settings\' (client-ui-settings-general), so it exists while that entry is mounted',
+    occupants: [
+      'client-ui-settings-general SearchField',
+    ],
+    replaceRisk: 'shadows-shipped-ui',
+    example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.search\', () => ctx.slots.register(\n      { name: \'settings.search\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
+    source: 'packages/client/ui-settings/src/client/contract/slots.ts:48',
+  },
+  {
+    key: 'settings.searchEmpty',
+    kind: 'single',
+    scope: 'root',
+    summary: 'Copy shown in the nav when a non-empty search matches no section label.',
+    doc: 'Copy shown in the nav when a non-empty search matches no section label.\nAbsent contribution leaves the empty-nav state unlabeled.',
+    registerOptions: [],
+    ownerProps: [
+      '/** Owner share of the header title seat (the shell supplies nothing). */\nexport interface SettingsHeaderOwnerProps {\n  /** Marker field: header owner props are intentionally empty. */\n  children?: never\n}',
+    ],
+    ownerPropsReferences: [],
+    standardProps: [
+      'useSessions: SnapshotSelectorHook<SessionListState>',
+      'useWorkspaces: SnapshotSelectorHook<import(\'./workspaces/service.ts\').WorkspaceListState>',
+    ],
+    keyDomain: '',
+    hookContext: '',
+    slotInject: '',
+    declaredBy: 'an entry in \'sidebar.settings\' (client-ui-settings-general), so it exists while that entry is mounted',
+    occupants: [
+      'client-ui-settings-general SearchEmpty',
+    ],
+    replaceRisk: 'shadows-shipped-ui',
+    example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.searchEmpty\', () => ctx.slots.register(\n      { name: \'settings.searchEmpty\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
+    source: 'packages/client/ui-settings/src/client/contract/slots.ts:53',
   },
   {
     key: 'settings.section',
@@ -1405,7 +1458,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.section\', () => ctx.slots.register(\n      { name: \'settings.section\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-settings/src/client/contract/slots.ts:53',
+    source: 'packages/client/ui-settings/src/client/contract/slots.ts:65',
   },
   {
     key: 'settings.trigger',
@@ -1472,7 +1525,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     occupants: [],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'shell.overlay\', () => ctx.slots.register(\n      { name: \'shell.overlay\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-layout/src/client/index.ts:83',
+    source: 'packages/client/ui-layout/src/client/index.ts:85',
   },
   {
     key: 'sidebar',

@@ -8,18 +8,23 @@
 // application on the machine running the suite (the produced-files restraint).
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
+import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
 import { CallId, createAssistantMessage, createToolResultMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
 import { SESSION_FORMAT_VERSION, Session, SessionId } from '@deepseek-ai/dsh-session'
 import type {} from '@deepseek-ai/dsh-session-title'
 import {
-  launchWebScaffold, seedSession, watchConsole, webSnapshotMode, type WebScaffold,
+  captureStableAria, compareOrRefreshGolden, launchWebScaffold, seedSession, watchConsole,
+  webSnapshotMode, type WebScaffold,
 } from './scaffold.ts'
 import { newEnglishPage, saveFailureShot } from './support.ts'
 
 const MODE = webSnapshotMode()
 const SEED_ID = 'produced-file-mentions-web-e2e'
 const DONE = 'FILE_MENTION_DONE'
+const REVIEW_EXPECTED = fileURLToPath(
+  new URL('./snapshots/produced-file-mentions/review.expected.md', import.meta.url),
+)
 
 /** One-part text content for a built message. */
 function text(value: string): { type: 'text'; text: string }[] {
@@ -159,4 +164,18 @@ describe('web e2e: inline-code mentions of produced files', () => {
     expect(tripwire.pageErrors).toEqual([])
     expect(tripwire.warnings).toEqual([])
   }, 90_000)
+
+  it.skipIf(MODE === 'record')('shows produced files in the assembled Review column', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-produced-file-review'))
+    await page.getByRole('button', { name: 'Open review', exact: true }).click()
+    await expect.poll(
+      () => page.locator('[data-review-file]').count(),
+      { timeout: 10_000 },
+    ).toBe(3)
+    const snapshot = await captureStableAria(page, '[class*="detailsCol"]', scaffold.workspaceCwd)
+    await compareOrRefreshGolden(REVIEW_EXPECTED, snapshot, MODE)
+    await page.locator('[class*="detailsCol"]')
+      .getByRole('button', { name: 'Close review', exact: true })
+      .click()
+  }, 60_000)
 })

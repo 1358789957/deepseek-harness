@@ -113,6 +113,23 @@ export function SidebarRoot({
     }
   }, [pointerInside])
 
+  // Ctrl/Cmd+B toggles the column; skip while the composer (or any editor) is focused.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.code !== 'KeyB' || event.altKey || !(event.ctrlKey || event.metaKey)) return
+      const target = event.target
+      if (target instanceof HTMLElement) {
+        const tag = target.tagName
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
+          || target.closest('[contenteditable]:not([contenteditable="false"])') !== null) return
+      }
+      event.preventDefault()
+      toggleSidebar()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => { document.removeEventListener('keydown', onKeyDown) }
+  }, [toggleSidebar])
+
   return (
     <div
       ref={column}

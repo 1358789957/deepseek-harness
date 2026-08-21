@@ -13,7 +13,8 @@ import { SettingsScopeBinder } from './settings-scope.ts'
 
 export type {
   SettingsGeneralItemOwnerProps, SettingsHeaderOwnerProps, SettingsOnboardingOwnerProps,
-  SettingsPluginsTabOwnerProps, SettingsSectionOwnerProps, SettingsTriggerOwnerProps,
+  SettingsPluginsTabOwnerProps, SettingsSearchOwnerProps, SettingsSectionOwnerProps,
+  SettingsTriggerOwnerProps,
 } from './contract/slots.ts'
 export { SettingsScopeController, SettingsScopeBinder } from './settings-scope.ts'
 

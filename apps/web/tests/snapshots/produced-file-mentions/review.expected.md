@@ -1,0 +1,19 @@
+- text: Review
+- button "Close review"
+- heading "Changes" [level=2]
+- text: 3 +3 −0
+- list:
+  - listitem:
+    - button "site/report.html":
+      - img
+      - text: report.html site +1 −0
+  - listitem:
+    - button "a/style.css":
+      - img
+      - text: style.css a +1 −0
+  - listitem:
+    - button "b/style.css":
+      - img
+      - text: style.css b +1 −0
+- heading "Tasks" [level=2]
+- text: 0 No tasks

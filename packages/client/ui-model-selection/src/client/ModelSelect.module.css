@@ -64,7 +64,8 @@
 
 .menu {
   position: absolute;
-  right: 0;
+  left: 0;
+  right: auto;
   bottom: calc(100% + 8px);
   z-index: 20;
   display: flex;

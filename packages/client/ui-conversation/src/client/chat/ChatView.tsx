@@ -18,6 +18,8 @@ import { IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ChatViewSlotProps } from '../contract/slots.ts'
 import { PendingSteeringBubble } from './MessageItem.tsx'
 import { ChatNodeSeat } from './ChatNodeSeat.tsx'
+import { ConversationMap } from './ConversationMap.tsx'
+import { collectMapMessages, conversationScroller, sameMapMessages } from './conversation-map.ts'
 import { formatRunDuration } from './message-chrome.ts'
 import css from './ChatView.module.css'
 
@@ -25,7 +27,7 @@ const FOLLOW_THRESHOLD = 24
 
 /** Active column host when present; otherwise the view-local scroller. */
 function scrollerOf(from: HTMLElement): HTMLElement {
-  return (from.closest('[data-conversation-scroll]')) ?? from
+  return conversationScroller(from)
 }
 
 interface PagingAnchor {
@@ -165,6 +167,10 @@ export function ChatView({
     [inbox],
   )
   const runningTurnStart = useMemo(() => runningTurnStartTime(timeline), [timeline])
+  const mapMessages = useSession(
+    snapshot => collectMapMessages(snapshot.chat.order, snapshot.chat.nodes),
+    sameMapMessages,
+  )
 
   const listRef = useRef<HTMLDivElement | null>(null)
   const columnRef = useRef<HTMLDivElement | null>(null)
@@ -365,6 +371,16 @@ export function ChatView({
   return (
     <div className={css.root}>
       <div ref={listRef} className={css.scroll}>
+        <ConversationMap
+          messages={mapMessages}
+          running={running}
+          listRef={listRef}
+          onManualNavigate={() => {
+            atBottomRef.current = false
+            setAtBottom(false)
+          }}
+          t={t}
+        />
         <div ref={columnRef} className={css.column} data-chat-flow="">
           {openState === 'loading' && <div className={css.hint}>{t('chat.loadingHistory')}</div>}
           {openState === 'error' && openError !== null && (

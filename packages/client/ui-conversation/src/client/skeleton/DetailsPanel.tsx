@@ -1,17 +1,16 @@
-// DetailsPanel: close button + the selected call's args and
-// result — args as JSON, the result raw except for a terminal-card call, whose
-// Output section is the command's terminal card. Reads the
-// selection from the shared chat
-// store (conversation writes, this panel reads — the cross-registration
-// share the store seat exists for) and derives the call material from the
-// session snapshot — no data of its own.
+// DetailsPanel: Review right column (变更 / 任务) plus the selected
+// call's Input/Output when a tool is selected. Reads the shared chat store
+// and the session snapshot — no data of its own.
 
-import { Fragment } from 'react'
+import { Fragment, useEffect } from 'react'
 import { CodeBlock } from '@deepseek-ai/dsh-client-ui-primitives'
 import { shallowEqual } from '@deepseek-ai/dsh-client-runtime/client'
 import type { ConversationSnapshot, RunningToolCall, ToolCallBlock, ToolResultNode } from '@deepseek-ai/dsh-client-runtime/client'
+import type { TodoItem } from '@deepseek-ai/dsh-tool-todo/client'
 import type { DetailsSlotProps } from '../contract/slots.ts'
 import { findToolCall } from '../chat/tool-node-reader.ts'
+import { reviewChanges, sameReviewChanges } from './review-material.ts'
+import { ReviewPane } from './ReviewPane.tsx'
 import css from './DetailsPanel.module.css'
 
 /** Full props composed by reference from the contract (automatic shares & injected share). */
@@ -63,7 +62,34 @@ function rawResultText(block: ToolCallBlock): string {
   return parts.join('\n')
 }
 
-export function DetailsPanel({ useSession, useSessions, sessionId, useStore, renderSlot, closeDetails, t }: DetailsPanelProps) {
+/** True when Escape should stay with the focused editor. */
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  const tag = target.tagName
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return true
+  return target.closest('[contenteditable]:not([contenteditable="false"])') !== null
+}
+
+/** Escape must not steal typing or dismiss an open overlay first. */
+function escapeBlocked(target: EventTarget | null): boolean {
+  if (isTypingTarget(target)) return true
+  return document.querySelector('[role="menu"], [role="dialog"], [aria-modal="true"]') !== null
+}
+
+export function DetailsPanel({
+  open, setColumnOpen, useSession, useSessions, useProjection, sessionId, useStore, renderSlot,
+  closeDetails, openFile, t,
+}: DetailsPanelProps) {
+  useEffect(() => { setColumnOpen(open) }, [open, setColumnOpen])
+  useEffect(() => {
+    if (!open) return
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape' || escapeBlocked(event.target)) return
+      closeDetails()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => { document.removeEventListener('keydown', onKeyDown) }
+  }, [closeDetails, open])
   const selection = useStore(s => s.selection)
   // Session workspace root: an omitted or relative terminal cwd resolves
   // against it, which the pure presenter cannot see.
@@ -74,15 +100,15 @@ export function DetailsPanel({ useSession, useSessions, sessionId, useStore, ren
   const material = useSession(
     s => (callId === undefined ? null : materialFor(s, callId)),
     (a, b) => shallowEqual(a, b))
+  const changes = useSession(s => reviewChanges(s), sameReviewChanges)
+  const todos = (useProjection('todos') ?? []) as readonly TodoItem[]
 
   return (
-    <div className={css.root}>
+    <div className={css.root} data-review-pane="">
       <div className={css.header}>
-        <div className={css.title}>
-          {selection === null ? t('details.title') : material?.name ?? selection.toolName ?? t('details.title')}
-        </div>
+        <div className={css.title}>{t('review.title')}</div>
         <button
-          type="button" className={css.close} aria-label={t('details.close')}
+          type="button" className={css.close} aria-label={t('review.close')}
           onClick={() => { closeDetails() }}
         >
           <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden>
@@ -91,38 +117,52 @@ export function DetailsPanel({ useSession, useSessions, sessionId, useStore, ren
         </button>
       </div>
       <div className={css.body}>
-        {selection === null || callId === undefined
-          ? <div className={css.empty}>{t('details.empty')}</div>
-          : material === null
-            ? <div className={css.empty}>{t('details.notInWindow')}</div>
-            : (
-              <>
-                {material.argsRaw !== null && (
+        <ReviewPane
+          files={changes.files}
+          added={changes.added}
+          removed={changes.removed}
+          produced={changes.produced}
+          todos={todos}
+          t={t}
+          openFile={openFile}
+        />
+        {callId !== undefined && (
+          <section className={css.section} data-review-section="details">
+            <div className={css.sectionLabel}>
+              {material?.name ?? selection?.toolName ?? t('review.details')}
+            </div>
+            {material === null
+              ? <div className={css.empty}>{t('details.notInWindow')}</div>
+              : (
+                <>
+                  {material.argsRaw !== null && (
+                    <section className={css.section}>
+                      <div className={css.sectionLabel}>{t('details.input')}</div>
+                      <CodeBlock code={pretty(material.argsRaw)} lang="json" copyLabel={t('copy')} copiedLabel={t('copied')} />
+                    </section>
+                  )}
                   <section className={css.section}>
-                    <div className={css.sectionLabel}>{t('details.input')}</div>
-                    <CodeBlock code={pretty(material.argsRaw)} lang="json" copyLabel={t('copy')} copiedLabel={t('copied')} />
+                    <div className={css.sectionLabel}>{t('details.output')}</div>
+                    {/* Keyed by the selected call: the body owns per-call view
+                        state (the terminal card's expand and copy), which React
+                        would otherwise carry into the next selection because the
+                        panel does not unmount between calls. */}
+                    <Fragment key={callId}>
+                      {renderSlot('conversation.details.tool', { block: material.block, cwd: sessionCwd }, {
+                        fallback: 'kind' in material.block
+                          ? (
+                            <pre className={css.code} data-error={material.block.isError || undefined}>
+                              {rawResultText(material.block)}
+                            </pre>
+                          )
+                          : <div className={css.empty}>{t('details.running')}</div>,
+                      })}
+                    </Fragment>
                   </section>
-                )}
-                <section className={css.section}>
-                  <div className={css.sectionLabel}>{t('details.output')}</div>
-                  {/* Keyed by the selected call: the body owns per-call view
-                      state (the terminal card's expand and copy), which React
-                      would otherwise carry into the next selection because the
-                      panel does not unmount between calls. */}
-                  <Fragment key={callId}>
-                    {renderSlot('conversation.details.tool', { block: material.block, cwd: sessionCwd }, {
-                      fallback: 'kind' in material.block
-                        ? (
-                          <pre className={css.code} data-error={material.block.isError || undefined}>
-                            {rawResultText(material.block)}
-                          </pre>
-                        )
-                        : <div className={css.empty}>{t('details.running')}</div>,
-                    })}
-                  </Fragment>
-                </section>
-              </>
-            )}
+                </>
+              )}
+          </section>
+        )}
       </div>
     </div>
   )
