@@ -18,6 +18,12 @@ afterEach(() => {
 const t: ApiKeySheetProps['t'] = makeTranslate(zh)
 const FIXTURE = 'sk-fixture-not-a-real-key'
 
+function keyField(): HTMLInputElement {
+  const field = document.querySelector('input[type="password"]')
+  if (field === null) throw new Error('API key field missing')
+  return field
+}
+
 function rpc(ok: boolean, message = 'nope') {
   return {
     result: ok ? { ok: true as const } : { ok: false as const, error: { message } },
@@ -60,13 +66,13 @@ describe('ApiKeySheet', () => {
   it('saves a typed key write-only and never echoes the plaintext', async () => {
     const set = vi.fn(async () => rpc(true))
     const { refresh } = setup({ configured: false }, { credentials: { set, unset: vi.fn() } } as never)
-    const field = screen.getByLabelText('API 密钥') as HTMLInputElement
+    const field = keyField()
     expect(field.type).toBe('password')
     fireEvent.change(field, { target: { value: FIXTURE } })
     fireEvent.click(screen.getByRole('button', { name: '保存' }))
     await waitFor(() => { expect(set).toHaveBeenCalledWith({ ref: 'DEEPSEEK_API_KEY', value: FIXTURE }) })
     expect(refresh).toHaveBeenCalled()
-    expect((screen.getByLabelText('API 密钥') as HTMLInputElement).value).toBe('')
+    expect(keyField().value).toBe('')
     expect(screen.queryByDisplayValue(FIXTURE)).toBeNull()
     expect(screen.queryByText(FIXTURE)).toBeNull()
   })
@@ -89,7 +95,7 @@ describe('ApiKeySheet', () => {
   it('surfaces save, clear, and thrown credential failures', async () => {
     const set = vi.fn(async () => rpc(false, 'set failed'))
     setup({ configured: false }, { credentials: { set, unset: vi.fn() } } as never)
-    fireEvent.change(screen.getByLabelText('API 密钥'), { target: { value: FIXTURE } })
+    fireEvent.change(keyField(), { target: { value: FIXTURE } })
     fireEvent.click(screen.getByRole('button', { name: '保存' }))
     await waitFor(() => { expect(screen.getByRole('status').textContent).toBe('set failed') })
 
@@ -122,21 +128,21 @@ describe('ApiKeySheet', () => {
     cleanup()
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200 })))
     setup({ configured: false })
-    fireEvent.change(screen.getByLabelText('API 密钥'), { target: { value: FIXTURE } })
+    fireEvent.change(keyField(), { target: { value: FIXTURE } })
     fireEvent.click(screen.getByRole('button', { name: '测试' }))
     await waitFor(() => { expect(screen.getByRole('status').textContent).toBe('密钥可用。') })
 
     cleanup()
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 401 })))
     setup({ configured: false })
-    fireEvent.change(screen.getByLabelText('API 密钥'), { target: { value: FIXTURE } })
+    fireEvent.change(keyField(), { target: { value: FIXTURE } })
     fireEvent.click(screen.getByRole('button', { name: '测试' }))
     await waitFor(() => { expect(screen.getByRole('status').textContent).toBe('请求失败（401）。') })
 
     cleanup()
     vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Failed to fetch') }))
     setup({ configured: false })
-    fireEvent.change(screen.getByLabelText('API 密钥'), { target: { value: FIXTURE } })
+    fireEvent.change(keyField(), { target: { value: FIXTURE } })
     fireEvent.click(screen.getByRole('button', { name: '测试' }))
     await waitFor(() => {
       expect(screen.getByRole('status').textContent).toBe('浏览器拦了跨域，请到开放平台控制台验证。')
@@ -146,7 +152,7 @@ describe('ApiKeySheet', () => {
   it('locks save and clear when the launch environment owns the key', () => {
     setup({ writable: false, configured: true })
     expect(screen.getByText('由启动环境提供（只读）')).toBeTruthy()
-    expect((screen.getByLabelText('API 密钥') as HTMLInputElement).disabled).toBe(true)
+    expect(keyField().disabled).toBe(true)
     expect((screen.getByRole('button', { name: '保存' }) as HTMLButtonElement).disabled).toBe(true)
     expect((screen.getByRole('button', { name: '清除' }) as HTMLButtonElement).disabled).toBe(true)
     expect((screen.getByRole('button', { name: '测试' }) as HTMLButtonElement).disabled).toBe(false)
