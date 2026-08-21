@@ -27,6 +27,15 @@
       "path": "../ui-settings"
     },
     {
+      "path": "../ui-settings-general"
+    },
+    {
+      "path": "../ui-layout"
+    },
+    {
+      "path": "../ui-sidebar"
+    },
+    {
       "path": "../../api/remotes/tsconfig.client.json"
     },
     {

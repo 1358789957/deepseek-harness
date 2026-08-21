@@ -98,6 +98,13 @@ describe('createFixtureApi commands/skills', () => {
     const missingSession = await api.skills.list(req({ sessionId: sid('fx-nope') }))
     expect(missingSession.result).toMatchObject({ ok: false, error: { code: 'session-not-found' } })
   })
+
+  it('serves the host-cwd skill catalog when no session is addressed', async () => {
+    const api = createFixtureApi()
+    const response = await api.skills.list(req({}))
+    if (!response.result.ok) throw new Error('host-cwd skill list failed')
+    expect(response.result.value.skills[0]?.name).toBe('fixture-demo')
+  })
 })
 
 describe('FixtureApiClient command/skill dispatch', () => {

@@ -61,7 +61,7 @@ describe('sidebar shell snapshots', () => {
     const { runtime } = await bench({ locale: 'en' })
     const slot = runtime.renderSlot('sidebar', { collapsed: false, width: 300, page: 'home' })
     const shell = slot.container.firstElementChild
-    slot.update({ collapsed: true, width: 56 })
+    slot.update({ collapsed: true, width: 56, page: 'home' })
     // The wide content (wordmark shortcut) unmounts at the 150ms settle;
     // only the rail's capsule remains a New-session button.
     await waitFor(() => {

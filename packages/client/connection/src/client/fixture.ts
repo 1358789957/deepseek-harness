@@ -2779,8 +2779,11 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
 
     skills: {
       list: (request) => {
-        const missing = requireSession(request)
-        if (missing !== undefined) return missing
+        const sessionId = request.payload.sessionId
+        if (sessionId !== undefined) {
+          const missing = requireSession({ ...request, payload: { sessionId } })
+          if (missing !== undefined) return missing
+        }
         return ok(request, {
           skills: [
             { name: 'fixture-demo', description: 'fixture 技能样本', whenToUse: '仅供 UI 目录渲染验收', modelInvocable: true, source: 'bundled' },

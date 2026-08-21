@@ -543,7 +543,7 @@ export function InputBar({
         setPlusOpen(false)
       }
     }
-    const onKey = (event: KeyboardEvent): void => {
+    const onKey = (event: globalThis.KeyboardEvent): void => {
       if (event.key === 'Escape') setPlusOpen(false)
     }
     document.addEventListener('pointerdown', onDown)
