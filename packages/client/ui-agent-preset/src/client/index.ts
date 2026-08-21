@@ -24,6 +24,7 @@ import { AgentPresetLabel } from './AgentPresetLabel.tsx'
 import type { AgentPresetLabelInjected } from './AgentPresetLabel.tsx'
 import { AgentPresetRow } from './AgentPresetRow.tsx'
 import type { AgentPresetRowInjected } from './AgentPresetRow.tsx'
+import { AgentPresetPlusMenu } from './AgentPresetPlusMenu.tsx'
 import { AgentPresetSeat } from './AgentPresetSeat.tsx'
 import type { AgentPresetSeatInjected } from './AgentPresetSeat.tsx'
 import { AgentPresetSection } from './AgentPresetSection.tsx'
@@ -175,6 +176,13 @@ export function apply(ctx: ClientContext): void {
         locale: 'settings.agentPreset',
         inject: labelInjected,
       }, AgentPresetLabel)
+      const plus = scope.slots.inject('conversation.input.plus', () => scope.slots.register({
+        name: 'conversation.input.plus',
+        id: 'agent-modes',
+        order: 10,
+        locale: 'settings.agentPreset',
+        inject: seatInjected,
+      }, AgentPresetPlusMenu))
       return () => {
         stop()
         settingsMoved()
@@ -183,6 +191,7 @@ export function apply(ctx: ClientContext): void {
         creatorDraft = undefined
         chip()
         label()
+        plus()
       }
     }, 'ui-agent-preset: new-session chip and header label')
   })

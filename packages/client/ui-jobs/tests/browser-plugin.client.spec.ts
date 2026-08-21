@@ -5,7 +5,7 @@
  * ownership reservation.
  */
 import { Context } from '@deepseek-ai/cordis'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import InvariantRegistry from '@deepseek-ai/dsh-invariants'
 import { SlotRegistry } from '@deepseek-ai/dsh-client-runtime/client'
 import { stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
@@ -30,9 +30,12 @@ async function bench(): Promise<{ ctx: Context; fiber: ReturnType<Context['plugi
     name: 'root',
     children: {
       'conversation.session.header.actions': { kind: 'list', scope: 'session' },
+      'sidebar.nav': { kind: 'list', scope: 'root' },
+      'shell.page': { kind: 'list', scope: 'root' },
     },
   } as never, () => null)
   ctx.provide('sessions', {})
+  ctx.provide('layout', { showPage: vi.fn() })
   // The locale plugin binds a settings scope, which reads the connection handle
   // and the forwarded-event port.
   ctx.provide('connection', { api: { settings: {} }, isLoopback: false } as never)
@@ -46,14 +49,18 @@ async function bench(): Promise<{ ctx: Context; fiber: ReturnType<Context['plugi
 
 describe('ui-job browser half', () => {
   it('declares the services it binds', () => {
-    expect(inject).toEqual(['sessions', 'slots', 'locale'])
+    expect(inject).toEqual(['sessions', 'slots', 'locale', 'layout'])
   })
 
-  it('registers the header action, and fiber teardown removes it (HMR safety)', async () => {
+  it('registers the header action, sidebar rows, and pages, and fiber teardown removes them', async () => {
     const { ctx, fiber } = await bench()
     expect(headerEntryIds(ctx)).toContain('job-list')
+    expect(ctx.slots.entries('sidebar.nav').map(entry => entry.options.id)).toEqual(['jobs', 'schedule'])
+    expect(ctx.slots.entries('shell.page').map(entry => entry.options.id)).toEqual(['jobs', 'schedule'])
     await fiber.dispose()
     expect(headerEntryIds(ctx)).not.toContain('job-list')
+    expect(ctx.slots.entries('sidebar.nav')).toHaveLength(0)
+    expect(ctx.slots.entries('shell.page')).toHaveLength(0)
   })
 
   it('registers both dictionaries under its own namespace and releases them with the fiber', async () => {

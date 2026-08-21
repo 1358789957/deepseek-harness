@@ -134,3 +134,7 @@ abstract onJobsChanged(listener: JobsChangedListener): () => void
 **一个运行中的 subagent 有两个入口。** 这是刻意接受的，且被限制在一次性后台委派这一种情况。如果实际用起来读着像噪声，修法是呈现层的——可以让目录行引用那个任务，而不是让任务列表隐藏这个 kind。
 
 **新增非根子路径必须补 `paths` 条目。** `@deepseek-ai/dsh-jobs/brand` 得先登记进 `tsconfig.base.json`，Typert 分析器才会接受该引用。它的故障表现是一条来自远离改动处的生成器的、令人困惑的「not exported by」错误，所以这个条目是新增子路径的组成部分，而不是优化。
+
+## Related
+
+- [Codex 侧栏任务看板、定时任务与加号菜单](2026-08-21-codex-sidebar-jobs-and-plus-menu.md) 在同一份 `jobsBySession` 镜像上增加侧栏任务看板；本笔记仍拥有线路帧和标题栏弹层。

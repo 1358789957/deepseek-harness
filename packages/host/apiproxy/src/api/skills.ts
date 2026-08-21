@@ -8,7 +8,7 @@
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { RpcRequest, RpcResponse } from './rpc.ts'
 
-/** Skill catalog row (wire projection of the host SkillSummary; provider/source vocabulary stays host-side). */
+/** Skill catalog row (wire projection of the host SkillSummary). */
 export interface SkillEntry {
   /** Kebab-case identifier the user references as `/name` in the composer. */
   readonly name: string
@@ -18,6 +18,11 @@ export interface SkillEntry {
   readonly whenToUse?: string
   /** False marks a user-only skill (`disable-model-invocation`): invocable here, absent from the model catalog. */
   readonly modelInvocable: boolean
+  /**
+   * Discovery source of the winning skill (`bundled`, `project-agents`,
+   * `project-dsh`, `user-dsh`, `custom`, …).
+   */
+  readonly source: string
 }
 
 /**
@@ -28,6 +33,10 @@ export interface SkillEntry {
  * one deterministic path with no dedicated invocation wire.
  */
 export interface SkillsApi {
-  /** Lists the user-invocable skill catalog for the session's project. */
-  list(request: RpcRequest<{ sessionId: SessionId }>): Promise<RpcResponse<{ skills: readonly SkillEntry[] }>>
+  /**
+   * Lists the user-invocable skill catalog. `sessionId` addresses that
+   * session's project cwd and composition; omit it to list the host process
+   * cwd through the host registry (hero / no current session).
+   */
+  list(request: RpcRequest<{ sessionId?: SessionId }>): Promise<RpcResponse<{ skills: readonly SkillEntry[] }>>
 }

@@ -138,6 +138,7 @@ function declareConversation(slots: SlotRegistry): () => void {
     children: {
       'conversation.hero.agentPreset': { kind: 'single', scope: 'root' },
       'conversation.session.header.actions': { kind: 'list', scope: 'session' },
+      'conversation.input.plus': { kind: 'list', scope: 'session-maybe' },
     },
   } as never, () => null)
 }
@@ -314,9 +315,11 @@ describe('ui-agent-preset apply', () => {
     const label = slots.entries('conversation.session.header.actions')[0]!
     expect(label.component).toBe(AgentPresetLabel)
     expect(label.options).toMatchObject({ id: 'agent-preset', order: -10 })
+    expect(slots.entries('conversation.input.plus')[0]!.options.id).toBe('agent-modes')
     await fiber.dispose()
     expect(slots.entries('conversation.hero.agentPreset')).toHaveLength(0)
     expect(slots.entries('conversation.session.header.actions')).toHaveLength(0)
+    expect(slots.entries('conversation.input.plus')).toHaveLength(0)
     expect(slots.entries('settings.section')).toHaveLength(0)
     conversation()
   })

@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-Web 后台任务特性的归属方：向 `conversation.session.header.actions` 贡献一个条目，列出当前会话可见的 `ctx.jobs` 记录。数据完全来自 [`dsh-client-runtime`](../runtime/README.md) 从 `session/jobs` 帧折叠出的 `jobsBySession` 列表镜像，因此本包不发任何 RPC，除弹层开合外不持有任何状态。
+Web 后台任务特性的归属方：向 `conversation.session.header.actions` 贡献一个条目，列出当前会话可见的 `ctx.jobs` 记录，并再贡献两行宽侧栏与对应的 `shell.page`——**任务看板**（官方后台任务，扁平化每个会话的 `jobsBySession` 镜像）和**定时任务**（客户端本地总表 `{ name, cadence, createdAt }`，存在 `localStorage` 键 `dsh.scheduled-jobs`，永不预置；列为名称／周期/规则／状态／下次／操作，状态在第一个周期槽之前为 `scheduled`，之后为 `overdue`）。标题栏弹层的数据完全来自 [`dsh-client-runtime`](../runtime/README.md) 从 `session/jobs` 帧折叠出的 `jobsBySession` 列表镜像，因此官方任务列表不发任何 RPC，除弹层开合外不持有任何状态。定时任务页不是宿主 `schedule_*` 工具；那些工具仍按会话作用域、面向模型。决策：[Codex 侧栏任务看板、定时任务与加号菜单](../../../.agents/notes/implemented/feature/2026-08-21-codex-sidebar-jobs-and-plus-menu.md)。
 
 只有当会话至少有一个任务时才渲染触发器，普通对话不会因为一项未被使用的能力而长出控件。角标计数为 `running` 加 `stopping`，为零时省略，这样只剩已完成任务的会话保留一个安静的历史入口，而不是宣告一个「零」。弹层是一个扁平列表：活跃行在前按 `startedAt` 升序，随后终态行按 `finishedAt` 降序；毫秒相同的并列按启动顺序打破，宿主的 map 迭代顺序永远不参与决定。一行显示生产者 kind、label、状态标记、生产者一旦给出 `detail` 就取代通用状态词的那段文字，以及已耗时。该耗时在活跃时每秒推进，并在 `finishedAt` 冻结；只有当打开的列表里确实有会动的东西时时钟才运行。缺少 `finishedAt` 的终态行读作零而不是负数，超过一小时的耗时停留在小时单位，不会长出任何生产者目前都到不了的「天」词汇。
 

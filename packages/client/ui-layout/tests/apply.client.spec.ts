@@ -30,27 +30,45 @@ async function bench() {
   // ui-theme's Appearance row binds a durable scope through these two.
   ctx.provide('remote', { $on: () => () => {} } as never)
   ctx.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)
+  const listeners = new Set<() => void>()
+  const listState = { current: undefined as string | undefined }
+  ctx.provide('sessions', {
+    list: {
+      getSnapshot: () => listState,
+      subscribe: (listener: () => void) => {
+        listeners.add(listener)
+        return () => { listeners.delete(listener) }
+      },
+    },
+  } as never)
   await ctx.plugin({ inject: themeInject, apply: themeApply }).await()
   await slotsFiber.await()
-  return { ctx, slots: ctx.get('slots') as SlotRegistry }
+  return {
+    ctx, slots: ctx.get('slots') as SlotRegistry,
+    setCurrent(next: string | undefined) {
+      listState.current = next
+      for (const listener of listeners) listener()
+    },
+  }
 }
 
 describe('ui-layout client apply', () => {
   it('declares its service dependencies', () => {
-    expect(inject).toEqual(['slots', 'theme'])
+    expect(inject).toEqual(['slots', 'theme', 'sessions'])
   })
 
-  it('provides ctx.layout and registers AppFrame into root with the three child declarations', async () => {
+  it('provides ctx.layout and registers AppFrame into root with the child declarations', async () => {
     const { ctx, slots } = await bench()
     const fiber = ctx.plugin({ inject: [...inject], apply })
     await fiber.await()
     expect(ctx.get('layout')).toBeInstanceOf(LayoutController)
     // The one register() call occupied 'root'…
     expect(slots.entries('root')).toHaveLength(1)
-    // …and declared the three children in the ledger.
     expect(slots.spec('sidebar')).toEqual({ kind: 'single', scope: 'root' })
     expect(slots.spec('conversation')).toEqual({ kind: 'single', scope: 'session-maybe' })
     expect(slots.spec('details')).toEqual({ kind: 'single', scope: 'session' })
+    expect(slots.spec('shell.overlay')).toEqual({ kind: 'list', scope: 'root' })
+    expect(slots.spec('shell.page')).toEqual({ kind: 'list', scope: 'root' })
   })
 
   it('injects no business face and attaches the layout actions', async () => {
@@ -58,13 +76,32 @@ describe('ui-layout client apply', () => {
     const fiber = ctx.plugin({ inject: [...inject], apply })
     await fiber.await()
     const actions = {
-      setSidebar: vi.fn(), setDetails: vi.fn(), toggleSidebar: vi.fn(), openDetails: vi.fn(), closeDetails: vi.fn(),
+      setSidebar: vi.fn(), setDetails: vi.fn(), toggleSidebar: vi.fn(),
+      setNarrow: vi.fn(), openDetails: vi.fn(), closeDetails: vi.fn(), showPage: vi.fn(),
     }
     const injected = (slots.entries('root')[0]!.inject as (actions: never) => object)(actions as never)
     expect(injected).toEqual({})
     const layout = ctx.get('layout') as LayoutController
     layout.toggleSidebar()
     expect(actions.toggleSidebar).toHaveBeenCalledOnce()
+  })
+
+  it('returns the center column home when the current session changes', async () => {
+    const { ctx, slots, setCurrent } = await bench()
+    const fiber = ctx.plugin({ inject: [...inject], apply })
+    await fiber.await()
+    const actions = {
+      setSidebar: vi.fn(), setDetails: vi.fn(), toggleSidebar: vi.fn(),
+      setNarrow: vi.fn(), openDetails: vi.fn(), closeDetails: vi.fn(), showPage: vi.fn(),
+    }
+    ;(slots.entries('root')[0]!.inject as (actions: never) => object)(actions as never)
+    setCurrent('s-1')
+    expect(actions.showPage).toHaveBeenCalledExactlyOnceWith('home')
+    setCurrent('s-1')
+    expect(actions.showPage).toHaveBeenCalledOnce()
+    setCurrent('s-2')
+    expect(actions.showPage).toHaveBeenCalledTimes(2)
+    await fiber.dispose()
   })
 
   it('theme presenter applies the initial snapshot, follows theme/change, and unwinds on dispose', async () => {

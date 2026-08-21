@@ -62,6 +62,8 @@ function mountFrame() {
     if (key === 'conversation') return <div data-testid="center-content" />
     if (key === 'details') return <div data-testid="details-content" />
     if (key === 'conversation.empty') return <div data-testid="empty-content" />
+    if (key === 'shell.page') return <div data-testid="page-content" />
+    if (key === 'shell.overlay') return <div data-testid="overlay-content" />
     return <div data-testid="other-content" />
   }) as AppFrameProps['renderSlot']
   const useSessions = ((sel: (s: SessionListState) => unknown) => {
@@ -216,7 +218,7 @@ describe('AppFrame', () => {
 
   it('sidebar slot receives live concession output as owner props', () => {
     const { slotCalls } = mountFrame()
-    expect(slotCalls.find(c => c.key === 'sidebar')!.props).toEqual({ collapsed: false, width: 280 })
+    expect(slotCalls.find(c => c.key === 'sidebar')!.props).toEqual({ collapsed: false, width: 280, page: 'home' })
   })
 
   it('sidebar drag widens through rAF-batched pointer moves', () => {
@@ -274,7 +276,7 @@ describe('AppFrame', () => {
     expect(getByTestId('sidebar-content')).toBeTruthy()
     expect(frame.hasAttribute('data-sidebar-collapsed')).toBe(true)
     const lastSidebarCall = slotCalls.filter(c => c.key === 'sidebar').at(-1)!
-    expect(lastSidebarCall.props).toEqual({ collapsed: true, width: SIDEBAR_COLLAPSED })
+    expect(lastSidebarCall.props).toEqual({ collapsed: true, width: SIDEBAR_COLLAPSED, page: 'home' })
   })
 
   it('viewport shrink triggers the concession chain via ResizeObserver', () => {
@@ -306,7 +308,7 @@ describe('AppFrame — narrow-viewport auto-collapse', () => {
     const { frame, slotCalls } = mountFrame()
     expect(tracks(frame)).toEqual([SIDEBAR_COLLAPSED, 0])
     expect(frame.hasAttribute('data-sidebar-collapsed')).toBe(true)
-    expect(slotCalls.filter(c => c.key === 'sidebar').at(-1)!.props).toEqual({ collapsed: true, width: SIDEBAR_COLLAPSED })
+    expect(slotCalls.filter(c => c.key === 'sidebar').at(-1)!.props).toEqual({ collapsed: true, width: SIDEBAR_COLLAPSED, page: 'home' })
     expect(frame.querySelectorAll('[class*="handle"]')).toHaveLength(0)
   })
 
@@ -341,6 +343,22 @@ describe('AppFrame — narrow-viewport auto-collapse', () => {
     frameWidth = 1920
     act(() => { fireResize?.(); vi.advanceTimersByTime(20) })
     expect(tracks(frame)).toEqual([400, 0])
+  })
+})
+
+describe('AppFrame — center-column pages', () => {
+  it('overlays shell.page for a non-home page and keeps conversation mounted', () => {
+    const { instance, getByTestId, slotCalls } = mountFrame()
+    expect(getByTestId('center-content')).toBeTruthy()
+    expect(getByTestId('overlay-content')).toBeTruthy()
+    expect(slotCalls.map(c => c.key)).not.toContain('shell.page')
+    act(() => { instance.actions.showPage('jobs') })
+    expect(getByTestId('center-content')).toBeTruthy()
+    expect(getByTestId('page-content')).toBeTruthy()
+    expect(slotCalls.filter(c => c.key === 'shell.page').at(-1)!.props).toEqual({ page: 'jobs' })
+    expect(slotCalls.filter(c => c.key === 'sidebar').at(-1)!.props).toEqual({
+      collapsed: false, width: 280, page: 'jobs',
+    })
   })
 })
 

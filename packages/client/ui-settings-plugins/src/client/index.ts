@@ -17,6 +17,9 @@ import type {} from '@deepseek-ai/dsh-client-locale/client'
 // through the service, never a value import (client bundle purity gate).
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+import type {} from '@deepseek-ai/dsh-client-ui-settings-general/client'
+import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: the ctx.remote Context merge and the forwarded-event key face.
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
@@ -24,6 +27,8 @@ import { AgentLoopCard } from './AgentLoopCard.tsx'
 import { BashCard } from './BashCard.tsx'
 import { ConfigurablePluginsTab } from './ConfigurablePluginsTab.tsx'
 import type { ConfigurablePluginsTabInjected } from './ConfigurablePluginsTab.tsx'
+import { PluginsNavTrigger } from './PluginsNavTrigger.tsx'
+import type { PluginsNavTriggerInjected } from './PluginsNavTrigger.tsx'
 import { PluginsSettingsSection } from './PluginsSettingsSection.tsx'
 import type { PluginsSettingsSectionInjected, PluginsSettingsTabEntry } from './PluginsSettingsSection.tsx'
 import { WebSearchCard } from './WebSearchCard.tsx'
@@ -48,7 +53,7 @@ export type { WebSearchCardFace, WebSearchCardState } from './web-search-card-co
 const NS = 'settings.plugins'
 
 /** Required services (cordis fiber inject). */
-export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope']
+export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope', 'layout', 'settingsPanel']
 
 /**
  * Mount the plugin configuration section and the cards this package ships.
@@ -108,6 +113,19 @@ export function apply(ctx: ClientContext): void {
 
   // This package owns the one Plugins navigation entry and the tab chrome;
   // feature plugins contribute pages without competing for Settings nav rows.
+  ctx.slots.inject('sidebar.nav', () => ctx.slots.register({
+    name: 'sidebar.nav',
+    id: 'plugins',
+    order: 0,
+    locale: NS,
+    inject: (): PluginsNavTriggerInjected => ({
+      openPlugins: () => {
+        ctx.layout.showPage('home')
+        ctx.settingsPanel.open('plugins')
+      },
+    }),
+  }, PluginsNavTrigger))
+
   ctx.slots.inject('settings.section', () => ctx.slots.register({
     name: 'settings.section',
     id: 'plugins',

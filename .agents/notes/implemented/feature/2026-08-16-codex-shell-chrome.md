@@ -56,3 +56,4 @@ Ctrl/Cmd+, toggles the Settings panel. The wide sidebar trigger shows that short
 
 - [Web preview product badge](2026-08-05-web-preview-product-badge.md) still owns the badge that remains beside the new headline.
 - [Conversation jump rail](2026-08-16-conversation-jump-rail.md) and [Codex Review column](2026-08-16-codex-review-column.md) own the already-shipped transcript chrome; this note does not change them.
+- [Codex sidebar task board, scheduled jobs, and plus menu](2026-08-21-codex-sidebar-jobs-and-plus-menu.md) owns the plus-menu rows and sidebar page triggers; this note still owns hero copy, settings search, and plugin inventory chrome.

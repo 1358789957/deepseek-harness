@@ -56,3 +56,4 @@ Ctrl/Cmd+, 会切换设置面板。宽侧栏触发器把该快捷键画在行尾
 
 - [Web 预览版产品徽标](2026-08-05-web-preview-product-badge.md) 仍持有留在新标题旁的徽标。
 - [会话跳转轨](2026-08-16-conversation-jump-rail.md) 与 [Codex Review 列](2026-08-16-codex-review-column.md) 持有已经交付的 transcript chrome；本笔记不改它们。
+- [Codex 侧栏任务看板、定时任务与加号菜单](2026-08-21-codex-sidebar-jobs-and-plus-menu.md) 拥有加号菜单行和侧栏页面触发器；本笔记仍拥有 hero 文案、设置搜索和插件清单 chrome。

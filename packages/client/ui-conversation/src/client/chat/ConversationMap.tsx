@@ -1,5 +1,5 @@
 // Left-gutter conversation jump rail: one marker per user turn, hover preview,
-// click-to-jump. Interaction matches the 声场 ConversationMap; chrome uses DSH
+// click-to-jump. Interaction matches a left-gutter conversation map; chrome uses DSH
 // tokens. The rail sits on the LEFT so the chat scrollbar stays on the RIGHT.
 
 import {

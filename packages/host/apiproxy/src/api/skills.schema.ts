@@ -15,11 +15,12 @@ export const skillEntrySchema = z.object({
   description: z.string(),
   whenToUse: z.string().optional(),
   modelInvocable: z.boolean(),
+  source: z.string().min(1),
 }) satisfies z.ZodType<Wire<SkillEntry>>
 
 /** skill.list request payload. */
 export const skillListRequestSchema = z.object({
-  sessionId: sessionIdSchema,
+  sessionId: sessionIdSchema.optional(),
 }) satisfies z.ZodType<Wire<RequestPayload<'skill.list'>>>
 
 /** skill.list response value. */

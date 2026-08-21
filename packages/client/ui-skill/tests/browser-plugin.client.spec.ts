@@ -23,7 +23,7 @@ import type { ClientSessionContext, InputTriggerSource } from '@deepseek-ai/dsh-
 import { apply, inject } from '../src/client/index.ts'
 import { SkillRow as SkillToolRow } from '../src/client/SkillRow.tsx'
 
-type SkillRow = { name: string; description: string; whenToUse?: string; modelInvocable?: boolean }
+type SkillRow = { name: string; description: string; whenToUse?: string; modelInvocable?: boolean; source?: string }
 type ListResult =
   | { ok: true; value: { skills: SkillRow[] } }
   | { ok: false; error: { code: string; message: string; details: object } }
@@ -44,8 +44,13 @@ function providePresentation(ctx: Context): PresentationCapture {
   const slots = new SlotRegistry(ctx)
   slots.register({
     name: 'root',
-    children: { 'tool.call.toolview': { kind: 'keyed', scope: 'session' } },
+    children: {
+      'tool.call.toolview': { kind: 'keyed', scope: 'session' },
+      'conversation.input.plus': { kind: 'list', scope: 'session-maybe' },
+      'shell.page': { kind: 'list', scope: 'root' },
+    },
   } as never, () => null)
+  ctx.provide('layout', { showPage: () => {} })
   const capture: PresentationCapture = {
     slots,
     dictionaries: [],
@@ -81,9 +86,9 @@ async function bench(list: ListFn, addressed?: SessionId, invoke?: InvokeFn) {
 }
 
 const CATALOG: SkillRow[] = [
-  { name: 'commit-helper', description: 'commit flow', modelInvocable: true },
-  { name: 'code-review', description: 'review flow', whenToUse: 'reviews', modelInvocable: true },
-  { name: 'deploy', description: 'deploy flow', modelInvocable: true },
+  { name: 'commit-helper', description: 'commit flow', modelInvocable: true, source: 'project-agents' },
+  { name: 'code-review', description: 'review flow', whenToUse: 'reviews', modelInvocable: true, source: 'bundled' },
+  { name: 'deploy', description: 'deploy flow', modelInvocable: true, source: 'user-dsh' },
 ]
 
 const listOk = (skills: SkillRow[]): ListFn => () => Promise.resolve({ result: { ok: true as const, value: { skills } } })
@@ -107,7 +112,7 @@ const req = (query: string, signal?: AbortSignal) =>
 
 describe('apply', () => {
   it('declares the services it binds', () => {
-    expect(inject).toEqual(['inputTriggers', 'connection', 'sessions', 'slots', 'locale', 'remote'])
+    expect(inject).toEqual(['inputTriggers', 'connection', 'sessions', 'slots', 'locale', 'remote', 'layout'])
   })
 
   it('registers the dedicated skill row and its locale dictionaries', async () => {
@@ -122,6 +127,8 @@ describe('apply', () => {
     expect(entry?.options).toMatchObject({ key: 'skill' })
     expect(entry?.locale).toBe('skill')
     expect(entry?.component).toBe(SkillToolRow)
+    expect(presentation.slots.entries('conversation.input.plus')[0]?.options.id).toBe('skill')
+    expect(presentation.slots.entries('shell.page')[0]?.options.id).toBe('skills')
     expect(presentation.dictionaries).toEqual([{
       namespace: 'skill', dictionaries: {
         zh: {
@@ -130,6 +137,18 @@ describe('apply', () => {
           'row.stopped': 'skill 加载已中止',
           'row.instructions': '说明',
           'menu.userOnly': '仅用户',
+          plus: 'Skill',
+          'page.title': 'Skill',
+          'page.empty': '还没有技能。把 skill 文件放到技能目录后再来看。',
+          'page.emptyImported': '还没有导入的技能。装上的会按导入顺序排在这里。',
+          'page.builtin': '内置',
+          'page.imported': '导入',
+          'page.search': '搜索技能',
+          'page.searchEmpty': '没有匹配的技能',
+          'page.enable': '启用 {name}',
+          'page.close': '关闭',
+          'page.import': '导入 SKILL.md',
+          'page.importInvalid': '不是有效的 SKILL.md',
         },
         en: {
           'row.running': 'Loading skill',
@@ -137,6 +156,18 @@ describe('apply', () => {
           'row.stopped': 'Skill load stopped',
           'row.instructions': 'Instructions',
           'menu.userOnly': 'user-only',
+          plus: 'Skill',
+          'page.title': 'Skill',
+          'page.empty': 'No skills yet. Put skill files in the skills directory, then come back.',
+          'page.emptyImported': 'No imported skills yet. Installed ones appear here in import order.',
+          'page.builtin': 'Built-in',
+          'page.imported': 'Imported',
+          'page.search': 'Search skills',
+          'page.searchEmpty': 'No matching skills',
+          'page.enable': 'Enable {name}',
+          'page.close': 'Close',
+          'page.import': 'Import SKILL.md',
+          'page.importInvalid': 'Not a valid SKILL.md',
         },
       },
     }])
@@ -165,6 +196,8 @@ describe('apply', () => {
     await fiber.dispose()
     expect(() => inputTriggers.registerSource(rival)).not.toThrow()
     expect(presentation.slots.entries('tool.call.toolview')).toHaveLength(0)
+    expect(presentation.slots.entries('conversation.input.plus')).toHaveLength(0)
+    expect(presentation.slots.entries('shell.page')).toHaveLength(0)
     expect(presentation.localeDisposed).toBe(true)
   })
 })
@@ -280,6 +313,30 @@ describe('catalog cache', () => {
     await source.candidates(proj('s2'), req(''))
     expect(payloads).toHaveLength(3)
     expect(payloads[2]).toEqual({ sessionId: 's1' })
+  })
+
+  it('skills/change clears every cached session', async () => {
+    const { list, payloads } = countingList()
+    const { ctx, source } = await bench(list)
+    await source.candidates(proj('s1'), req(''))
+    expect(payloads).toHaveLength(1)
+    ctx.remote.$dispatch('skills/change', [])
+    await source.candidates(proj('s1'), req(''))
+    expect(payloads).toHaveLength(2)
+  })
+
+  it('omits unchecked skills from slash candidates', async () => {
+    const data = new Map<string, string>([
+      ['dsh.skill-enabled', JSON.stringify({ disabled: ['code-review'] })],
+    ])
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => data.get(key) ?? null,
+      setItem: (key: string, value: string) => { data.set(key, value) },
+    })
+    const { source } = await bench(listOk(CATALOG))
+    const items = await source.candidates(proj('s1'), req(''))
+    expect(items.map(item => item.name)).toEqual(['commit-helper', 'deploy'])
+    vi.unstubAllGlobals()
   })
 
   it('connection/reset clears every cached session', async () => {

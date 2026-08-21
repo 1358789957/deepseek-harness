@@ -68,6 +68,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: opacity var(--ds-transition-duration-fast) var(--ds-ease-in-out);
 }
 
 /* Keep the hero mark in the same primary ink as its headline. */

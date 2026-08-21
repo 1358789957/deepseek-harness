@@ -134,3 +134,7 @@ Below it, [`jobs-local`](../../../../packages/jobs/jobs-local/tests/jobs.spec.ts
 **Two entry points for one running subagent.** Accepted deliberately, and bounded to one-shot background delegations. If it reads as noise in practice, the fix is presentational — the catalog row can cite the task rather than the task list hiding the kind.
 
 **A new non-root subpath needs its `paths` entry.** `@deepseek-ai/dsh-jobs/brand` had to be registered in `tsconfig.base.json` before the Typert analyzer would accept the reference. The failure mode is a confusing "not exported by" error from a generator far from the edit, so the entry is part of adding a subpath, not an optimization.
+
+## Related
+
+- [Codex sidebar task board, scheduled jobs, and plus menu](2026-08-21-codex-sidebar-jobs-and-plus-menu.md) adds the sidebar task board over the same `jobsBySession` mirror; this note still owns the wire frame and the header popover.

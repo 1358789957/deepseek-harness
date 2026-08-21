@@ -27,6 +27,12 @@ export interface ILayout {
   openDetails(): void
   /** Close the details panel. */
   closeDetails(): void
+  /**
+   * Show a center-column page. `'home'` reveals the conversation; any other
+   * id must match a `shell.page` registration.
+   * @param page - `'home'` or a `shell.page` entry id.
+   */
+  showPage(page: string): void
 }
 
 /** Cross-plugin panel-action face (ctx.layout). */
@@ -57,6 +63,15 @@ export class LayoutController implements ILayout {
   /** Close the details panel. */
   closeDetails(): void {
     this.#require().closeDetails()
+  }
+
+  /**
+   * Show a center-column page. A write before the root entry mounts is
+   * dropped — the session-change subscriber can fire during boot.
+   * @param page - `'home'` or a `shell.page` entry id.
+   */
+  showPage(page: string): void {
+    this.#panels?.showPage(page)
   }
 
   #require(): PanelActions {

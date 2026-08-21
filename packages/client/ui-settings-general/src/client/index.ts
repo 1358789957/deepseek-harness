@@ -7,7 +7,7 @@
  * Feature-owned rows and sections stay with their features.
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import { createSnapshotStore, type ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type { ConnectionHandle } from '@deepseek-ai/dsh-api-remotes/client'
 import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
 import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-web-react'
@@ -27,6 +27,7 @@ import { SettingsDocumentAction } from './SettingsDocumentAction.tsx'
 import type { SettingsDocumentActionInjected } from './SettingsDocumentAction.tsx'
 import { refreshDocumentIfLoaded, SettingsDocumentStore } from './settings-document-store.ts'
 import { en, zh, type SettingsKey } from './locales.ts'
+import { SettingsPanelController } from './service.ts'
 
 export type {
   CloseLabelProps, HeaderContentProps, SearchEmptyProps, SearchFieldProps, TriggerContentProps,
@@ -38,6 +39,15 @@ export type { SettingsDocumentActionInjected, SettingsDocumentActionProps } from
 export type { SettingsDocumentState } from './settings-document-store.ts'
 export { SettingsDocumentStore } from './settings-document-store.ts'
 export type { SettingsKey } from './locales.ts'
+export type { ISettingsPanel, SettingsPanelState } from './service.ts'
+export { SettingsPanelController } from './service.ts'
+
+declare module '@deepseek-ai/cordis' {
+  interface Context {
+    /** Open/close the settings modal; the shell owns the snapshot. */
+    settingsPanel: import('./service.ts').ISettingsPanel
+  }
+}
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -68,6 +78,12 @@ export function apply(ctx: ClientContext): void {
   // seat, and the nav label is a thunk the owner resolves per render — no
   // locale/change re-registration wiring.
   const t = ctx.locale.bind(NS)
+  const panelStore = createSnapshotStore<{ open: boolean; sectionId?: string }>({ open: false })
+  const settingsPanel = new SettingsPanelController(panelStore)
+  ctx.effect(() => {
+    const dispose = ctx.reflect.provide('settingsPanel', settingsPanel)
+    return () => { void dispose() }
+  }, 'ui-settings-general: settingsPanel')
   const connection = ctx.get('connection') as ConnectionHandle
   const documentController = connection.isLoopback
     ? new SettingsDocumentStore(connection.api)
@@ -120,6 +136,7 @@ export function apply(ctx: ClientContext): void {
           }
         },
       },
+      panel: panelStore,
       onboardingSteps: {
         getSnapshot: () => {
           const version = ctx.slots.getVersion('settings.onboarding')
@@ -138,6 +155,8 @@ export function apply(ctx: ClientContext): void {
         subscribe: listener => ctx.slots.subscribe('settings.onboarding', listener),
       },
     },
+    openPanel: (sectionId) => { settingsPanel.open(sectionId) },
+    closePanel: () => { settingsPanel.close() },
   })
   ctx.slots.inject('sidebar.settings', () => ctx.slots.register({
     name: 'sidebar.settings',

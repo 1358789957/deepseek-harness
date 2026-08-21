@@ -118,7 +118,7 @@ export function HeroShell({ t, children }: HeroShellProps) {
       <div className={css.stack}>
         <div className={css.headline}>
           {/* figma 34:10412: fish 34×25 leading the headline, gap 10. */}
-          <span className={css.fishHitbox}>
+          <span className={css.fishHitbox} data-hero-logo="">
             <FishLogo size={34} className={css.fish} />
           </span>
           <span className={css.headlineText}>{t('hero.headline')}</span>
