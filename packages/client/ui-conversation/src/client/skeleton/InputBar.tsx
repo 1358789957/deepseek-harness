@@ -813,7 +813,9 @@ export function InputBar({
               {renderSlot('conversation.input.plan', { locked })}
             </div>
             {leftItems}
-            {renderSlot('conversation.input.model', { locked: modelSeatLocked })}
+            <div className={css.modelSeat}>
+              {renderSlot('conversation.input.model', { locked: modelSeatLocked })}
+            </div>
           </div>
           <div className={css.trailing}>
             {rightItems}

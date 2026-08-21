@@ -1167,6 +1167,7 @@ describe('plus menu chrome and control seats', () => {
     ])
     expect(view.queryByLabelText('Plan mode')).toBeNull()
     expect(view.queryByLabelText('Model')).toBeNull()
+    expect(view.queryByText('标准模式')).toBeNull()
   })
 
   it('opens the plus menu locally and does not launch the command menu', () => {

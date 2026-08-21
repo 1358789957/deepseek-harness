@@ -113,4 +113,10 @@ describe('WorkspaceBrowser.module.css list', () => {
     expect(declarations('.rail .iconButton')?.get('width')).toBe('36px')
     expect(declarations('.rail .search')?.get('width')).toBe('36px')
   })
+
+  it('keeps the workspaces header icons apart on a compressed sidebar', () => {
+    expect(declarations('.sectionHeader')?.get('gap')).toBe('10px')
+    expect(declarations('.headerActions')?.get('gap')).toBe('8px')
+    expect(declarations('.headerActions')?.get('max-width')).toBe('72px')
+  })
 })

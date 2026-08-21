@@ -325,6 +325,13 @@
   gap: 12px;
 }
 
+/* Lets the model trigger shrink and ellipsize instead of pushing send. */
+.modelSeat {
+  flex: 1 1 7rem;
+  min-width: 0;
+  max-width: 220px;
+}
+
 .trailing .modes {
   gap: 4px;
 }
