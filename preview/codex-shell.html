@@ -8,13 +8,13 @@
   <style>
     html, body { margin: 0; height: 100%; background: #f3f3f3; color: var(--dsw-alias-label-primary); }
     .app { position: relative; display: flex; flex-direction: column; height: 100%; background: #f3f3f3; }
-    .chrome { flex: none; height: 32px; display: flex; align-items: center; padding: 0 0 0 8px; background: #f3f3f3; color: #5f5f5f; user-select: none; }
+    .chrome { flex: none; height: 36px; display: flex; align-items: center; gap: 6px; padding: 0 0 0 10px; background: #f3f3f3; color: #5f5f5f; user-select: none; }
     .chrome .cbtn { width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: inherit; display: grid; place-items: center; cursor: pointer; padding: 0; }
     .chrome .cbtn:hover { background: rgba(0,0,0,0.05); }
     .chrome .cbtn.off { color: #c4c4c4; cursor: default; }
     .chrome .cbtn.off:hover { background: transparent; }
-    .chrome .menus { display: flex; align-items: center; gap: 2px; margin-left: 4px; }
-    .chrome .mlabel { height: 24px; padding: 0 8px; border: 0; border-radius: 4px; background: transparent; color: #4a4a4a; font: inherit; font-size: 12.5px; cursor: pointer; }
+    .chrome .menus { display: flex; align-items: center; gap: 6px; margin-left: 8px; }
+    .chrome .mlabel { height: 26px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: #4a4a4a; font: inherit; font-size: 13px; cursor: pointer; }
     .chrome .mlabel:hover { background: rgba(0,0,0,0.05); }
     .chrome .win { display: flex; align-items: stretch; margin-left: auto; height: 100%; }
     .chrome .win button { width: 46px; height: 100%; border: 0; background: transparent; color: #3d3d3d; display: grid; place-items: center; cursor: pointer; padding: 0; }
@@ -22,7 +22,7 @@
     .chrome .win .x:hover { background: #e81123; color: #fff; }
     .cols { display: flex; flex: 1; min-height: 0; }
     .sidebar { width: 264px; flex: none; display: flex; flex-direction: column; padding: 12px 10px; background: #f3f3f3; z-index: 1; }
-    .brand { display: flex; align-items: center; gap: 4px; font-size: 17px; font-weight: 700; padding: 2px 2px 10px; letter-spacing: -0.02em; }
+    .brand { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; padding: 4px 4px 12px; letter-spacing: -0.02em; }
     .brand .bname { padding: 0 6px; white-space: nowrap; color: #111; }
     .brand.searching .bname { display: none; }
     .brand .ssrch { margin-left: auto; }
@@ -39,6 +39,7 @@
     .main { flex: 1; position: relative; min-width: 0; background: #fff; z-index: 2; border-radius: 12px 12px 0 0; overflow: hidden; box-shadow: 0 -1px 0 rgba(15,23,42,0.04), -2px 0 8px rgba(15,23,42,0.04); }
     .hero { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 0 48px 72px; }
     .logo { position: absolute; top: 200px; left: 50%; transform: translateX(-50%); color: var(--dsw-alias-label-primary); }
+    .hero.plus-open .logo { opacity: 0; pointer-events: none; }
     .headline { display: flex; align-items: center; gap: 10px; font-size: 32px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
     .badge { font-size: 11px; line-height: 16px; padding: 1px 6px; border-radius: 4px; background: var(--dsw-alias-bg-layer-3); color: var(--dsw-alias-label-tertiary); }
     .stack { position: relative; width: min(100%, 720px); display: flex; flex-direction: column; align-items: stretch; }
@@ -47,21 +48,28 @@
     .project .chev { margin-left: 2px; }
     .card { position: relative; z-index: 1; width: 100%; box-sizing: border-box; margin-top: 34px; border: 1px solid rgba(0,0,0,0.04); border-radius: 16px; background: #fff; padding: 14px 16px 10px; box-shadow: 0 4px 16px rgba(15,23,42,0.05); }
     .card textarea { display: block; width: 100%; box-sizing: border-box; min-height: 72px; margin: 0; padding: 0; border: 0; resize: none; outline: none; background: transparent; font: inherit; font-size: 14px; color: var(--dsw-alias-label-primary); }
-    .bar { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
-    .trail { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+    .bar { display: flex; align-items: center; gap: 10px; margin-top: 10px; min-width: 0; }
+    .trail { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; min-width: 0; }
     .add { width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: var(--dsw-alias-label-secondary); font-size: 18px; cursor: pointer; }
     .add:hover, .add.open { background: var(--dsw-alias-interactive-bg-hover); }
-    .amenu { position: absolute; left: 12px; bottom: 48px; z-index: 20; width: 220px; padding: 4px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); display: none; }
+    .amenu { position: fixed; left: 0; top: 0; z-index: 80; width: 220px; padding: 4px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); display: none; }
     .amenu.show { display: flex; flex-direction: column; }
     .acell { display: flex; align-items: center; height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
     .acell:hover, .acell.on { background: var(--dsw-alias-interactive-bg-hover); }
     .asep { height: 1px; margin: 4px 6px; background: var(--dsw-alias-border-l2); }
-    .preset { display: none; }
+    button.preset { display: none !important; }
     .aval { margin-left: auto; color: var(--dsw-alias-label-tertiary); font-size: 12px; }
     .acell.row { width: 100%; box-sizing: border-box; }
     .fold { margin-left: auto; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-tertiary); font: inherit; font-size: 16px; line-height: 1; cursor: pointer; }
     .fold:hover { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
-    .subpage { position: relative; z-index: 1; display: flex; flex-direction: column; width: min(520px, calc(100% - 32px)); height: min(560px, calc(100% - 48px)); border-radius: 20px; overflow: hidden; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); }
+    .subpage { position: relative; z-index: 1; display: flex; flex-direction: column; width: min(640px, calc(100% - 32px)); height: min(560px, calc(100% - 48px)); border-radius: 20px; overflow: hidden; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); }
+    .skillcols { display: flex; flex: 1; min-height: 0; }
+    .sknav { width: 132px; flex: none; display: flex; flex-direction: column; gap: 4px; padding: 12px 8px; border-right: 1px solid var(--dsw-alias-border-l2); background: var(--dsw-alias-bg-layer-2); }
+    .sknav .cell small { margin-left: auto; color: var(--dsw-alias-label-tertiary); }
+    .skimp { display: none; height: 34px; padding: 0 12px; border: 0; border-radius: 8px; background: #111; color: #fff; font: inherit; font-size: 13px; font-weight: 500; align-items: center; justify-content: center; cursor: pointer; flex: none; white-space: nowrap; }
+    .skimp.show { display: flex; }
+    .skimp:hover { background: #000; }
+    .skimp input { display: none; }
     .subhead { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 16px; font-size: 16px; font-weight: 500; border-bottom: 1px solid var(--dsw-alias-border-l2); }
     .subhead button { width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font-size: 18px; cursor: pointer; }
     .subhead button:hover { background: var(--dsw-alias-interactive-bg-hover); }
@@ -72,16 +80,30 @@
     .job:hover { background: var(--dsw-alias-interactive-bg-hover); }
     .job .when { margin-left: auto; color: var(--dsw-alias-label-tertiary); font-size: 12px; }
     .job .del { border: 0; background: transparent; color: var(--dsw-alias-label-tertiary); cursor: pointer; }
+    .skrow { display: flex; align-items: flex-start; gap: 10px; min-height: 52px; padding: 10px 2px; border-bottom: 1px solid rgba(15,23,42,0.05); cursor: pointer; }
+    .skrow.off { opacity: 0.55; }
+    .skrow input[type="checkbox"] { flex: none; width: 16px; height: 16px; margin: 3px 2px 0 0; accent-color: #111; cursor: pointer; }
+    .skmeta { flex: 1; min-width: 0; }
+    .skname { font-size: 13.5px; font-weight: 500; }
+    .skdesc { margin-top: 2px; font-size: 12px; color: var(--dsw-alias-label-tertiary); line-height: 1.4; }
+    .sksrc { flex: none; height: 22px; padding: 0 8px; border-radius: 6px; background: #f1f1f1; color: #555; font-size: 12px; display: inline-flex; align-items: center; }
+    .jmeta { font-size: 12px; color: var(--dsw-alias-label-tertiary); margin: 0 0 8px; }
+    .jtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .jtable th { text-align: left; font-size: 12px; font-weight: 500; color: var(--dsw-alias-label-tertiary); padding: 6px 8px; border-bottom: 1px solid var(--dsw-alias-border-l2); }
+    .jtable td { padding: 10px 8px; border-bottom: 1px solid rgba(15,23,42,0.05); vertical-align: middle; }
+    .jtable .del { border: 0; background: transparent; color: var(--dsw-alias-label-tertiary); cursor: pointer; font: inherit; font-size: 12px; }
+    .jtable .del:hover { color: var(--dsw-alias-label-primary); }
+
     .about .klink { margin: -6px 0 12px; font-size: 12px; }
     .about .klink a { color: var(--dsw-alias-label-secondary); }
     .about #keyTestMsg { min-height: 18px; margin: 0 0 10px; font-size: 12px; color: var(--dsw-alias-label-tertiary); }
     .about .kfield { width: 100%; height: 36px; box-sizing: border-box; margin: 0 0 14px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; padding: 0 10px; background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; }
     .about .kacts { display: flex; justify-content: flex-end; gap: 8px; }
     .about .ghostbtn { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; cursor: pointer; }
-    .model { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 8px; border: 0; border-radius: 24px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .model { display: inline-flex; align-items: center; gap: 6px; height: 28px; max-width: 220px; padding: 0 10px; border: 0; border-radius: 24px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     .model:hover, .model.open { background: var(--dsw-alias-interactive-bg-hover); }
     .effort { color: var(--dsw-alias-label-caption); }
-    .preset { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 8px; border: 0; border-radius: 24px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .preset { display: none; }
     .preset:hover, .preset.open { background: var(--dsw-alias-interactive-bg-hover); }
     .pmenu { position: absolute; left: 44px; bottom: 48px; z-index: 20; width: 320px; padding: 4px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); display: none; }
     .pmenu.show { display: flex; flex-direction: column; }
@@ -158,8 +180,8 @@
     .keys .rowk { display: flex; justify-content: space-between; gap: 16px; min-height: 28px; font-size: 13px; }
     .keys .rowk span:last-child { color: var(--dsw-alias-label-tertiary); }
 
-    .shead { display: flex; align-items: center; gap: 2px; height: 28px; margin: 10px 2px 4px; }
-    .slabel { flex: none; font-size: 12px; font-weight: 500; color: var(--dsw-alias-label-tertiary); margin-right: auto; padding-left: 6px; }
+    .shead { display: flex; align-items: center; gap: 8px; height: 32px; margin: 12px 4px 6px; }
+    .slabel { flex: none; font-size: 12px; font-weight: 500; color: var(--dsw-alias-label-tertiary); margin-right: auto; padding-left: 8px; }
     .sicon { width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: var(--dsw-alias-label-secondary); display: grid; place-items: center; cursor: pointer; padding: 0; flex: none; }
     .sicon:hover { background: var(--dsw-alias-interactive-bg-hover); }
     .ssrch { display: flex; align-items: center; gap: 2px; min-width: 28px; }
@@ -212,7 +234,17 @@
     .kacts button { width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: #9a9a9a; cursor: pointer; display: grid; place-items: center; padding: 0; }
     .kacts button:hover { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
     .hint { margin-top: 8px; font-size: 12px; color: var(--dsw-alias-label-tertiary); }
-  </style>
+      @media (max-width: 1100px) {
+      .headline { font-size: 26px; }
+      .hero { padding: 0 28px 56px; }
+      .model .effort { display: none; }
+      .chrome .mlabel { padding: 0 8px; }
+    }
+    @media (max-width: 860px) {
+      .sidebar { width: 220px; }
+      .review { width: 240px; }
+    }
+</style>
 </head>
 <body>
   <div class="app">
@@ -432,8 +464,16 @@
       <div class="mask" id="skillMask"></div>
       <div class="subpage">
         <div class="subhead"><button id="skillBack" type="button" aria-label="返回">‹</button><span>Skill</span></div>
-        <div class="subbody">
-          <div class="sempty">还没有技能。把 skill 文件放到技能目录后再来看。</div>
+        <div class="skillcols">
+          <nav class="sknav">
+            <button class="cell on" type="button" data-sk="built" id="skNavBuilt">内置 <small id="skNBuilt">0</small></button>
+            <button class="cell" type="button" data-sk="import" id="skNavImp">导入 <small id="skNImp">0</small></button>
+          </nav>
+          <div class="subbody">
+            <div class="kbar"><input id="skillQ" type="search" placeholder="搜索技能…" autocomplete="off" /><label class="skimp" id="skImpBtn">导入<input id="skImpFile" type="file" accept=".md,text/markdown" /></label></div>
+            <div class="jmeta" id="skillMeta">正在查找技能…</div>
+            <div id="skillList"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -451,6 +491,7 @@
             </select>
             <button class="ok" type="submit">添加</button>
           </form>
+          <div class="jmeta" id="jobMeta">总表 · 0 条</div>
           <div id="jobList"></div>
         </div>
       </div>
@@ -569,7 +610,7 @@
       document.getElementById('plusPlanState').textContent = planOn ? '开' : '关'
       draft.placeholder = planOn ? '描述你想要计划的内容' : '描述你想要构建的内容'
     }
-    const hidePlus = () => { plusMenu.classList.remove('show'); plusBtn.classList.remove('open') }
+    const hidePlus = () => { plusMenu.classList.remove('show'); plusBtn.classList.remove('open'); document.querySelector('.hero').classList.remove('plus-open') }
     const hideKeySheet = () => { keySheet.classList.remove('show'); keyInput.value = '' }
     const hideComposerMenus = () => {
       menu.classList.remove('show'); btn.classList.remove('open')
@@ -578,14 +619,31 @@
     }
     btn.onclick = () => { menu.classList.toggle('show'); btn.classList.toggle('open'); pmenu.classList.remove('show'); pbtn.classList.remove('open'); hidePlus(); hideBarPops() }
     pbtn.onclick = () => { pmenu.classList.toggle('show'); pbtn.classList.toggle('open'); menu.classList.remove('show'); btn.classList.remove('open'); hidePlus(); hideBarPops() }
+    const placePlus = () => {
+      const r = plusBtn.getBoundingClientRect()
+      const h = plusMenu.offsetHeight
+      const w = plusMenu.offsetWidth
+      const pad = 8
+      let left = r.right + 8
+      let top = r.bottom - h
+      if (top < pad) top = pad
+      if (left + w > window.innerWidth - pad) left = Math.max(pad, r.left - w - 8)
+      plusMenu.style.left = left + 'px'
+      plusMenu.style.top = top + 'px'
+      plusMenu.style.bottom = 'auto'
+    }
     plusBtn.onclick = (e) => {
       e.stopPropagation()
       hideBarPops()
       menu.classList.remove('show'); btn.classList.remove('open')
       pmenu.classList.remove('show'); pbtn.classList.remove('open')
       plusMenu.classList.toggle('show')
-      plusBtn.classList.toggle('open', plusMenu.classList.contains('show'))
+      const open = plusMenu.classList.contains('show')
+      plusBtn.classList.toggle('open', open)
+      document.querySelector('.hero').classList.toggle('plus-open', open)
+      if (open) placePlus()
     }
+    window.addEventListener('resize', () => { if (plusMenu.classList.contains('show')) placePlus() })
     const skillPage = document.getElementById('skillPage')
     const jobPage = document.getElementById('jobPage')
     const openPage = (el) => { hideComposerMenus(); el.classList.add('show') }
@@ -598,23 +656,121 @@
     const paintJobs = () => {
       const box = document.getElementById('jobList')
       const jobs = loadJobs()
-      if (!jobs.length) { box.innerHTML = '<div class="sempty">还没有定时任务</div>'; return }
-      box.innerHTML = ''
+      const meta = document.getElementById('jobMeta')
+      if (meta) meta.textContent = '总表 · ' + jobs.length + ' 条'
+      if (!jobs.length) {
+        box.innerHTML = '<table class="jtable"><thead><tr><th>名称</th><th>周期</th><th>状态</th><th></th></tr></thead></table><div class="sempty">还没有定时任务</div>'
+        return
+      }
+      const table = document.createElement('table')
+      table.className = 'jtable'
+      table.innerHTML = '<thead><tr><th>名称</th><th>周期</th><th>状态</th><th></th></tr></thead>'
+      const tb = document.createElement('tbody')
       jobs.forEach((j, i) => {
-        const row = document.createElement('div')
-        row.className = 'job'
-        row.innerHTML = '<span></span><span class="when"></span><button class="del" type="button" aria-label="删除">×</button>'
-        row.children[0].textContent = j.name
-        row.children[1].textContent = j.when
-        row.querySelector('.del').onclick = () => {
-          const next = loadJobs().filter((_, idx) => idx !== i)
-          saveJobs(next)
+        const tr = document.createElement('tr')
+        tr.innerHTML = '<td></td><td></td><td>已登记</td><td><button class="del" type="button">删除</button></td>'
+        tr.children[0].textContent = j.name
+        tr.children[1].textContent = j.when
+        tr.querySelector('.del').onclick = () => {
+          saveJobs(loadJobs().filter((_, idx) => idx !== i))
           paintJobs()
         }
-        box.appendChild(row)
+        tb.appendChild(tr)
       })
+      table.appendChild(tb)
+      box.innerHTML = ''
+      box.appendChild(table)
     }
-    document.getElementById('plusSkillFold').onclick = (e) => { e.stopPropagation(); openPage(skillPage) }
+    const srcLabel = { 'project-dsh': '导入', 'project-agents': '内置', 'user-dsh': '导入', 'user-agents': '导入', 'custom': '导入', 'bundled': '内置', 'imported': '导入' }
+    const isBuilt = (s) => s.source === 'bundled' || s.source === 'project-agents'
+    const loadSkillOn = () => { try { return JSON.parse(localStorage.getItem('dsh.skills.on') || '{}') } catch { return {} } }
+    const saveSkillOn = (map) => localStorage.setItem('dsh.skills.on', JSON.stringify(map))
+    const skillIsOn = (name, map) => map[name] !== false
+    const loadImported = () => { try { return JSON.parse(localStorage.getItem('dsh.skills.imported') || '[]') } catch { return [] } }
+    const saveImported = (rows) => localStorage.setItem('dsh.skills.imported', JSON.stringify(rows))
+    let skillTab = 'built'
+    const paintSkills = async (q) => {
+      const box = document.getElementById('skillList')
+      const meta = document.getElementById('skillMeta')
+      const impBtn = document.getElementById('skImpBtn')
+      impBtn.classList.toggle('show', skillTab === 'import')
+      box.innerHTML = '<div class="sempty">正在查找技能…</div>'
+      try {
+        const res = await fetch('skills.json', { cache: 'no-store' })
+        if (!res.ok) throw new Error(String(res.status))
+        const catalog = await res.json()
+        const imported = loadImported()
+        const all = catalog.concat(imported)
+        const built = all.filter(isBuilt)
+        const incoming = all.filter(s => !isBuilt(s))
+        document.getElementById('skNBuilt').textContent = built.length
+        document.getElementById('skNImp').textContent = incoming.length
+        const pool = skillTab === 'import' ? incoming : built
+        const on = loadSkillOn()
+        const qq = (q || '').trim().toLowerCase()
+        const rows = pool.filter(s => !qq || String(s.name).toLowerCase().includes(qq) || String(s.description || '').toLowerCase().includes(qq))
+        const enabled = pool.filter(s => skillIsOn(s.name, on)).length
+        meta.textContent = (skillTab === 'import' ? '导入 · ' : '内置 · ') + '已启用 ' + enabled + ' / ' + pool.length
+        if (!rows.length) {
+          box.innerHTML = '<div class="sempty">' + (
+            pool.length ? '没有匹配的技能' :
+            skillTab === 'import' ? '还没有导入的技能。装上的会按导入顺序排在这里。' :
+            '还没有内置技能。'
+          ) + '</div>'
+          return
+        }
+        box.innerHTML = ''
+        rows.forEach(s => {
+          const checked = skillIsOn(s.name, on)
+          const row = document.createElement('label')
+          row.className = 'skrow' + (checked ? '' : ' off')
+          row.innerHTML = '<input type="checkbox"><div class="skmeta"><div class="skname"></div><div class="skdesc"></div></div><span class="sksrc"></span>'
+          const cb = row.querySelector('input')
+          cb.checked = checked
+          row.querySelector('.skname').textContent = s.name
+          row.querySelector('.skdesc').textContent = s.description || ''
+          row.querySelector('.sksrc').textContent = srcLabel[s.source] || (isBuilt(s) ? '内置' : '导入')
+          cb.onchange = () => {
+            const next = loadSkillOn()
+            next[s.name] = cb.checked
+            saveSkillOn(next)
+            paintSkills(document.getElementById('skillQ').value)
+          }
+          box.appendChild(row)
+        })
+      } catch {
+        meta.textContent = '查找失败'
+        box.innerHTML = '<div class="sempty">读不到技能目录。</div>'
+      }
+    }
+    document.querySelectorAll('.sknav .cell').forEach(b => b.onclick = () => {
+      skillTab = b.dataset.sk
+      document.querySelectorAll('.sknav .cell').forEach(x => x.classList.toggle('on', x === b))
+      paintSkills(document.getElementById('skillQ').value)
+    })
+    document.getElementById('skImpFile').onchange = async (e) => {
+      const file = e.target.files && e.target.files[0]
+      e.target.value = ''
+      if (!file) return
+      const text = await file.text()
+      let name = file.name.replace(/\.md$/i, '').replace(/^SKILL$/i, 'imported-skill')
+      let desc = ''
+      const fm = text.match(/^---\n([\s\S]*?)\n---/)
+      if (fm) {
+        const nm = fm[1].match(/^name:\s*(.+)$/m)
+        const dm = fm[1].match(/^description:\s*(.+)$/m)
+        if (nm) name = nm[1].trim().replace(/^["']|["']$/g, '')
+        if (dm) desc = dm[1].trim().replace(/^["']|["']$/g, '')
+      }
+      const rows = loadImported().filter(s => s.name !== name)
+      rows.unshift({ name, description: desc.slice(0, 180), source: 'imported' })
+      saveImported(rows)
+      skillTab = 'import'
+      document.querySelectorAll('.sknav .cell').forEach(x => x.classList.toggle('on', x.dataset.sk === 'import'))
+      paintSkills('')
+    }
+    document.getElementById('plusSkillFold').onclick = (e) => { e.stopPropagation(); openPage(skillPage); paintSkills(document.getElementById('skillQ').value) }
+    document.getElementById('skillQ').addEventListener('input', () => paintSkills(document.getElementById('skillQ').value))
     document.getElementById('openSched').onclick = () => { hideBoard(); openPage(jobPage); paintJobs() }
     const jobsView = document.getElementById('jobsView')
     const hideBoard = () => {

@@ -1,0 +1,79 @@
+[
+  {
+    "name": "dsh-archive-agent-notes",
+    "description": "Use when adding, auditing, pruning, archiving, restoring, or reviewing Agent Notes in deepseek-harness; checks every new note for superseded active records, classifies implemented ",
+    "source": "project-agents",
+    "rank": 200,
+    "path": ".agents/skills/dsh-archive-agent-notes/SKILL.md"
+  },
+  {
+    "name": "dsh-code-review",
+    "description": "Use when reviewing a pull request in the deepseek-harness repo — orients the reviewer to this codebase's standards (AGENTS.md conventions, defensive patterns, ADRs, quality gates) ",
+    "source": "project-agents",
+    "rank": 200,
+    "path": ".agents/skills/dsh-code-review/SKILL.md"
+  },
+  {
+    "name": "dsh-doc-site-sync",
+    "description": "Use when publishing, updating, moving, or removing DeepSeek Harness documentation website pages; editing website/docs.ts mappings or navigation; diagnosing a page missing from the ",
+    "source": "project-agents",
+    "rank": 200,
+    "path": ".agents/skills/dsh-doc-site-sync/SKILL.md"
+  },
+  {
+    "name": "dsh-doc-standards",
+    "description": "Use when writing, moving, reviewing, or auditing documentation in the deepseek-harness repo — choosing hierarchy and detail, separating tutorials from references, checking tutorial",
+    "source": "project-agents",
+    "rank": 200,
+    "path": ".agents/skills/dsh-doc-standards/SKILL.md"
+  },
+  {
+    "name": "dsh-find-simplifications",
+    "description": "Use when working in the deepseek-harness repo to find non-obvious simplification candidates, write proposed Agent Notes or inline TODO/FIXME/XXX notes, audit or coalesce superseded",
+    "source": "project-agents",
+    "rank": 200,
+    "path": ".agents/skills/dsh-find-simplifications/SKILL.md"
+  },
+  {
+    "name": "dsh-merging-stacked-prs",
+    "description": "Use when landing a stack of dependent GitHub PRs (A ← B ← C, where each bases on the one below) onto master, merging a PR whose base is another open PR's branch, or whenever a requ",
+    "source": "project-agents",
+    "rank": 200,
+    "path": ".agents/skills/dsh-merging-stacked-prs/SKILL.md"
+  },
+  {
+    "name": "dsh-pre-push-checks",
+    "description": "Use before pushing, force-pushing, marking ready for review, or claiming checks pass on a deepseek-harness branch, and immediately after gh stack sync publishes rewritten branches,",
+    "source": "project-agents",
+    "rank": 200,
+    "path": ".agents/skills/dsh-pre-push-checks/SKILL.md"
+  },
+  {
+    "name": "dsh-prose-standard",
+    "description": "Use when writing, reviewing, restoring, trimming, or auditing prose in the deepseek-harness repo, including deciding where documentation or comments are required across Markdown, J",
+    "source": "project-agents",
+    "rank": 200,
+    "path": ".agents/skills/dsh-prose-standard/SKILL.md"
+  },
+  {
+    "name": "dsh-translate-docs",
+    "description": "Manually run the extended DeepSeek Harness bilingual-document workflow, including generated briefings, delegated prose translation, whole-document translation, and scoped pairing v",
+    "source": "project-agents",
+    "rank": 200,
+    "path": ".agents/skills/dsh-translate-docs/SKILL.md"
+  },
+  {
+    "name": "dsh-trim-cot-leakage",
+    "description": "Use when auditing or fixing prose that reads like a leaked reasoning transcript — dead design-session citations such as (decision N), audit item codes, or §N of uncommitted drafts;",
+    "source": "project-agents",
+    "rank": 200,
+    "path": ".agents/skills/dsh-trim-cot-leakage/SKILL.md"
+  },
+  {
+    "name": "record-browser-gif",
+    "description": "Record browser or Web UI interaction demos as optimized GIFs using the available built-in browser, state-based frame capture, and deterministic encoding, then publish to a dedicate",
+    "source": "project-agents",
+    "rank": 200,
+    "path": ".agents/skills/record-browser-gif/SKILL.md"
+  }
+]
