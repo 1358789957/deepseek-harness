@@ -66,5 +66,9 @@ describe('imported-skill overlay', () => {
       ],
       next,
     ).map(item => item.name)).toEqual(['mine', 'other', 'disk'])
+    expect(importedTabRows(
+      [{ name: 'dsh-badge', description: 'bundled', source: 'bundled' }],
+      [{ name: 'dsh-badge', description: 'picked', source: IMPORTED_SKILL_SOURCE }],
+    )).toEqual([])
   })
 })
