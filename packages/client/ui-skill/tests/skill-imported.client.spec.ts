@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from 'vitest'
 import {
   addImportedSkill, IMPORTED_SKILL_SOURCE, IMPORTED_SKILLS_KEY, importedTabRows,
@@ -32,6 +33,38 @@ describe('imported-skill overlay', () => {
     ]))
     expect(loadImportedSkills(store)).toEqual([row])
     expect(loadImportedSkills({ getItem: () => { throw new Error('blocked') } })).toEqual([])
+  })
+
+  it('reads and writes the default browser storage', () => {
+    localStorage.removeItem(IMPORTED_SKILLS_KEY)
+    expect(loadImportedSkills()).toEqual([])
+    saveImportedSkills([row])
+    expect(loadImportedSkills()).toEqual([row])
+    localStorage.removeItem(IMPORTED_SKILLS_KEY)
+  })
+
+  it('treats a missing or throwing Storage accessor as empty', () => {
+    const desc = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+    const restore = (): void => {
+      if (desc === undefined) delete (globalThis as { localStorage?: Storage }).localStorage
+      else Object.defineProperty(globalThis, 'localStorage', desc)
+    }
+    Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: undefined })
+    try {
+      expect(loadImportedSkills()).toEqual([])
+    } finally {
+      restore()
+    }
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get(): Storage { throw new Error('blocked') },
+    })
+    try {
+      expect(loadImportedSkills()).toEqual([])
+      expect(() => { saveImportedSkills([row]) }).not.toThrow()
+    } finally {
+      restore()
+    }
   })
 
   it('persists the overlay and ignores a blocked write', () => {
