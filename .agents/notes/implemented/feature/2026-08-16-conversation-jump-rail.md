@@ -6,7 +6,7 @@ English | [中文](2026-08-16-conversation-jump-rail.zh.md)
 
 ## Problem
 
-Long Chat transcripts force linear scrolling. Codex and 声场 solve this with a left-gutter rail: hover a nearby turn to preview it, click to jump. DeepSeek Harness Chat had the scrollport and stable row identities but no equivalent scrubber, so a reader hunting an earlier prompt had to wheel the whole window.
+Long Chat transcripts force linear scrolling. Codex solve this with a left-gutter rail: hover a nearby turn to preview it, click to jump. DeepSeek Harness Chat had the scrollport and stable row identities but no equivalent scrubber, so a reader hunting an earlier prompt had to wheel the whole window.
 
 A tempting fix is a new `root` or `conversation.view` plugin that overlays the column. That would steal chrome from ChatView, require a root registration this package does not own, and duplicate the scrollport contract ConversationRoot already reserved.
 
@@ -22,7 +22,7 @@ The rail is a zero-size sticky overlay on the left of the Chat scroller so the c
 
 **Register a root overlay plugin.** A root occupant would sit outside ChatView's scroll math, need a new slot declaration on the shell, and could not see the Chat Node store without a second subscription path. The rail is a chat-flow control; ChatView already owns the order, the scrollport, and the follow pin.
 
-**Add a `conversation.view` tab.** A map tab would replace the transcript instead of scrubbing it. Codex/声场 keep the rail beside the same thread the reader is in.
+**Add a `conversation.view` tab.** A map tab would replace the transcript instead of scrubbing it. Codex keep the rail beside the same thread the reader is in.
 
 **One marker per Chat Node, including tools.** Tool and chrome rows are not turns. A marker per user prompt matches how readers look for "the question I asked".
 

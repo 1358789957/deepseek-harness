@@ -6,7 +6,7 @@ Status: implemented
 
 ## 问题
 
-长 Chat transcript（文本记录）只能线性滚动。Codex 与声场用左侧 gutter 轨解决：悬停附近一轮以预览，点击即跳转。DeepSeek Harness 的 Chat 已有滚动容器和稳定行身份，却没有对等的 scrubber，读者要找更早的提示词只能滚完整窗。
+长 Chat transcript（文本记录）只能线性滚动。Codex 用左侧 gutter 轨解决：悬停附近一轮以预览，点击即跳转。DeepSeek Harness 的 Chat 已有滚动容器和稳定行身份，却没有对等的 scrubber，读者要找更早的提示词只能滚完整窗。
 
 一个诱人的修法是新增 `root` 或 `conversation.view` 插件盖在列上。那会从 ChatView 抢走 chrome，要求一次本包并不拥有的 root 注册，并复制 ConversationRoot 已经预留的滚动容器约定。
 
@@ -22,7 +22,7 @@ Status: implemented
 
 **注册一个 root overlay 插件。** root 占用者会落在 ChatView 的滚动算法之外，需要在 shell 上新增 slot 声明，并且没有第二条订阅路径就读不到 Chat Node store。该轨是聊天流控件；ChatView 已经拥有顺序、滚动容器和跟随钉。
 
-**增加一个 `conversation.view` 标签页。** 地图标签页会替换 transcript，而不是在同一条线程里 scrub。Codex／声场把轨留在读者正在看的那条线程旁边。
+**增加一个 `conversation.view` 标签页。** 地图标签页会替换 transcript，而不是在同一条线程里 scrub。Codex把轨留在读者正在看的那条线程旁边。
 
 **每个 Chat Node（含工具）一个标记。** 工具行和 chrome 行不是轮次。每个用户提示一个标记，符合读者查找「我问过的那句」的方式。
 

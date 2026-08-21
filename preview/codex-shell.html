@@ -50,6 +50,17 @@
     .bar { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
     .trail { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
     .add { width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: var(--dsw-alias-label-secondary); font-size: 18px; cursor: pointer; }
+    .add:hover, .add.open { background: var(--dsw-alias-interactive-bg-hover); }
+    .amenu { position: absolute; left: 12px; bottom: 48px; z-index: 20; width: 220px; padding: 4px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); display: none; }
+    .amenu.show { display: flex; flex-direction: column; }
+    .acell { display: flex; align-items: center; height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+    .acell:hover, .acell.on { background: var(--dsw-alias-interactive-bg-hover); }
+    .asep { height: 1px; margin: 4px 6px; background: var(--dsw-alias-border-l2); }
+    .preset { display: none; }
+    .aval { margin-left: auto; color: var(--dsw-alias-label-tertiary); font-size: 12px; }
+    .about .kfield { width: 100%; height: 36px; box-sizing: border-box; margin: 0 0 14px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; padding: 0 10px; background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; }
+    .about .kacts { display: flex; justify-content: flex-end; gap: 8px; }
+    .about .ghostbtn { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; cursor: pointer; }
     .model { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 8px; border: 0; border-radius: 24px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
     .model:hover, .model.open { background: var(--dsw-alias-interactive-bg-hover); }
     .effort { color: var(--dsw-alias-label-caption); }
@@ -249,7 +260,7 @@
           <div class="card">
           <textarea id="draft" placeholder="描述你想要构建的内容"></textarea>
           <div class="bar">
-            <button class="add" type="button" aria-label="命令">+</button>
+            <button class="add" id="plusBtn" type="button" aria-label="命令">+</button>
             <button class="preset" id="presetBtn" type="button" title="即将开始的这个会话所用的 Agent 预设">标准模式 ▾</button>
             <div class="trail">
             <button class="model" id="modelBtn" type="button" aria-label="选择模型，当前 DeepSeek-V4-Flash，推理等级 High">DeepSeek-V4-Flash <span class="effort">High</span> ▾</button>
@@ -257,6 +268,17 @@
               <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden><path d="M8.3125 0.98C8.67 1.05 8.98 1.20 9.26 1.43C9.49 1.61 9.73 1.86 9.98 2.11L14.71 6.83L13.29 8.25L9 3.96V15.04H7V3.96L2.71 8.25L1.29 6.83L6.02 2.11C6.27 1.86 6.51 1.61 6.74 1.43C6.98 1.24 7.28 1.04 7.69 0.98C7.90 0.95 8.10 0.96 8.31 0.98Z" fill="currentColor"/></svg>
             </button>
             </div>
+          </div>
+          <div class="amenu" id="plusMenu" role="menu" aria-label="命令">
+            <button class="acell" type="button" id="plusSkill">Skill</button>
+            <button class="acell" type="button" id="plusPlan">Plan <span class="aval" id="plusPlanState">关</span></button>
+            <div class="asep"></div>
+            <button class="acell mode on" type="button" data-mode="标准模式">标准模式</button>
+            <button class="acell mode" type="button" data-mode="PTC 模式">PTC 模式</button>
+            <button class="acell mode" type="button" data-mode="极简模式">极简模式</button>
+            <button class="acell mode" type="button" data-mode="创造模式">创造模式</button>
+            <div class="asep"></div>
+            <button class="acell" type="button" id="plusKey">API 密钥 <span class="aval" id="plusKeyState">未设置</span></button>
           </div>
           <div class="pmenu" id="presetMenu" role="menu" aria-label="智能体预设">
             <button class="pcell on" type="button"><span class="pname">标准模式</span><span class="pdesc">文件编辑、Shell、检索、Skills、计划、目标、子代理和工作流</span></button>
@@ -374,6 +396,18 @@
         <button class="ok" id="keysOk" type="button">好</button>
       </div>
     </div>
+    <div class="about" id="keySheet">
+      <div class="mask" id="keyMask"></div>
+      <div class="card2">
+        <h3>API 密钥</h3>
+        <p>填 DeepSeek 密钥。保存后只显示已设置，不再回显明文。</p>
+        <input class="kfield" id="keyInput" type="password" autocomplete="off" placeholder="sk-…" />
+        <div class="kacts">
+          <button class="ghostbtn" type="button" id="keyClear">清除</button>
+          <button class="ok" type="button" id="keySave">保存</button>
+        </div>
+      </div>
+    </div>
     <div class="ghost" id="ghost"><span id="ghostText">已最小化</span><button id="ghostBack" type="button">还原</button></div>
   <script>
     const o = document.getElementById('settings')
@@ -460,12 +494,73 @@
     const menu = document.getElementById('modelMenu')
     const pbtn = document.getElementById('presetBtn')
     const pmenu = document.getElementById('presetMenu')
+    const plusBtn = document.getElementById('plusBtn')
+    const plusMenu = document.getElementById('plusMenu')
+    const keySheet = document.getElementById('keySheet')
+    const keyInput = document.getElementById('keyInput')
+    let planOn = false
+    const paintKeyState = () => {
+      const on = localStorage.getItem('dsh.hasApiKey') === '1'
+      document.getElementById('plusKeyState').textContent = on ? '已设置' : '未设置'
+    }
+    const paintPlanState = () => {
+      document.getElementById('plusPlanState').textContent = planOn ? '开' : '关'
+      draft.placeholder = planOn ? '描述你想要计划的内容' : '描述你想要构建的内容'
+    }
+    const hidePlus = () => { plusMenu.classList.remove('show'); plusBtn.classList.remove('open') }
+    const hideKeySheet = () => { keySheet.classList.remove('show'); keyInput.value = '' }
     const hideComposerMenus = () => {
       menu.classList.remove('show'); btn.classList.remove('open')
       pmenu.classList.remove('show'); pbtn.classList.remove('open')
+      hidePlus()
     }
-    btn.onclick = () => { menu.classList.toggle('show'); btn.classList.toggle('open'); pmenu.classList.remove('show'); pbtn.classList.remove('open'); hideBarPops() }
-    pbtn.onclick = () => { pmenu.classList.toggle('show'); pbtn.classList.toggle('open'); menu.classList.remove('show'); btn.classList.remove('open'); hideBarPops() }
+    btn.onclick = () => { menu.classList.toggle('show'); btn.classList.toggle('open'); pmenu.classList.remove('show'); pbtn.classList.remove('open'); hidePlus(); hideBarPops() }
+    pbtn.onclick = () => { pmenu.classList.toggle('show'); pbtn.classList.toggle('open'); menu.classList.remove('show'); btn.classList.remove('open'); hidePlus(); hideBarPops() }
+    plusBtn.onclick = (e) => {
+      e.stopPropagation()
+      hideBarPops()
+      menu.classList.remove('show'); btn.classList.remove('open')
+      pmenu.classList.remove('show'); pbtn.classList.remove('open')
+      plusMenu.classList.toggle('show')
+      plusBtn.classList.toggle('open', plusMenu.classList.contains('show'))
+    }
+    document.getElementById('plusSkill').onclick = () => {
+      hideComposerMenus()
+      openPlugins()
+    }
+    document.getElementById('plusPlan').onclick = () => {
+      planOn = !planOn
+      paintPlanState()
+      hidePlus()
+    }
+    plusMenu.querySelectorAll('.acell.mode').forEach(b => b.onclick = () => {
+      plusMenu.querySelectorAll('.acell.mode').forEach(x => x.classList.remove('on'))
+      b.classList.add('on')
+      const name = b.dataset.mode
+      pmenu.querySelectorAll('.pcell').forEach(x => x.classList.toggle('on', x.querySelector('.pname').textContent === name))
+      hidePlus()
+    })
+    document.getElementById('plusKey').onclick = () => {
+      hideComposerMenus()
+      keyInput.value = ''
+      keySheet.classList.add('show')
+      keyInput.focus()
+    }
+    document.getElementById('keyMask').onclick = hideKeySheet
+    document.getElementById('keySave').onclick = () => {
+      const v = keyInput.value.trim()
+      if (!v) return
+      localStorage.setItem('dsh.hasApiKey', '1')
+      hideKeySheet()
+      paintKeyState()
+    paintPlanState()
+    }
+    document.getElementById('keyClear').onclick = () => {
+      localStorage.removeItem('dsh.hasApiKey')
+      hideKeySheet()
+      paintKeyState()
+    }
+    paintKeyState()
     pmenu.querySelectorAll('.pcell').forEach(b => b.onclick = () => {
       pmenu.querySelectorAll('.pcell').forEach(x => x.classList.remove('on'))
       b.classList.add('on')
@@ -508,6 +603,7 @@
     })
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.bar-pop') && !e.target.closest('.mlabel')) hideBarPops()
+      if (!e.target.closest('.amenu') && !e.target.closest('#plusBtn')) hidePlus()
     })
 
     const focusDraft = () => { draft.focus() }
@@ -617,23 +713,9 @@
     const sessQ = document.getElementById('sessQ')
     const slist = document.getElementById('slist')
     const workspaces = [
-      { id: 'shengchang', name: '声场', open: true },
       { id: 'ungrouped', name: '未分组', open: true },
     ]
-    const sessions = [
-      { id: 's1', ws: 'shengchang', title: '跳转轨交互', messages: [
-        { role: 'user', text: '把跳转轨做成声场那样，悬停预览，点击跳到那一轮。' },
-        { role: 'bot', text: '左侧细轨，悬停出预览卡，点击跳到对应轮次。键盘也能上下走。' },
-      ]},
-      { id: 's2', ws: 'shengchang', title: '审查栏对齐', messages: [
-        { role: 'user', text: '右侧审查栏按 Codex 密度收一下。' },
-        { role: 'bot', text: '变更 / 本轮产出 / 任务三块已经按空态铺好，文件行点开就能看。' },
-      ]},
-      { id: 's3', ws: 'ungrouped', title: 'Codex 壳预览', messages: [
-        { role: 'user', text: '对话页顶部按 Codex 做圆角裁剪。' },
-        { role: 'bot', text: '主栏做成内缩圆角卡片，标题栏按键都接上了。' },
-      ]},
-    ]
+    const sessions = []
     let groupBy = 'workspace'
     let orderBy = 'updated'
     let activeSid = ''
