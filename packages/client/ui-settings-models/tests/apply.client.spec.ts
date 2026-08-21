@@ -46,7 +46,6 @@ function declare(slots: SlotRegistry): () => void {
         'settings.section': { kind: 'list', scope: 'root' },
         'settings.onboarding': { kind: 'list', scope: 'root' },
         'conversation.input.plus': { kind: 'list', scope: 'session-maybe' },
-        'shell.overlay': { kind: 'list', scope: 'root' },
       },
     } as never,
     () => null,
@@ -87,8 +86,7 @@ describe('ui-settings-models apply', () => {
     )()
     expect(deepSeekInjected.hooks.models).toBe(injected.controller.store)
     expect(deepSeekInjected.api).toBeDefined()
-    expect(before.slots.entries('conversation.input.plus').map(entry => entry.options.id)).toEqual(['api-key'])
-    expect(before.slots.entries('shell.overlay').map(entry => entry.options.id)).toEqual(['api-key'])
+    expect(before.slots.entries('conversation.input.plus')).toHaveLength(0)
 
     const after = await bench()
     await after.ctx.plugin({ inject: [...inject], apply }).await()
@@ -237,51 +235,5 @@ describe('pushed invalidations', () => {
     expect(load).toHaveBeenCalledOnce()
     b.ctx.emit('connection/reset')
     expect(load).toHaveBeenCalledTimes(2)
-  })
-
-  it('keeps the last api-key badge when describe fails and refreshes on credentials/updated', async () => {
-    const describe = vi.fn()
-      .mockRejectedValueOnce(new Error('offline'))
-      .mockResolvedValueOnce({
-        rpcId: 'c',
-        result: { ok: false as const, error: { code: 'internal', message: 'no', details: {} } },
-      })
-      .mockResolvedValueOnce({
-        rpcId: 'c',
-        result: {
-          ok: true as const,
-          value: { credentials: { DEEPSEEK_API_KEY: { configured: true, writable: true } } },
-        },
-      })
-      .mockResolvedValueOnce({
-        rpcId: 'c',
-        result: {
-          ok: true as const,
-          value: { credentials: { DEEPSEEK_API_KEY: { configured: false, writable: true } } },
-        },
-      })
-    const ctx = new Context()
-    await ctx.plugin(SlotRegistry).await()
-    const locale = new LocaleRuntime(ctx)
-    ctx.provide('locale', locale)
-    new TestRemote(ctx)
-    ctx.provide('connection', { api: { credentials: { describe } }, isLoopback: true } as never)
-    const slots = ctx.get('slots') as SlotRegistry
-    declare(slots)
-    await ctx.plugin({ inject: [...inject], apply }).await()
-    const plus = slots.entries('conversation.input.plus')[0]!
-    const injected = (
-      plus.inject as unknown as () => import('../src/client/ApiKeyPlusItem.tsx').ApiKeyPlusInjected
-    )()
-    await injected.refresh()
-    expect(injected.hooks.apiKey.getSnapshot().configured).toBe(false)
-    await injected.refresh()
-    expect(injected.hooks.apiKey.getSnapshot().configured).toBe(false)
-    await injected.refresh()
-    expect(injected.hooks.apiKey.getSnapshot().configured).toBe(true)
-    ctx.remote.$dispatch('credentials/updated', ['DEEPSEEK_API_KEY'])
-    await vi.waitFor(() => {
-      expect(injected.hooks.apiKey.getSnapshot().configured).toBe(false)
-    })
   })
 })

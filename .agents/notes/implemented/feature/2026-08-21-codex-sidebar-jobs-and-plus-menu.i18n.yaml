@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-21-codex-sidebar-jobs-and-plus-menu.md
-2026-08-21-codex-sidebar-jobs-and-plus-menu.md: 01229394afdee07f7b051d1ba3cbbce2ca0ef0bb
-2026-08-21-codex-sidebar-jobs-and-plus-menu.zh.md: bc2dbadb8bbe6332947bde3eb2f4409e21c6818a
+2026-08-21-codex-sidebar-jobs-and-plus-menu.md: 11264cb86fd8d93d8ad38c0e6552e65b365007dc
+2026-08-21-codex-sidebar-jobs-and-plus-menu.zh.md: 6bd817b25060aee620b25c16f494ee39987f4a1b
