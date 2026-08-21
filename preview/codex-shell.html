@@ -58,6 +58,23 @@
     .asep { height: 1px; margin: 4px 6px; background: var(--dsw-alias-border-l2); }
     .preset { display: none; }
     .aval { margin-left: auto; color: var(--dsw-alias-label-tertiary); font-size: 12px; }
+    .acell.row { width: 100%; box-sizing: border-box; }
+    .fold { margin-left: auto; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-tertiary); font: inherit; font-size: 16px; line-height: 1; cursor: pointer; }
+    .fold:hover { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
+    .subpage { position: relative; z-index: 1; display: flex; flex-direction: column; width: min(520px, calc(100% - 32px)); height: min(560px, calc(100% - 48px)); border-radius: 20px; overflow: hidden; background: var(--dsw-alias-bg-layer-2); box-shadow: var(--dsw-shadow-lv3); }
+    .subhead { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 16px; font-size: 16px; font-weight: 500; border-bottom: 1px solid var(--dsw-alias-border-l2); }
+    .subhead button { width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font-size: 18px; cursor: pointer; }
+    .subhead button:hover { background: var(--dsw-alias-interactive-bg-hover); }
+    .subbody { flex: 1; overflow: auto; padding: 16px 20px 20px; }
+    .sform { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .sform input, .sform select { height: 36px; box-sizing: border-box; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; padding: 0 10px; background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; }
+    .job { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 8px; border-radius: 8px; font-size: 13px; }
+    .job:hover { background: var(--dsw-alias-interactive-bg-hover); }
+    .job .when { margin-left: auto; color: var(--dsw-alias-label-tertiary); font-size: 12px; }
+    .job .del { border: 0; background: transparent; color: var(--dsw-alias-label-tertiary); cursor: pointer; }
+    .about .klink { margin: -6px 0 12px; font-size: 12px; }
+    .about .klink a { color: var(--dsw-alias-label-secondary); }
+    .about #keyTestMsg { min-height: 18px; margin: 0 0 10px; font-size: 12px; color: var(--dsw-alias-label-tertiary); }
     .about .kfield { width: 100%; height: 36px; box-sizing: border-box; margin: 0 0 14px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; padding: 0 10px; background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; }
     .about .kacts { display: flex; justify-content: flex-end; gap: 8px; }
     .about .ghostbtn { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; cursor: pointer; }
@@ -130,6 +147,14 @@
     .review .rb { flex: 1; overflow: auto; padding: 16px 14px 24px; display: flex; flex-direction: column; gap: 22px; }
     .review .sec label { display: block; margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--dsw-alias-label-secondary); }
     .review .empty { padding: 6px 8px; border-radius: 8px; background: var(--dsw-alias-interactive-bg-hover); font-size: 13px; color: var(--dsw-alias-label-tertiary); }
+    .hero.hid { display: none; }
+    .jobs-view { display: none; height: 100%; align-items: center; justify-content: center; flex-direction: column; gap: 8px; padding: 24px; }
+    .jobs-view.show { display: flex; }
+    .jobs-view .lab { font-size: 16px; font-weight: 500; }
+    .jobs-view .desc { font-size: 13px; color: var(--dsw-alias-label-tertiary); }
+    .jobs-view .jlist { width: min(420px, 100%); display: flex; flex-direction: column; gap: 6px; }
+    .jobs-view .jrow { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border-radius: 10px; background: var(--dsw-alias-interactive-bg-hover); font-size: 13px; text-align: left; border: 0; width: 100%; cursor: pointer; color: inherit; font: inherit; }
+    .jobs-view .jst { margin-left: auto; font-size: 12px; color: var(--dsw-alias-label-tertiary); }
     .keys .rowk { display: flex; justify-content: space-between; gap: 16px; min-height: 28px; font-size: 13px; }
     .keys .rowk span:last-child { color: var(--dsw-alias-label-tertiary); }
 
@@ -229,6 +254,8 @@
       </div>
       <button class="new" id="btnNew" type="button">新会话</button>
       <button class="trigger" id="openPlugins" type="button" style="margin-top:4px">插件</button>
+      <button class="trigger" id="openBoard" type="button" style="margin-top:4px">任务看板</button>
+      <button class="trigger" id="openSched" type="button">定时任务</button>
       <div class="shead" id="shead">
         <span class="slabel" id="slabel">工作区</span>
         <button class="sicon sact" id="btnView" type="button" aria-label="视图选项" title="视图选项">
@@ -270,7 +297,6 @@
             </div>
           </div>
           <div class="amenu" id="plusMenu" role="menu" aria-label="命令">
-            <button class="acell" type="button" id="plusSkill">Skill</button>
             <button class="acell" type="button" id="plusPlan">Plan <span class="aval" id="plusPlanState">关</span></button>
             <div class="asep"></div>
             <button class="acell mode on" type="button" data-mode="标准模式">标准模式</button>
@@ -278,6 +304,7 @@
             <button class="acell mode" type="button" data-mode="极简模式">极简模式</button>
             <button class="acell mode" type="button" data-mode="创造模式">创造模式</button>
             <div class="asep"></div>
+            <div class="acell row"><span>Skill</span><button class="fold" id="plusSkillFold" type="button" aria-label="展开 Skill">›</button></div>
             <button class="acell" type="button" id="plusKey">API 密钥 <span class="aval" id="plusKeyState">未设置</span></button>
           </div>
           <div class="pmenu" id="presetMenu" role="menu" aria-label="智能体预设">
@@ -294,6 +321,11 @@
         </div>
       </div>
       </div>
+        <div class="jobs-view" id="jobsView">
+          <div class="lab">暂无任务</div>
+          <div class="desc">进行中的任务会显示在这里</div>
+          <div class="jlist" id="boardList"></div>
+        </div>
     </main>
     <aside class="review" id="review">
       <div class="rh">审查 <button class="rx" id="btnReviewX" type="button" aria-label="关闭审查">×</button></div>
@@ -396,13 +428,43 @@
         <button class="ok" id="keysOk" type="button">好</button>
       </div>
     </div>
+    <div class="overlay" id="skillPage">
+      <div class="mask" id="skillMask"></div>
+      <div class="subpage">
+        <div class="subhead"><button id="skillBack" type="button" aria-label="返回">‹</button><span>Skill</span></div>
+        <div class="subbody">
+          <div class="sempty">还没有技能。把 skill 文件放到技能目录后再来看。</div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay" id="jobPage">
+      <div class="mask" id="jobMask"></div>
+      <div class="subpage">
+        <div class="subhead"><button id="jobBack" type="button" aria-label="返回">‹</button><span>定时任务</span></div>
+        <div class="subbody">
+          <form class="sform" id="jobForm">
+            <input id="jobName" type="text" placeholder="任务名称" autocomplete="off" />
+            <select id="jobWhen">
+              <option value="每小时">每小时</option>
+              <option value="每天">每天</option>
+              <option value="每周">每周</option>
+            </select>
+            <button class="ok" type="submit">添加</button>
+          </form>
+          <div id="jobList"></div>
+        </div>
+      </div>
+    </div>
     <div class="about" id="keySheet">
       <div class="mask" id="keyMask"></div>
       <div class="card2">
         <h3>API 密钥</h3>
         <p>填 DeepSeek 密钥。保存后只显示已设置，不再回显明文。</p>
         <input class="kfield" id="keyInput" type="password" autocomplete="off" placeholder="sk-…" />
+        <p class="klink"><a href="https://api-docs.deepseek.com/zh-cn/" target="_blank" rel="noopener">API 文档</a> · <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">控制台测钥匙</a></p>
+        <div id="keyTestMsg"></div>
         <div class="kacts">
+          <button class="ghostbtn" type="button" id="keyTest">测试</button>
           <button class="ghostbtn" type="button" id="keyClear">清除</button>
           <button class="ok" type="button" id="keySave">保存</button>
         </div>
@@ -524,9 +586,89 @@
       plusMenu.classList.toggle('show')
       plusBtn.classList.toggle('open', plusMenu.classList.contains('show'))
     }
-    document.getElementById('plusSkill').onclick = () => {
-      hideComposerMenus()
-      openPlugins()
+    const skillPage = document.getElementById('skillPage')
+    const jobPage = document.getElementById('jobPage')
+    const openPage = (el) => { hideComposerMenus(); el.classList.add('show') }
+    const hidePage = (el) => el.classList.remove('show')
+    const jobWhenLabel = { '每小时': '每小时', '每天': '每天', '每周': '每周' }
+    const loadJobs = () => {
+      try { return JSON.parse(localStorage.getItem('dsh.jobs') || '[]') } catch { return [] }
+    }
+    const saveJobs = (jobs) => localStorage.setItem('dsh.jobs', JSON.stringify(jobs))
+    const paintJobs = () => {
+      const box = document.getElementById('jobList')
+      const jobs = loadJobs()
+      if (!jobs.length) { box.innerHTML = '<div class="sempty">还没有定时任务</div>'; return }
+      box.innerHTML = ''
+      jobs.forEach((j, i) => {
+        const row = document.createElement('div')
+        row.className = 'job'
+        row.innerHTML = '<span></span><span class="when"></span><button class="del" type="button" aria-label="删除">×</button>'
+        row.children[0].textContent = j.name
+        row.children[1].textContent = j.when
+        row.querySelector('.del').onclick = () => {
+          const next = loadJobs().filter((_, idx) => idx !== i)
+          saveJobs(next)
+          paintJobs()
+        }
+        box.appendChild(row)
+      })
+    }
+    document.getElementById('plusSkillFold').onclick = (e) => { e.stopPropagation(); openPage(skillPage) }
+    document.getElementById('openSched').onclick = () => { hideBoard(); openPage(jobPage); paintJobs() }
+    const jobsView = document.getElementById('jobsView')
+    const hideBoard = () => {
+      hero.classList.remove('hid')
+      jobsView.classList.remove('show')
+    }
+    const paintBoard = () => {
+      const list = document.getElementById('boardList')
+      const lab = jobsView.querySelector('.lab')
+      const desc = jobsView.querySelector('.desc')
+      const rows = sessions.filter(s => s.messages && s.messages.length)
+      list.innerHTML = ''
+      if (!rows.length) {
+        lab.textContent = '暂无任务'
+        desc.textContent = '进行中的任务会显示在这里'
+        desc.style.display = ''
+        return
+      }
+      lab.textContent = '进行中'
+      desc.style.display = 'none'
+      rows.forEach(s => {
+        const b = document.createElement('button')
+        b.type = 'button'
+        b.className = 'jrow'
+        b.innerHTML = '<span></span><span class="jst">进行中</span>'
+        b.children[0].textContent = s.title
+        b.onclick = () => { hideBoard(); openSession(s.id) }
+        list.appendChild(b)
+      })
+    }
+    const showBoard = () => {
+      closeSettings()
+      hideBarPops()
+      hidePage(jobPage)
+      hidePage(skillPage)
+      hero.classList.add('hid')
+      jobsView.classList.add('show')
+      paintBoard()
+    }
+    document.getElementById('openBoard').onclick = showBoard
+    document.getElementById('skillBack').onclick = () => hidePage(skillPage)
+    document.getElementById('skillMask').onclick = () => hidePage(skillPage)
+    document.getElementById('jobBack').onclick = () => hidePage(jobPage)
+    document.getElementById('jobMask').onclick = () => hidePage(jobPage)
+    document.getElementById('jobForm').onsubmit = (e) => {
+      e.preventDefault()
+      const name = document.getElementById('jobName').value.trim()
+      const when = document.getElementById('jobWhen').value
+      if (!name) return
+      const jobs = loadJobs()
+      jobs.push({ name, when })
+      saveJobs(jobs)
+      document.getElementById('jobName').value = ''
+      paintJobs()
     }
     document.getElementById('plusPlan').onclick = () => {
       planOn = !planOn
@@ -546,21 +688,36 @@
       keySheet.classList.add('show')
       keyInput.focus()
     }
+    const keyMsg = document.getElementById('keyTestMsg')
+    const currentKey = () => keyInput.value.trim() || localStorage.getItem('dsh.apiKey') || ''
     document.getElementById('keyMask').onclick = hideKeySheet
     document.getElementById('keySave').onclick = () => {
       const v = keyInput.value.trim()
-      if (!v) return
+      if (!v) { keyMsg.textContent = '先填密钥'; return }
+      localStorage.setItem('dsh.apiKey', v)
       localStorage.setItem('dsh.hasApiKey', '1')
       hideKeySheet()
       paintKeyState()
-    paintPlanState()
     }
     document.getElementById('keyClear').onclick = () => {
+      localStorage.removeItem('dsh.apiKey')
       localStorage.removeItem('dsh.hasApiKey')
       hideKeySheet()
       paintKeyState()
     }
+    document.getElementById('keyTest').onclick = async () => {
+      const v = currentKey()
+      if (!v) { keyMsg.textContent = '先填密钥再测'; return }
+      keyMsg.textContent = '正在测…'
+      try {
+        const res = await fetch('https://api.deepseek.com/models', { headers: { Authorization: 'Bearer ' + v } })
+        keyMsg.textContent = res.ok ? '钥匙可用' : ('测试失败 ' + res.status + '，也可以走上面的控制台链接')
+      } catch {
+        keyMsg.textContent = '浏览器拦了跨域。用上面的控制台链接测。'
+      }
+    }
     paintKeyState()
+    paintPlanState()
     pmenu.querySelectorAll('.pcell').forEach(b => b.onclick = () => {
       pmenu.querySelectorAll('.pcell').forEach(x => x.classList.remove('on'))
       b.classList.add('on')
@@ -609,7 +766,7 @@
     const focusDraft = () => { draft.focus() }
     const hero = document.querySelector('.hero')
     const thread = document.getElementById('thread')
-    const newChat = () => { draft.value = ''; send.disabled = true; closeSettings(); hideBarPops(); hero.classList.remove('chat'); thread.innerHTML = ''; focusDraft() }
+    const newChat = () => { draft.value = ''; send.disabled = true; closeSettings(); hideBarPops(); hideBoard(); hero.classList.remove('chat'); thread.innerHTML = ''; focusDraft() }
     const toggleSide = () => document.querySelector('.sidebar').classList.toggle('hid')
     const toggleMax = () => {
       const app = document.querySelector('.app')
@@ -851,6 +1008,7 @@
       paintThread()
       paintList()
       closeSettings()
+      hideBoard()
     }
     const commitSend = () => {
       const text = draft.value.trim()
