@@ -16,7 +16,8 @@ import { NamedEntries, ScopedLayers, scopeChainOf, scopeOf } from '@deepseek-ai/
 import type { ScopeKey, ScopeLayer } from '@deepseek-ai/dsh-scope'
 import z from '@deepseek-ai/schemastery'
 import type Schema from '@deepseek-ai/schemastery'
-import type {} from './types.ts'
+/** Re-export the `skills/change` Events merge so the package-root `.d.ts` keeps it. */
+export type {} from './types.ts'
 
 const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const DEFAULT_COLLECT_CACHE_ENTRIES = 128
