@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  addImportedSkill, IMPORTED_SKILL_SOURCE, IMPORTED_SKILLS_KEY,
+  addImportedSkill, IMPORTED_SKILL_SOURCE, IMPORTED_SKILLS_KEY, importedTabRows,
   loadImportedSkills, mergeSkillCatalog, saveImportedSkills,
 } from '../src/client/skill-imported.ts'
 
@@ -49,8 +49,8 @@ describe('imported-skill overlay', () => {
       { ...row, description: 'newer' },
       [row, { name: 'other', description: 'kept', source: IMPORTED_SKILL_SOURCE }],
     )
-    expect(next.map(item => item.name)).toEqual(['other', 'mine'])
-    expect(next[1]?.description).toBe('newer')
+    expect(next.map(item => item.name)).toEqual(['mine', 'other'])
+    expect(next[0]?.description).toBe('newer')
     expect(mergeSkillCatalog(
       [{ name: 'mine', description: 'host', source: 'user-dsh' }],
       next,
@@ -58,5 +58,13 @@ describe('imported-skill overlay', () => {
       { name: 'mine', description: 'host', source: 'user-dsh' },
       { name: 'other', description: 'kept', source: IMPORTED_SKILL_SOURCE },
     ])
+    expect(importedTabRows(
+      [
+        { name: 'dsh-badge', description: 'bundled', source: 'bundled' },
+        { name: 'mine', description: 'host', source: 'user-dsh' },
+        { name: 'disk', description: 'on disk', source: 'user-dsh' },
+      ],
+      next,
+    ).map(item => item.name)).toEqual(['mine', 'other', 'disk'])
   })
 })

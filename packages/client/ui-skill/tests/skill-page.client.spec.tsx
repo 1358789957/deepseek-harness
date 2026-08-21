@@ -73,7 +73,10 @@ describe('SkillPage', () => {
     await waitFor(() => { expect(screen.getByText('dsh-code-review')).toBeTruthy() })
     fireEvent.click(within(screen.getByRole('navigation')).getByRole('button', { name: /导入/ }))
     expect(screen.getByText(zh['page.emptyImported'])).toBeTruthy()
-    expect(screen.getByRole('button', { name: '导入 SKILL.md' })).toBeTruthy()
+    const search = screen.getByRole('searchbox', { name: '搜索技能' })
+    const importBtn = screen.getByRole('button', { name: '导入 SKILL.md' })
+    expect(importBtn.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
+    expect(screen.queryByRole('list')).toBeNull()
   })
 
   it('shows the empty copy when the catalog is empty', async () => {
@@ -158,6 +161,24 @@ describe('SkillPage', () => {
     expect(screen.getByText('from file')).toBeTruthy()
     expect(within(screen.getByRole('navigation')).getByRole('button', { name: /导入/ }).textContent)
       .toMatch(/1/)
+    expect(screen.queryByRole('list')?.contains(screen.getByRole('button', { name: '导入 SKILL.md' })))
+      .toBe(false)
+
+    const second = new File(
+      ['---\nname: later\ndescription: newer pick\n---\n'],
+      'SKILL.md',
+      { type: 'text/markdown' },
+    )
+    await act(async () => { choose(second) })
+    await waitFor(() => { expect(screen.getByText('later')).toBeTruthy() })
+    expect(screen.getByRole('list').textContent?.indexOf('later'))
+      .toBeLessThan(screen.getByRole('list').textContent?.indexOf('picked') ?? 0)
+
+    fireEvent.change(screen.getByRole('searchbox', { name: '搜索技能' }), { target: { value: 'newer' } })
+    expect(screen.getByText('later')).toBeTruthy()
+    expect(screen.queryByText('picked')).toBeNull()
+    fireEvent.change(screen.getByRole('searchbox', { name: '搜索技能' }), { target: { value: 'zzzz' } })
+    expect(screen.getByText(zh['page.searchEmpty'])).toBeTruthy()
 
     const invalid = new File(['---\ndescription: only\n---\n'], 'SKILL.md', { type: 'text/markdown' })
     await act(async () => { choose(invalid) })

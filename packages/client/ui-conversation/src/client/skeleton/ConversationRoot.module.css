@@ -324,7 +324,7 @@
   z-index: 1;
 }
 
-/* An upward plus menu covers the hero mark; fade it so the two do not stack. */
+/* A plus menu to the right of + covers the hero mark; fade it so the two do not stack. */
 .composerHero:has([data-plus-open]) :global([data-hero-logo]) {
   opacity: 0;
   pointer-events: none;

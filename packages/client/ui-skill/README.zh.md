@@ -10,7 +10,7 @@ pick 会落下字面文本 `/name `，发出的提示词中也是同一段字面
 
 `/client` 导出接口只有插件主体（`apply`／`inject`）；source 对象是注册 effect 的内部实现。
 
-加号菜单的 Skill 行（右侧 chevron）会关闭菜单并打开 `shell.page` id `skills`，用同一份 `skill.list` 缓存列出目录（没有会话时列出宿主 cwd）；它不会打开「设置 → 插件」。左侧导航把内置（`bundled`、`project-agents`）和导入分开。每行有复选框——新名称默认勾选；`dsh.skill-enabled` 只存关掉的集合；未勾选的行仍列出，但不进 slash 目录。实心「导入 SKILL.md」按钮把选中的文件写入 `dsh.imported-skills` 叠加层；之后 `skills/change` 里同名的宿主行优先。空态按分组：「还没有技能。把 skill 文件放到技能目录后再来看。」／「还没有导入的技能」。
+加号菜单的 Skill 行（右侧 chevron）会关闭菜单并打开 `shell.page` id `skills`，用同一份 `skill.list` 缓存列出目录（没有会话时列出宿主 cwd）；它不会打开「设置 → 插件」。左侧导航把内置（`bundled`、`project-agents`）和导入分开。搜索框过滤当前分组；实心「导入 SKILL.md」按钮在其右侧作为添加动作，不进列表正文。每行有复选框——新名称默认勾选；`dsh.skill-enabled` 只存关掉的集合；未勾选的行仍列出，但不进 slash 目录。选中的文件会前置写入 `dsh.imported-skills` 叠加层（最新在前）；之后 `skills/change` 里同名的宿主行优先。空态按分组：「还没有技能。把 skill 文件放到技能目录后再来看。」／「还没有导入的技能。装上的会按导入顺序排在这里。」
 
 ## skill 工具行
 

@@ -13,7 +13,7 @@ import {
   loadDisabledSkills, saveDisabledSkills, setSkillEnabled,
 } from './skill-enabled.ts'
 import {
-  addImportedSkill, loadImportedSkills, mergeSkillCatalog, saveImportedSkills,
+  addImportedSkill, importedTabRows, loadImportedSkills, mergeSkillCatalog, saveImportedSkills,
 } from './skill-imported.ts'
 import { parseSkillMarkdown } from './parse-skill-md.ts'
 import css from './SkillPage.module.css'
@@ -72,6 +72,7 @@ export function SkillPage({
   const [importError, setImportError] = useState<string | null>(null)
   const [disabled, setDisabled] = useState(loadDisabledSkills)
   const [group, setGroup] = useState<SkillGroup>('builtin')
+  const [query, setQuery] = useState('')
   const [revision, setRevision] = useState(0)
   const fileRef = useRef<HTMLInputElement | null>(null)
 
@@ -89,12 +90,19 @@ export function SkillPage({
 
   const catalog = useMemo(() => mergeSkillCatalog(skills, imported), [skills, imported])
   const builtin = useMemo(() => catalog.filter(skill => isBuiltinSkillSource(skill.source)), [catalog])
-  const importedRows = useMemo(
-    () => catalog.filter(skill => !isBuiltinSkillSource(skill.source)),
-    [catalog],
-  )
+  const importedRows = useMemo(() => importedTabRows(catalog, imported), [catalog, imported])
   const rows = group === 'builtin' ? builtin : importedRows
-  const emptyCopy = group === 'builtin' ? t('page.empty') : t('page.emptyImported')
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    if (needle === '') return rows
+    return rows.filter(skill => (
+      skill.name.toLowerCase().includes(needle)
+      || skill.description.toLowerCase().includes(needle)
+    ))
+  }, [query, rows])
+  const emptyCopy = query.trim() !== ''
+    ? t('page.searchEmpty')
+    : group === 'builtin' ? t('page.empty') : t('page.emptyImported')
 
   const onImportFile = (file: File): void => {
     void file.text().then((text) => {
@@ -134,7 +142,7 @@ export function SkillPage({
             type="button"
             className={group === 'builtin' ? css.navOn : css.navItem}
             aria-current={group === 'builtin' ? 'page' : undefined}
-            onClick={() => { setGroup('builtin') }}
+            onClick={() => { setGroup('builtin'); setQuery('') }}
           >
             {t('page.builtin')}
             <span className={css.count}>{builtin.length}</span>
@@ -143,7 +151,7 @@ export function SkillPage({
             type="button"
             className={group === 'imported' ? css.navOn : css.navItem}
             aria-current={group === 'imported' ? 'page' : undefined}
-            onClick={() => { setGroup('imported') }}
+            onClick={() => { setGroup('imported'); setQuery('') }}
           >
             {t('page.imported')}
             <span className={css.count}>{importedRows.length}</span>
@@ -151,6 +159,14 @@ export function SkillPage({
         </nav>
         <div className={css.content}>
           <div className={css.toolbar}>
+            <input
+              className={css.search}
+              type="search"
+              value={query}
+              placeholder={t('page.search')}
+              aria-label={t('page.search')}
+              onChange={(event) => { setQuery(event.currentTarget.value) }}
+            />
             <button
               type="button"
               className={css.import}
@@ -172,11 +188,11 @@ export function SkillPage({
             />
           </div>
           {importError !== null && <div className={css.importError} role="status">{importError}</div>}
-          {rows.length === 0
+          {visible.length === 0
             ? <div className={css.empty}>{emptyCopy}</div>
             : (
               <ul className={css.list}>
-                {rows.map((skill) => {
+                {visible.map((skill) => {
                   const enabled = !disabled.has(skill.name)
                   return (
                     <li key={`${skill.source}:${skill.name}`} className={css.row}>

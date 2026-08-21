@@ -10,7 +10,7 @@ A failed `skill.list` throws from `candidates`, which the slash shell logs and f
 
 The `/client` exports are the plugin body (`apply`/`inject`) only; the source object is internal to the registration effect.
 
-The plus-menu Skill row (right chevron) closes the menu and opens `shell.page` id `skills` from the same `skill.list` cache (and a host-cwd list when there is no session); it does not open Settings → Plugins. Left nav splits 内置 (`bundled`, `project-agents`) from 导入. Each row has a checkbox — new names default on; `dsh.skill-enabled` stores the off set; unchecked rows stay listed and drop out of the slash catalog. A solid 导入 SKILL.md button picks a file into the `dsh.imported-skills` overlay; a later `skills/change` host row of the same name wins. Empty copy is per group: 「还没有技能。把 skill 文件放到技能目录后再来看。」 / 「还没有导入的技能」.
+The plus-menu Skill row (right chevron) closes the menu and opens `shell.page` id `skills` from the same `skill.list` cache (and a host-cwd list when there is no session); it does not open Settings → Plugins. Left nav splits 内置 (`bundled`, `project-agents`) from 导入. A search field filters the open group; the solid 导入 SKILL.md button sits to its right as the add action, never inside the list. Each row has a checkbox — new names default on; `dsh.skill-enabled` stores the off set; unchecked rows stay listed and drop out of the slash catalog. A pick prepends the `dsh.imported-skills` overlay (newest first); a later `skills/change` host row of the same name wins. Empty copy is per group: 「还没有技能。把 skill 文件放到技能目录后再来看。」 / 「还没有导入的技能。装上的会按导入顺序排在这里」.
 
 ## Skill tool row
 

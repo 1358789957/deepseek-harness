@@ -1,8 +1,10 @@
 /**
  * Client-local overlay of SKILL.md files the user picked on the Skill page.
  * Host `skill.list` still owns on-disk catalogs; a pick that later appears
- * there wins by name. Never seeded.
+ * there wins by name. Never seeded. Overlay order is newest first.
  */
+
+import { isBuiltinSkillSource } from './skill-groups.ts'
 
 /** Discovery source stamped on a user-picked file that is not yet on disk. */
 export const IMPORTED_SKILL_SOURCE = 'imported'
@@ -45,7 +47,7 @@ function isImportedSkill(value: unknown): value is ImportedSkill {
  * Read the imported-skill overlay. Invalid JSON or a blocked read yields
  * an empty list so the page still opens.
  * @param storage - `localStorage` or a test double.
- * @returns stored rows, oldest first.
+ * @returns stored rows, newest first.
  */
 export function loadImportedSkills(
   storage: Pick<Storage, 'getItem'> | undefined = browserStorage(),
@@ -85,13 +87,13 @@ export function saveImportedSkills(
  * Insert or replace one imported row by name.
  * @param row - parsed pick.
  * @param existing - current overlay.
- * @returns the next overlay.
+ * @returns the next overlay, newest first.
  */
 export function addImportedSkill(
   row: ImportedSkill,
   existing: readonly ImportedSkill[],
 ): ImportedSkill[] {
-  return [...existing.filter(item => item.name !== row.name), row]
+  return [row, ...existing.filter(item => item.name !== row.name)]
 }
 
 /**
@@ -107,4 +109,31 @@ export function mergeSkillCatalog<T extends { name: string }>(
 ): T[] {
   const names = new Set(catalog.map(row => row.name))
   return [...catalog, ...imported.filter(row => !names.has(row.name))]
+}
+
+/**
+ * Rows for the 导入 tab: overlay newest first (host fields win by name),
+ * then host non-builtin names the overlay does not list.
+ * @param catalog - merged host + overlay catalog.
+ * @param imported - local overlay, newest first.
+ * @returns imported-tab rows.
+ */
+export function importedTabRows<T extends { name: string; source: string }>(
+  catalog: readonly T[],
+  imported: readonly T[],
+): T[] {
+  const hostByName = new Map(catalog.map(row => [row.name, row]))
+  const overlay: T[] = []
+  const seen = new Set<string>()
+  for (const row of imported) {
+    const host = hostByName.get(row.name)
+    if (host !== undefined && isBuiltinSkillSource(host.source)) continue
+    const next = host ?? row
+    overlay.push(next)
+    seen.add(next.name)
+  }
+  return [
+    ...overlay,
+    ...catalog.filter(row => !isBuiltinSkillSource(row.source) && !seen.has(row.name)),
+  ]
 }

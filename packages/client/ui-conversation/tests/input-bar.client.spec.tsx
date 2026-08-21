@@ -1205,7 +1205,7 @@ describe('plus menu chrome and control seats', () => {
     expect(view.queryByRole('menu', { name: '更多' })).toBeNull()
   })
 
-  it('places the plus menu above the button, then to the right when above does not fit', () => {
+  it('places the plus menu to the right of the button, bottom-aligned, then flips left', () => {
     const { view } = bench({
       plusEntry: <button type="button" role="menuitem">Plan</button>,
     })
@@ -1220,16 +1220,16 @@ describe('plus menu chrome and control seats', () => {
     Object.defineProperty(menu, 'offsetWidth', { configurable: true, value: 220 })
     Object.defineProperty(menu, 'offsetHeight', { configurable: true, value: 200 })
     act(() => { window.dispatchEvent(new Event('resize')) })
-    expect(menu.style.top).toBe('292px')
-    expect(menu.style.left).toBe('40px')
+    expect(menu.style.top).toBe('328px')
+    expect(menu.style.left).toBe('76px')
     expect(view.container.querySelector('[data-plus-open]')).not.toBeNull()
 
     plus.getBoundingClientRect = () => ({
-      top: 80, right: 68, bottom: 108, left: 40, width: 28, height: 28, x: 40, y: 80, toJSON: () => ({}),
+      top: 500, right: 780, bottom: 528, left: 752, width: 28, height: 28, x: 752, y: 500, toJSON: () => ({}),
     })
     act(() => { window.dispatchEvent(new Event('resize')) })
-    expect(menu.style.left).toBe('76px')
-    expect(menu.style.top).toBe('80px')
+    expect(menu.style.left).toBe('524px')
+    expect(menu.style.top).toBe('328px')
   })
 
   it('the Access chip renders the projection value and submits a non-Full-access pick directly', async () => {

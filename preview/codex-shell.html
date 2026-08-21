@@ -69,7 +69,9 @@
     .subbody { flex: 1; overflow: auto; padding: 16px 20px 20px; }
     .skill-body { display: flex; gap: 16px; min-height: 280px; }
     .skill-main { flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-    .skill-import { align-self: flex-start; height: 32px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--dsw-alias-label-primary); color: var(--dsw-alias-bg-layer-2); font: inherit; font-size: 13px; cursor: pointer; }
+    .skill-bar { display: flex; align-items: center; gap: 8px; }
+    .skill-bar input[type=search] { flex: 1; min-width: 0; height: 32px; box-sizing: border-box; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; padding: 0 10px; background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; }
+    .skill-import { flex: none; height: 32px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--dsw-alias-label-primary); color: var(--dsw-alias-bg-layer-2); font: inherit; font-size: 13px; cursor: pointer; }
     .skill-nav { width: 132px; flex: none; display: flex; flex-direction: column; gap: 4px; }
     .skill-nav button { display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 13px; cursor: pointer; }
     .skill-nav button.on, .skill-nav button:hover { background: var(--dsw-specific-sidebar-nav-item-active); color: var(--dsw-alias-label-primary); }
@@ -462,7 +464,10 @@
               <button type="button" id="skillNavImported" data-g="imported">导入 <span class="cnt" id="skillCntImported">0</span></button>
             </nav>
             <div class="skill-main">
-              <button class="skill-import" id="skillImport" type="button">导入 SKILL.md</button>
+              <div class="skill-bar">
+                <input id="skillSearch" type="search" placeholder="搜索技能" aria-label="搜索技能" />
+                <button class="skill-import" id="skillImport" type="button">导入 SKILL.md</button>
+              </div>
               <input id="skillFile" type="file" accept=".md,text/markdown" hidden />
               <div class="sempty" id="skillImportErr" hidden></div>
               <div class="skill-list" id="skillList"></div>
@@ -609,15 +614,16 @@
       const mh = plusMenu.offsetHeight || 280
       const gap = 8
       const margin = 8
-      const above = r.top - gap - mh
-      if (above >= margin) {
-        plusMenu.style.top = above + 'px'
-        plusMenu.style.left = Math.min(Math.max(r.left, margin), window.innerWidth - mw - margin) + 'px'
+      const top = Math.min(Math.max(r.bottom - mh, margin), window.innerHeight - mh - margin)
+      const right = r.right + gap
+      if (right + mw <= window.innerWidth - margin) {
+        plusMenu.style.top = top + 'px'
+        plusMenu.style.left = right + 'px'
         return
       }
-      const right = r.right + gap
-      plusMenu.style.top = Math.min(Math.max(r.top, margin), window.innerHeight - mh - margin) + 'px'
-      plusMenu.style.left = (right + mw <= window.innerWidth - margin ? right : Math.max(margin, window.innerWidth - mw - margin)) + 'px'
+      const left = r.left - gap - mw
+      plusMenu.style.top = top + 'px'
+      plusMenu.style.left = (left >= margin ? left : Math.max(margin, window.innerWidth - mw - margin)) + 'px'
     }
     const hidePlus = () => {
       plusMenu.classList.remove('show')
@@ -743,9 +749,14 @@
       document.getElementById('skillNavBuiltin').classList.toggle('on', skillGroup === 'builtin')
       document.getElementById('skillNavImported').classList.toggle('on', skillGroup === 'imported')
       const box = document.getElementById('skillList')
-      const rows = skillGroup === 'builtin' ? BUILTIN_SKILLS : imported
+      const q = (document.getElementById('skillSearch').value || '').trim().toLowerCase()
+      const rows = (skillGroup === 'builtin' ? BUILTIN_SKILLS : imported)
+        .filter(s => !q || s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q))
       if (!rows.length) {
-        box.innerHTML = '<div class="sempty">' + (skillGroup === 'builtin' ? '还没有技能。把 skill 文件放到技能目录后再来看。' : '还没有导入的技能') + '</div>'
+        const empty = q
+          ? '没有匹配的技能'
+          : (skillGroup === 'builtin' ? '还没有技能。把 skill 文件放到技能目录后再来看。' : '还没有导入的技能。装上的会按导入顺序排在这里。')
+        box.innerHTML = '<div class="sempty">' + empty + '</div>'
         return
       }
       box.innerHTML = ''
@@ -770,6 +781,7 @@
     }
     document.getElementById('skillNavBuiltin').onclick = () => { skillGroup = 'builtin'; paintSkills() }
     document.getElementById('skillNavImported').onclick = () => { skillGroup = 'imported'; paintSkills() }
+    document.getElementById('skillSearch').oninput = () => paintSkills()
     document.getElementById('skillImport').onclick = () => document.getElementById('skillFile').click()
     document.getElementById('skillFile').onchange = (e) => {
       const file = e.target.files && e.target.files[0]
@@ -784,7 +796,7 @@
           return
         }
         const next = loadImportedSkills().filter(s => s.name !== row.name)
-        next.push(row)
+        next.unshift(row)
         saveImportedSkills(next)
         err.hidden = true
         err.textContent = ''

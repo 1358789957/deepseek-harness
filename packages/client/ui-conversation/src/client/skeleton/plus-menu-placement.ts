@@ -1,7 +1,7 @@
 /**
- * Place the composer plus menu from the + button rect. Prefer above the
- * button (over the draft). If that would leave the viewport, open to the
- * right. Never flip below the button.
+ * Place the composer plus menu from the + button rect. Open to the right
+ * of +, bottom-aligned with the button so the panel covers the draft.
+ * Flip to the left only when the right side would leave the viewport.
  */
 
 /** Axis-aligned box used for placement. */
@@ -52,18 +52,16 @@ export function placePlusMenu(
   menu: Pick<PlusMenuBox, 'width' | 'height'>,
   viewport: PlusMenuViewport,
 ): PlusMenuOrigin {
-  const aboveTop = anchor.top - GAP - menu.height
-  if (aboveTop >= MARGIN) {
-    return {
-      top: aboveTop,
-      left: clamp(anchor.left, MARGIN, viewport.width - menu.width - MARGIN),
-    }
-  }
+  const top = clamp(anchor.bottom - menu.height, MARGIN, viewport.height - menu.height - MARGIN)
   const rightLeft = anchor.right + GAP
+  if (rightLeft + menu.width <= viewport.width - MARGIN) {
+    return { top, left: rightLeft }
+  }
+  const leftLeft = anchor.left - GAP - menu.width
   return {
-    top: clamp(anchor.top, MARGIN, viewport.height - menu.height - MARGIN),
-    left: rightLeft + menu.width <= viewport.width - MARGIN
-      ? rightLeft
-      : clamp(viewport.width - menu.width - MARGIN, MARGIN, viewport.width - MARGIN),
+    top,
+    left: leftLeft >= MARGIN
+      ? leftLeft
+      : clamp(MARGIN, MARGIN, viewport.width - menu.width - MARGIN),
   }
 }

@@ -5,27 +5,27 @@ const menu = { width: 220, height: 280 }
 const viewport = { width: 800, height: 600 }
 
 describe('placePlusMenu', () => {
-  it('opens above the + button when that side fits', () => {
+  it('opens to the right of +, bottom-aligned with the button', () => {
     expect(placePlusMenu(
       { top: 400, right: 68, bottom: 428, left: 40, width: 28, height: 28 },
       menu,
       viewport,
-    )).toEqual({ top: 112, left: 40 })
+    )).toEqual({ top: 148, left: 76 })
   })
 
-  it('opens to the right of + when above would leave the viewport', () => {
+  it('flips to the left of + when the right side would leave the viewport', () => {
     expect(placePlusMenu(
-      { top: 80, right: 68, bottom: 108, left: 40, width: 28, height: 28 },
+      { top: 400, right: 780, bottom: 428, left: 752, width: 28, height: 28 },
       menu,
       viewport,
-    )).toEqual({ top: 80, left: 76 })
+    )).toEqual({ top: 148, left: 524 })
   })
 
-  it('clamps a right-side overflow instead of flipping below the button', () => {
+  it('clamps a left-side overflow instead of flipping below the button', () => {
     expect(placePlusMenu(
-      { top: 80, right: 780, bottom: 108, left: 752, width: 28, height: 28 },
+      { top: 80, right: 230, bottom: 108, left: 202, width: 28, height: 28 },
       menu,
-      viewport,
-    )).toEqual({ top: 80, left: 572 })
+      { width: 250, height: 600 },
+    )).toEqual({ top: 8, left: 8 })
   })
 })
