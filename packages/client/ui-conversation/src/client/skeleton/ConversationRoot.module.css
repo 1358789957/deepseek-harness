@@ -324,6 +324,12 @@
   z-index: 1;
 }
 
+/* An upward plus menu covers the hero mark; fade it so the two do not stack. */
+.composerHero:has([data-plus-open]) :global([data-hero-logo]) {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Blue backdrop ellipse (figma 313:14109), centered on the input card: the
    card's resting center sits ~92px above the stack bottom (32 foot pad +
    half of the ~120px two-row card); width tracks the card (glow asset 1051

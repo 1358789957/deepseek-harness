@@ -680,7 +680,10 @@ export function InputBar({
   }
 
   return (
-    <div className={clsx(css.root, variant === 'hero' && css.hero)}>
+    <div
+      className={clsx(css.root, variant === 'hero' && css.hero)}
+      {...(plusOpen ? { 'data-plus-open': '' } : {})}
+    >
       {dragActive && (
         <DropOverlay
           disabled={!canAcceptDrop}

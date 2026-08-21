@@ -26,7 +26,7 @@ Preview and fixtures must not contain the user's project 「声场」, 跳转轨
 
 **定时任务** (`SchedulePage`) is a 总表 of `{ name, cadence: hourly|daily|weekly, createdAt }` in `localStorage` key `dsh.scheduled-jobs`. Columns: 名称, 周期/规则, 状态, 下次, 操作(删除). State is `scheduled` until the first cadence slot, then `overdue` (this page does not dispatch). The list starts empty and is never seeded. There is no host scheduler write and no user `schedule_*` RPC. A blocked or invalid read opens an empty page; a blocked write keeps the in-memory list for the visit.
 
-The composer plus button opens local `conversation.input.plus` (`onClose`, `locked`) and does not call `toggleCommandMenu`. Slash `/` still opens the command source. The plus control is disabled only when the session is `removed`; hero, locked, and parent-offline composers still open the menu. The menu is `position: fixed` from the + button rect: below when it fits, otherwise to the right of +, never over the draft. Modes live only in this menu — the input bar does not also show a 标准模式 chip. Composer, sidebar 工作区, and title-bar File/Edit/View/Help keep extra gap so the chrome does not jam on a narrow window.
+The composer plus button opens local `conversation.input.plus` (`onClose`, `locked`) and does not call `toggleCommandMenu`. Slash `/` still opens the command source. The plus control is disabled only when the session is `removed`; hero, locked, and parent-offline composers still open the menu. The menu is `position: fixed` from the + button rect: above the button (over the draft) when it fits, otherwise to the right of +, never below. While it is open the hero fish (`data-hero-logo`, preview `.logo`) fades so the mark does not stack with the menu. Modes live only in this menu — the input bar does not also show a 标准模式 chip. Composer, sidebar 工作区, and title-bar File/Edit/View/Help keep extra gap so the chrome does not jam on a narrow window.
 
 Plus rows, in order: Plan toggle (开/关, `/plan` / `/plan off`); the four built-in modes 标准 / PTC / 极简 / 创造 (`standard` / `code` / `minimal` / `cordis`, else the first four roster options); Skill with a right chevron that closes the menu and `showPage('skills')`; API 密钥 at the bottom.
 
@@ -58,7 +58,7 @@ API key writes go through `credentials.set` / `unset` on `DEEPSEEK_API_KEY`. `cr
 
 **Keep Skill or the key sheet as plus-item local state.** Rejected. `onClose` unmounts the menu; those surfaces must outlive it.
 
-**Open the plus menu upward over the draft.** Rejected. The menu covers the textarea. It opens below the + button, or to the right when below does not fit.
+**Open the plus menu downward below the + button.** Rejected. Downward leaves the draft visible. The menu lifts over the draft; when above does not fit it opens to the right of +, never below.
 
 **Dashed-outline 导入 SKILL.md.** Rejected. The button uses the same solid `label-primary` fill as the product ok / send treatment.
 
@@ -73,7 +73,7 @@ API key writes go through `credentials.set` / `unset` on `DEEPSEEK_API_KEY`. `cr
 ## Testing
 
 - `packages/client/ui-jobs/tests/job-board.client.spec.tsx`, `schedule-page.client.spec.tsx`, `scheduled-jobs.client.spec.ts`, and `sidebar-page-nav.client.spec.tsx` pin empty copy, flatten/open, the 总表 columns, add/list/delete, and storage failure.
-- `packages/client/ui-conversation/tests/input-bar.client.spec.tsx` and `plus-menu-placement.client.spec.ts` pin plus → local menu, downward / right placement, no `toggleCommandMenu`, Escape / outside / session change close, and disabled-only-when-removed.
+- `packages/client/ui-conversation/tests/input-bar.client.spec.tsx` and `plus-menu-placement.client.spec.ts` pin plus → local menu, upward / right placement, `data-plus-open`, no `toggleCommandMenu`, Escape / outside / session change close, and disabled-only-when-removed.
 - `packages/client/ui-plan/tests/plan-plus-item.client.spec.tsx`, `ui-agent-preset/tests/agent-preset-plus-menu.client.spec.tsx`, `ui-skill/tests/skill-plus-item.client.spec.tsx`, `skill-page.client.spec.tsx`, `skill-imported.client.spec.ts`, and `parse-skill-md.client.spec.ts` pin the plus rows, catalog groups, checkboxes, and 导入 SKILL.md.
 - `packages/client/ui-settings-models/tests/api-key-sheet.client.spec.tsx` and `deepseek-key-test.client.spec.ts` pin write-only save/clear, 已设置, CORS copy, and no key logging.
 - `preview/codex-shell.html` stays empty of sample sessions and stores only a `dsh.hasApiKey` flag, never a key value.

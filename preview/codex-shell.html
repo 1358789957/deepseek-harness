@@ -38,7 +38,8 @@
     .shortcut { margin-left: auto; color: var(--dsw-alias-label-tertiary); font-size: 12px; }
     .main { flex: 1; position: relative; min-width: 0; background: #fff; z-index: 2; border-radius: 12px 12px 0 0; overflow: hidden; box-shadow: 0 -1px 0 rgba(15,23,42,0.04), -2px 0 8px rgba(15,23,42,0.04); }
     .hero { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 0 48px 72px; }
-    .logo { position: absolute; top: 200px; left: 50%; transform: translateX(-50%); color: var(--dsw-alias-label-primary); }
+    .logo { position: absolute; top: 200px; left: 50%; transform: translateX(-50%); color: var(--dsw-alias-label-primary); transition: opacity 0.15s ease; }
+    .hero.plus-open .logo { opacity: 0; pointer-events: none; }
     .headline { display: flex; align-items: center; gap: 10px; font-size: 32px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
     .badge { font-size: 11px; line-height: 16px; padding: 1px 6px; border-radius: 4px; background: var(--dsw-alias-bg-layer-3); color: var(--dsw-alias-label-tertiary); }
     .stack { position: relative; width: min(100%, 720px); display: flex; flex-direction: column; align-items: stretch; }
@@ -608,9 +609,9 @@
       const mh = plusMenu.offsetHeight || 280
       const gap = 8
       const margin = 8
-      const below = r.bottom + gap
-      if (below + mh <= window.innerHeight - margin) {
-        plusMenu.style.top = below + 'px'
+      const above = r.top - gap - mh
+      if (above >= margin) {
+        plusMenu.style.top = above + 'px'
         plusMenu.style.left = Math.min(Math.max(r.left, margin), window.innerWidth - mw - margin) + 'px'
         return
       }
@@ -618,7 +619,11 @@
       plusMenu.style.top = Math.min(Math.max(r.top, margin), window.innerHeight - mh - margin) + 'px'
       plusMenu.style.left = (right + mw <= window.innerWidth - margin ? right : Math.max(margin, window.innerWidth - mw - margin)) + 'px'
     }
-    const hidePlus = () => { plusMenu.classList.remove('show'); plusBtn.classList.remove('open') }
+    const hidePlus = () => {
+      plusMenu.classList.remove('show')
+      plusBtn.classList.remove('open')
+      document.querySelector('.hero')?.classList.remove('plus-open')
+    }
     const hideKeySheet = () => { keySheet.classList.remove('show'); keyInput.value = '' }
     const hideComposerMenus = () => {
       menu.classList.remove('show'); btn.classList.remove('open')
@@ -634,6 +639,7 @@
       pmenu.classList.remove('show'); pbtn.classList.remove('open')
       plusMenu.classList.toggle('show')
       plusBtn.classList.toggle('open', plusMenu.classList.contains('show'))
+      document.querySelector('.hero')?.classList.toggle('plus-open', plusMenu.classList.contains('show'))
       if (plusMenu.classList.contains('show')) placePlus()
     }
     window.addEventListener('resize', () => {

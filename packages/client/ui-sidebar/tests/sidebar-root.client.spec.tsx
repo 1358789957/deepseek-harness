@@ -31,33 +31,36 @@ function mountShell({
   let footerActionOwner: SidebarFooterActionOwnerProps | undefined
   let navOwner: SidebarNavOwnerProps | undefined
   let current = { collapsed, width, page }
-  const root = () => (
-    <SidebarRoot
-      collapsed={current.collapsed} width={current.width} page={current.page}
-      useSessions={neverHook} useWorkspaces={neverHook}
-      startSession={startSession} toggleSidebar={toggleSidebar} t={t}
-      renderSlot={((
-        key: string,
-        owner: SidebarFooterActionOwnerProps | SidebarNavOwnerProps
-          | SidebarSectionOwnerProps | SidebarSettingsOwnerProps,
-      ) => {
-        if (key === 'sidebar.settings') {
-          settingsOwner = owner
-          return <div data-testid="settings-seat" data-wide={owner.wide} />
-        }
-        if (key === 'sidebar.footer.action') {
-          footerActionOwner = owner
-          return <div data-testid="footer-action-seat" data-wide={owner.wide} />
-        }
-        if (key === 'sidebar.nav') {
-          navOwner = owner as SidebarNavOwnerProps
-          return <div data-testid="nav-seat" data-wide={owner.wide} data-page={(owner as SidebarNavOwnerProps).page} />
-        }
-        regionOwner = owner as SidebarSectionOwnerProps
-        return <div data-testid="region" data-wide={owner.wide} />
-      }) as SidebarRootComponentProps['renderSlot']}
-    />
-  )
+  const root = () => {
+    navOwner = undefined
+    return (
+      <SidebarRoot
+        collapsed={current.collapsed} width={current.width} page={current.page}
+        useSessions={neverHook} useWorkspaces={neverHook}
+        startSession={startSession} toggleSidebar={toggleSidebar} t={t}
+        renderSlot={((
+          key: string,
+          owner: SidebarFooterActionOwnerProps | SidebarNavOwnerProps
+            | SidebarSectionOwnerProps | SidebarSettingsOwnerProps,
+        ) => {
+          if (key === 'sidebar.settings') {
+            settingsOwner = owner
+            return <div data-testid="settings-seat" data-wide={owner.wide} />
+          }
+          if (key === 'sidebar.footer.action') {
+            footerActionOwner = owner
+            return <div data-testid="footer-action-seat" data-wide={owner.wide} />
+          }
+          if (key === 'sidebar.nav') {
+            navOwner = owner as SidebarNavOwnerProps
+            return <div data-testid="nav-seat" data-wide={owner.wide} data-page={(owner as SidebarNavOwnerProps).page} />
+          }
+          regionOwner = owner as SidebarSectionOwnerProps
+          return <div data-testid="region" data-wide={owner.wide} />
+        }) as SidebarRootComponentProps['renderSlot']}
+      />
+    )
+  }
   const view = render(root())
   return {
     startSession,

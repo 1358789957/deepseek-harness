@@ -26,7 +26,7 @@ Status: implemented
 
 **定时任务**（`SchedulePage`）是 `{ name, cadence: hourly|daily|weekly, createdAt }` 的总表，存在 `localStorage` 键 `dsh.scheduled-jobs`。列：名称、周期/规则、状态、下次、操作（删除）。状态在第一个周期槽之前为 `scheduled`，之后为 `overdue`（本页不投递）。列表从空开始，永不预置。不写宿主调度器，也没有用户 `schedule_*` RPC。读取被拦或 JSON 无效时打开空页；写入被拦时本次访问仍保留内存列表。
 
-composer 加号打开本地 `conversation.input.plus`（`onClose`、`locked`），不调用 `toggleCommandMenu`。Slash `/` 仍打开命令源。仅当会话 `removed` 时禁用加号；hero、锁定和父会话离线的 composer 仍可打开菜单。菜单相对 + 按钮用 `position: fixed` 定位：下方放得下就向下开，否则开到 + 右侧，绝不翻到草稿上方。模式只出现在该菜单里——输入栏不再另放「标准模式」chip。composer、侧栏工作区和标题栏 File/Edit/View/Help 加大间距，窄窗口下不挤在一起。
+composer 加号打开本地 `conversation.input.plus`（`onClose`、`locked`），不调用 `toggleCommandMenu`。Slash `/` 仍打开命令源。仅当会话 `removed` 时禁用加号；hero、锁定和父会话离线的 composer 仍可打开菜单。菜单相对 + 按钮用 `position: fixed` 定位：上方放得下就向上开（盖住草稿），否则开到 + 右侧，绝不翻到按钮下方。菜单打开时 hero 鱼标（`data-hero-logo`，预览 `.logo`）淡出，避免和菜单叠在一起。模式只出现在该菜单里——输入栏不再另放「标准模式」chip。composer、侧栏工作区和标题栏 File/Edit/View/Help 加大间距，窄窗口下不挤在一起。
 
 加号行顺序：Plan 开关（开／关，`/plan`／`/plan off`）；四种内置模式 标准／PTC／极简／创造（`standard`／`code`／`minimal`／`cordis`，否则取名单前四项）；右侧带 chevron 的 Skill，关闭菜单后 `showPage('skills')`；底栏 API 密钥。
 
@@ -58,7 +58,7 @@ API 密钥经 `credentials.set`／`unset` 写入 `DEEPSEEK_API_KEY`。`credentia
 
 **让 Skill 或密钥面板作为 plus 项的本地 state。** 拒绝。`onClose` 会卸载菜单；这些界面必须比菜单活得更久。
 
-**让加号菜单向上翻到草稿上方。** 拒绝。菜单会挡住文本框。它在 + 下方打开，下方放不下时开到右侧。
+**让加号菜单在 + 下方打开。** 拒绝。向下开能露出草稿。菜单抬到草稿上方；上方放不下时开到 + 右侧，绝不翻到按钮下方。
 
 **虚线描边的「导入 SKILL.md」。** 拒绝。该按钮使用与产品 ok／发送相同的实心 `label-primary` 填充。
 
@@ -73,7 +73,7 @@ API 密钥经 `credentials.set`／`unset` 写入 `DEEPSEEK_API_KEY`。`credentia
 ## Testing
 
 - `packages/client/ui-jobs/tests/job-board.client.spec.tsx`、`schedule-page.client.spec.tsx`、`scheduled-jobs.client.spec.ts` 和 `sidebar-page-nav.client.spec.tsx` 钉住空态文案、扁平化／打开、总表列、添加／列表／删除，以及存储失败。
-- `packages/client/ui-conversation/tests/input-bar.client.spec.tsx` 和 `plus-menu-placement.client.spec.ts` 钉住加号 → 本地菜单、向下／向右定位、不调用 `toggleCommandMenu`、Escape／外部／会话切换关闭，以及仅在 removed 时禁用。
+- `packages/client/ui-conversation/tests/input-bar.client.spec.tsx` 和 `plus-menu-placement.client.spec.ts` 钉住加号 → 本地菜单、向上／向右定位、`data-plus-open`、不调用 `toggleCommandMenu`、Escape／外部／会话切换关闭，以及仅在 removed 时禁用。
 - `packages/client/ui-plan/tests/plan-plus-item.client.spec.tsx`、`ui-agent-preset/tests/agent-preset-plus-menu.client.spec.tsx`、`ui-skill/tests/skill-plus-item.client.spec.tsx`、`skill-page.client.spec.tsx`、`skill-imported.client.spec.ts` 和 `parse-skill-md.client.spec.ts` 钉住加号行、目录分组、复选框和「导入 SKILL.md」。
 - `packages/client/ui-settings-models/tests/api-key-sheet.client.spec.tsx` 和 `deepseek-key-test.client.spec.ts` 钉住只写保存／清除、「已设置」、CORS 文案，以及不记录密钥。
 - `preview/codex-shell.html` 保持没有示例会话，只存 `dsh.hasApiKey` 标志，从不存密钥值。

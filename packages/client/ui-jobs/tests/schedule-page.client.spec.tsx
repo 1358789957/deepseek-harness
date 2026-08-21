@@ -37,7 +37,7 @@ describe('SchedulePage', () => {
     fireEvent.change(screen.getByLabelText('周期'), { target: { value: 'weekly' } })
     fireEvent.click(screen.getByRole('button', { name: '添加' }))
     expect(screen.getByText('nightly')).toBeTruthy()
-    expect(screen.getByText('每周')).toBeTruthy()
+    expect(screen.getByRole('cell', { name: '每周' })).toBeTruthy()
     expect(screen.getByText('已安排')).toBeTruthy()
     expect(screen.getByRole('columnheader', { name: '名称' })).toBeTruthy()
     expect(screen.getByRole('columnheader', { name: '周期/规则' })).toBeTruthy()

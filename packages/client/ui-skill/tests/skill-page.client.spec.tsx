@@ -50,8 +50,8 @@ describe('SkillPage', () => {
     renderPage(async () => CATALOG, SID, vi.fn(), setEnabled)
     await waitFor(() => { expect(screen.getByText('dsh-code-review')).toBeTruthy() })
     const nav = screen.getByRole('navigation')
-    expect(within(nav).getByRole('button', { name: /内置/ })).toHaveTextContent('2')
-    expect(within(nav).getByRole('button', { name: /导入/ })).toHaveTextContent('1')
+    expect(within(nav).getByRole('button', { name: /内置/ }).textContent).toMatch(/2/)
+    expect(within(nav).getByRole('button', { name: /导入/ }).textContent).toMatch(/1/)
     expect(screen.getByText('project-agents')).toBeTruthy()
     expect(screen.queryByText('mine')).toBeNull()
 
@@ -156,8 +156,8 @@ describe('SkillPage', () => {
     await act(async () => { choose(valid) })
     await waitFor(() => { expect(screen.getByText('picked')).toBeTruthy() })
     expect(screen.getByText('from file')).toBeTruthy()
-    expect(within(screen.getByRole('navigation')).getByRole('button', { name: /导入/ }))
-      .toHaveTextContent('1')
+    expect(within(screen.getByRole('navigation')).getByRole('button', { name: /导入/ }).textContent)
+      .toMatch(/1/)
 
     const invalid = new File(['---\ndescription: only\n---\n'], 'SKILL.md', { type: 'text/markdown' })
     await act(async () => { choose(invalid) })

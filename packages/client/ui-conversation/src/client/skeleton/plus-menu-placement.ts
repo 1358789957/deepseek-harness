@@ -1,7 +1,7 @@
 /**
- * Place the composer plus menu from the + button rect. Prefer below the
- * button; if that would leave the viewport, open to the right. Never flip
- * up over the draft.
+ * Place the composer plus menu from the + button rect. Prefer above the
+ * button (over the draft). If that would leave the viewport, open to the
+ * right. Never flip below the button.
  */
 
 /** Axis-aligned box used for placement. */
@@ -52,10 +52,10 @@ export function placePlusMenu(
   menu: Pick<PlusMenuBox, 'width' | 'height'>,
   viewport: PlusMenuViewport,
 ): PlusMenuOrigin {
-  const belowTop = anchor.bottom + GAP
-  if (belowTop + menu.height <= viewport.height - MARGIN) {
+  const aboveTop = anchor.top - GAP - menu.height
+  if (aboveTop >= MARGIN) {
     return {
-      top: belowTop,
+      top: aboveTop,
       left: clamp(anchor.left, MARGIN, viewport.width - menu.width - MARGIN),
     }
   }

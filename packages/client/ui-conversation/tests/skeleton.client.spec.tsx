@@ -262,6 +262,7 @@ describe('Hero chrome', () => {
     const view = render(<HeroShell t={makeTranslate(en, commonEn)} />)
     expect(view.getByText('What should we build?')).toBeTruthy()
     expect(view.getByText('Preview')).toBeTruthy()
+    expect(view.container.querySelector('[data-hero-logo]')).not.toBeNull()
   })
 })
 

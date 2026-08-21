@@ -3,7 +3,7 @@
  * After save the field is cleared and the row shows 已设置; the plaintext
  * never reappears and is never logged.
  */
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useId, useState, type FormEvent } from 'react'
 import type { IApiClient } from '@deepseek-ai/dsh-api-remotes/client'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
 import { IconCloseOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
@@ -44,6 +44,7 @@ export function ApiKeySheet({
   useApiKey, closeSheet, refresh, api, t,
 }: ApiKeySheetProps) {
   const { open, configured, writable } = useApiKey(state => state)
+  const titleId = useId()
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -126,9 +127,9 @@ export function ApiKeySheet({
   return (
     <div className={css.layer} role="presentation">
       <div className={css.mask} aria-hidden="true" onClick={closeSheet} />
-      <div className={css.sheet} role="dialog" aria-modal="true" aria-label={t('plusApiKey')}>
+      <div className={css.sheet} role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <div className={css.header}>
-          <h1 className={css.title}>{t('plusApiKey')}</h1>
+          <h1 className={css.title} id={titleId}>{t('plusApiKey')}</h1>
           <button type="button" className={css.close} aria-label={t('close')} onClick={closeSheet}>
             <IconCloseOutline16 size={14} />
           </button>
