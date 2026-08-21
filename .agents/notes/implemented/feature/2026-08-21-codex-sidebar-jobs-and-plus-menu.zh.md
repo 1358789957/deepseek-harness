@@ -32,7 +32,7 @@ composer 加号打开本地 `conversation.input.plus`（`onClose`、`locked`）�
 
 Skill 不得作为 plus 项的本地 state：`onClose` 会卸载 plus 条目。Skill 是 `shell.page` id `skills`。
 
-Skill 页列出 `skill.list`（没有会话时列出宿主 cwd）并带 `source`，在转发的 `skills/change` 上重新拉取。左侧导航把内置（`bundled`、`project-agents`）和导入分开。搜索框过滤当前分组；实心「导入 SKILL.md」按钮（`label-primary` 填充）在其右侧作为添加动作，不进列表正文。每行有复选框；新名称默认勾选；`dsh.skill-enabled` 只存关掉的集合；未勾选的行仍列出，但不进 slash 目录。选中的文件会前置写入 `dsh.imported-skills`（最新在前）；之后同名的宿主行优先。导入空态是「还没有导入的技能。装上的会按导入顺序排在这里。」
+Skill 页列出 `skill.list`（没有会话时通过默认预设的 standing 层列出宿主启动 cwd）并带 `source`，在转发的 `skills/change` 上重新拉取。左侧导航把内置（`bundled`、`project-agents`）和导入分开。搜索框过滤当前分组；实心「导入 SKILL.md」按钮（`label-primary` 填充）在其右侧作为添加动作，不进列表正文。每行有复选框；新名称默认勾选；`dsh.skill-enabled` 只存关掉的集合；未勾选的行仍列出，但不进 slash 目录。选中的文件会前置写入 `dsh.imported-skills`（最新在前）；之后同名的宿主行优先。导入空态是「还没有导入的技能。装上的会按导入顺序排在这里。」
 
 API 密钥经 Models 页的 `ProviderEditor`（以及 DeepSeek 引导步骤）用 `credentials.set`／`unset` 写入。`credentials.describe` 不含值。保存后密码框清空，行上显示已配置徽标。页面从不记录密钥、从不读取机器环境密钥，也从不把明文写入 composer 菜单。
 

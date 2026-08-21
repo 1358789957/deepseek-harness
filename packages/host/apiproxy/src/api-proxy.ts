@@ -3208,7 +3208,8 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
       // Skill lookup never creates or resumes an agent: the session address
       // resolves to a canonical cwd from the host-resident session header, and
       // the view scope is the live agent or the preset's standing key. A
-      // missing sessionId lists the host process cwd through the host registry.
+      // missing sessionId lists the host launch cwd through the default
+      // preset's standing layer (Web's host skill-filesystem row is off).
       async list(request) {
         const { sessionId } = request.payload
         const toEntry = (skill: {
@@ -3230,7 +3231,25 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
             return err(request, { code: 'internal', message: 'skill registry is absent: the host composition does not mount @deepseek-ai/dsh-skill', details: {} })
           }
           try {
-            const skills = (await skillRegistry.list({ cwd: process.cwd() })).filter(isUserInvocable)
+            // Web disables the host skill-filesystem row so presets own local
+            // discovery. A hero list has no session agent; the default
+            // preset's standing key is the view that still sees that layer.
+            const presets = ctx.get('agentPresets')
+            let scope: ScopeKey | undefined
+            if (presets !== undefined) {
+              try {
+                scope = await presets.standingKeyFor()
+              } catch {
+                // Swallows only an unknown or unusable default preset: the
+                // global layer still answers, the same way a cold transcript
+                // degrades when the roster no longer supplies the recorded id.
+                scope = undefined
+              }
+            }
+            const skills = (await skillRegistry.list({
+              cwd: defaults.cwd,
+              ...scope === undefined ? {} : { scope },
+            })).filter(isUserInvocable)
             return ok(request, { skills: skills.map(toEntry) })
           } catch (error: unknown) {
             return err(request, { code: 'internal', message: `skill listing failed: ${String(error)}`, details: {} })

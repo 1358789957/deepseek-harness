@@ -654,6 +654,69 @@ describe('skills over the layered host registry', () => {
     expect(seen).toEqual([standingKeys.get('minimal')])
   })
 
+  it('omitted sessionId lists the host launch cwd through the default preset standing key', async () => {
+    const { api, ctx, cwd } = await harness(['standard'])
+    const seen: { scope?: unknown; cwd?: string }[] = []
+    ctx.provide('skills', {
+      list: (options: { scope?: unknown; cwd?: string }) => {
+        seen.push({ scope: options.scope, cwd: options.cwd })
+        return Promise.resolve([
+          {
+            name: 'hero-skill',
+            description: 'launch-cwd catalog',
+            invocation: { userInvocable: true, modelInvocable: true },
+            source: 'project-agents',
+          },
+        ])
+      },
+    } as never)
+
+    const response = await api.skills.list(request({}))
+
+    expect(response.result).toMatchObject({
+      ok: true,
+      value: { skills: [{ name: 'hero-skill', source: 'project-agents', modelInvocable: true }] },
+    })
+    expect(seen).toEqual([{ scope: standingKeys.get('standard'), cwd }])
+  })
+
+  it('omitted sessionId lists the host launch cwd on the global layer when no roster is composed', async () => {
+    const { api, ctx, cwd } = await harness()
+    const seen: { scope?: unknown; cwd?: string }[] = []
+    ctx.provide('skills', {
+      list: (options: { scope?: unknown; cwd?: string }) => {
+        seen.push({ scope: options.scope, cwd: options.cwd })
+        return Promise.resolve([])
+      },
+    } as never)
+
+    const response = await api.skills.list(request({}))
+
+    expect(response.result).toMatchObject({ ok: true, value: { skills: [] } })
+    expect(seen).toEqual([{ cwd }])
+  })
+
+  it('omitted sessionId falls back to the global view when the default standing key is unusable', async () => {
+    failingStandingKeys.add('standard')
+    try {
+      const { api, ctx, cwd } = await harness(['standard'])
+      const seen: { scope?: unknown; cwd?: string }[] = []
+      ctx.provide('skills', {
+        list: (options: { scope?: unknown; cwd?: string }) => {
+          seen.push({ scope: options.scope, cwd: options.cwd })
+          return Promise.resolve([])
+        },
+      } as never)
+
+      const response = await api.skills.list(request({}))
+
+      expect(response.result).toMatchObject({ ok: true, value: { skills: [] } })
+      expect(seen).toEqual([{ cwd }])
+    } finally {
+      failingStandingKeys.delete('standard')
+    }
+  })
+
   it('serves the global view when the roster no longer supplies the recorded preset', async () => {
     const { api, ctx } = await harness(['standard'])
     const seen: unknown[] = []

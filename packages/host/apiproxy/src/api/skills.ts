@@ -35,8 +35,8 @@ export interface SkillEntry {
 export interface SkillsApi {
   /**
    * Lists the user-invocable skill catalog. `sessionId` addresses that
-   * session's project cwd and composition; omit it to list the host process
-   * cwd through the host registry (hero / no current session).
+   * session's project cwd and composition; omit it to list the host launch
+   * cwd through the default preset's standing layer (hero / no current session).
    */
   list(request: RpcRequest<{ sessionId?: SessionId }>): Promise<RpcResponse<{ skills: readonly SkillEntry[] }>>
 }
